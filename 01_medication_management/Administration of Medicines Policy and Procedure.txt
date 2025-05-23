@@ -1,0 +1,223 @@
+Title: Administration of Medicines Policy and Procedure
+Category: Medications Management
+URL: https://app.qcs.co.uk/policy-centre/my-policies/CM11/view-policy
+
+==================================================
+
+Medication
+Compliance
+Consent
+CM11 - Administration of Medicines Policy and Procedure
+ALL POLICY
+REVIEW SHEET
+PURPOSE
+SCOPE
+OBJECTIVES
+POLICY
+PROCEDURE
+DEFINITIONS
+KEY FACTS - PROFESSIONALS
+KEY FACTS - PEOPLE AFFECTED BY THE SERVICE
+FURTHER READING
+OUTSTANDING PRACTICE
+FORMS
+RESOURCES
+Review Sheet
+Last Reviewed 21 Feb 25
+Last Amended 21 Feb 25
+This policy will be reviewed as needs require or at the following interval: Annual
+Business Impact:
+LOW
+Minimal action required. Circulate information amongst relevant parties.
+Reason for this Review:
+Scheduled review
+Changes Made:
+Yes
+Summary:
+This policy will support staff with the administration of medicines. It has been reviewed with minor changes to 4.2, 4.6, 5.9, 5.13, 5.16, 5.17, 5.18, 5.23 and 5.25. References have been checked to ensure they remain current.
+Relevant Legislation:
+The Care Act 2014
+Care Quality Commission (Registration) Regulations 2009
+Human Rights Act 1998
+Medical Act 1983
+Medicines Act 1968
+The Human Medicines Regulations 2012
+Mental Capacity Act 2005
+Mental Capacity Act Code of Practice
+Data Protection Act 2018
+Underpinning Knowledge:
+Author: Care Quality Commission (CQC), (2022), When Required Medicines in Adult Social Care [Online] Available from: https://www.cqc.org.uk/guidance-providers/adult-social-care/when-required-medicines-adult-social-care [Accessed: 21/02/2025]
+Author: CQC, (2022), Fire Risk from Use of Emollient Creams [Online] Available from: https://www.cqc.org.uk/guidance-providers/learning-safety-incidents/issue-3-fire-risk-use-emollient-creams [Accessed: 21/02/2025]
+Author: NICE, (2018), Decision-making and Mental Capacity - NICE guideline [NG108] [Online] Available from: https://www.nice.org.uk/guidance/ng108 [Accessed: 21/02/2025]
+Author: CQC, (2022), Self Administered Medicines in Care Homes [Online] Available from: https://www.cqc.org.uk/guidance-providers/adult-social-care/self-administered-medicines-care-homes [Accessed: 21/02/2025]
+Author: CQC, (2022), Medicines Administration Records in Adult Social Care [Online] Available from: https://www.cqc.org.uk/guidance-providers/adult-social-care/medicines-administration-records-adult-social-care [Accessed: 21/02/2025]
+Author: MHRA, (2021), Emollients and Risk of Severe and Fatal Burns: New resource available [Online] Available from: https://www.gov.uk/drug-safety-update/emollients-and-risk-of-severe-and-fatal-burns-new-resources-available#full-publication-update-history [Accessed: 21/02/2025]
+Author: Department of Health and University of Leeds, (2016), Administration of Medicines in Care Homes (with nursing) for Older People by Care Assistants [Online] Available from: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/518298/Medicines_in_care_homes_A.pdf [Accessed: 21/02/2025]
+Author: Royal Pharmaceutical Society, (2024), Professional Guidance on the Safe and Secure Handling of Medicines [Online] Available from: https://www.rpharms.com/recognition/setting-professional-standards/safe-and-secure-handling-of-medicines/professional-guidance-on-the-safe-and-secure-handling-of-medicines [Accessed: 21/02/2025]
+Author: NHS England, (2018), Stopping over medication of people with a learning disability and autistic people (STOMP) and supporting treatment and appropriate medication in paediatrics (STAMP) [Online] Available from: https://www.england.nhs.uk/learning-disabilities/improving-health/stomp/ [Accessed: 21/02/2025]
+Author: NICE, (2014), Managing Medicines in Care Homes [Online] Available from: https://www.nice.org.uk/guidance/sc1 [Accessed: 21/02/2025]
+Author: Royal Pharmaceutical Society, (2019), Professional Guidance on the Administration of Medicines in Healthcare Settings [Online] Available from: https://www.rpharms.com/Portals/0/RPS%20document%20library/Open%20access/Professional%20standards/SSHM%20and%20Admin/Admin%20of%20Meds%20prof%20guidance.pdf?ver=2019-01-23-145026-567 [Accessed: 21/02/2025]
+Author: CQC, (2025), Time Sensitive Medicines [Online] Available from: https://www.cqc.org.uk/guidance-providers/adult-social-care/time-sensitive-medicines [Accessed: 21/02/2025]
+Author: CQC, (2023), Delegating Medicines Administration [Online] Available from: https://www.cqc.org.uk/guidance-providers/adult-social-care/delegating-medicines-administration [Accessed: 21/02/2025]
+Author: NICE, (2015), Medicines Management in Care Homes [Online] Available from: https://www.nice.org.uk/guidance/qs85/chapter/Quality-statement-1-Record-keeping [Accessed: 21/02/2025]
+Suggested Action:
+Encourage sharing the policy through the use of the QCS App
+Equality Impact Assessment:
+QCS have undertaken an equality analysis during the review of this policy. This statement is a written record that demonstrates that we have shown due to regard to the need to eliminate lawful discrimination, advance equality of opportunity and foster good relations with respect to the characteristics protected by equality law.
+1. Purpose
+1.1 To ensure that Residents are safeguarded by the systems put in place regarding the administration of medication and to set minimum standards of practice that are adopted by all staff involved in the administration of medication.
+1.2 This policy should be read with the Overarching Medication Policy and Procedure and support and complement any locally required policies and procedures.
+1.3 To support Quenby Rest Home in meeting the following Quality Statements:
+Key Question
+Quality Statements
+Key Question
+Effective
+Quality Statements
+QSE1: Assessing needs
+QSE2: Delivering evidence-based care & treatment
+Key Question
+Effective
+Quality Statements
+QSE6: Consent to care and treatment
+Key Question
+Responsive
+Quality Statements
+QSR1: Person-centred care
+Key Question
+Safe
+Quality Statements
+QSS3: Safeguarding
+Key Question
+Safe
+Quality Statements
+QSS8: Medicines optimisation
+Key Question
+Well-led
+Quality Statements
+QSW5: Governance, management and sustainability
+1.4 Relevant Legislation
+The Care Act 2014
+Care Quality Commission (Registration) Regulations 2009
+Human Rights Act 1998
+Medical Act 1983
+Medicines Act 1968
+The Human Medicines Regulations 2012
+Mental Capacity Act 2005
+Mental Capacity Act Code of Practice
+Data Protection Act 2018
+2. Scope
+2.1 Roles Affected:
+Registered Manager
+Other management
+Care staff
+2.2 People Affected:
+Residents
+2.3 Stakeholders Affected:
+Family
+Commissioners
+External health professionals
+Local Authority
+NHS
+3. Objectives
+3.1 Following assessment, Residents receive appropriate support and encouragement to manage their own medication as independently as possible if they wish, without putting themselves or others at risk.
+3.2 All Residents who require medication, receive their medication safely. Administration is based on evidence-based best practice and national recommendations, delivered by competent and confident staff who understand their responsibilities and follow best practice, reducing the risk of medication errors and incidents.
+3.3 Staff adopt a person-centred approach by engaging with the Resident or their advocate in decisions about their medicines. This encourages Residents to take their medicines as prescribed.
+4. Policy
+4.1 General Policy Statement
+Quenby Rest Home aims to provide safe and reliable care including support, treatment and advice in relation to medication administration that maximises the Resident’s choice and independence
+Residents will be treated as individuals and, at all times, due consideration will be given to their age, beliefs, opinions, experience, ability, cultural needs and any other factors important to them
+Quenby Rest Home recognises the importance of staff training and supervision and will ensure that all employees involved in the administration of medication are well trained and competent to perform the activities within the remit of their roles
+Residents will be fully involved in the management and administration of their medication
+Residents will be fully involved in decisions regarding their individual medication and its purpose and will have shared with them, using a method which promotes their understanding, the medication patient leaflet information provided by the dispensing pharmacist
+4.2 Self-Administration and Medication Support
+Care Workers at Quenby Rest Home should assume that the Resident can take and look after their medicines themselves (self-administer) unless a risk assessment has indicated otherwise.
+Self-Administration:
+Can improve Resident satisfaction
+Encourages independence and self-care
+Can prepare Residents for discharge
+Quenby Rest Home is responsible for assessing and agreeing on the level of medication support required as detailed in the Overarching Medication Policy and Procedure and ensuring that the appropriate record keeping and training needs are met.
+Staff should refer to the Overarching Medication Policy and Procedure at Quenby Rest Home for further information on self-medication.
+4.3 Safe Administration of Medicines / The 'RIGHTS'
+All Care Workers who administer medication must be familiar with the Royal Pharmaceutical Society's 'Professional Guidance on the Administration of Medicines in Healthcare Settings' (a link can be found in the Underpinning Knowledge section).
+Care Workers administering medication should have a sound knowledge of the medicines they are administering, including:
+Therapeutic use
+Usual dose
+Side effects
+Precautions
+Contraindications
+If they do not have this knowledge, they should not administer and should seek advice from a senior staff member at Quenby Rest Home.
+There are a number of 'Rights of Administration' associated with medicines administration; the 5 rights, 6 rights, 7 rights, 8 rights, 9 rights and 10 rights.
+They all outline the key principles for administration of medicines.
+For this policy we will use the 6 rights of administration as outlined by the National Institute for Health and Care Excellence (2014) and referred to by CQC (2022):
+Right Resident
+Right medicine
+Right route
+Right dose
+Right time
+Residents Right to refuse
+Details of the other rights of administration can be found in the further reading section of this policy.
+4.4 Routes of Administration
+The oral route is the most frequently used route for medication administration, however other routes are used for various reasons
+It is the responsibility of Quenby Rest Home to ensure that Care Workers who administer medication are trained and competent to administer medication via the routes prescribed
+The most recent version of the Royal Marsden Manual of Clinical Nursing Procedures should be available for staff to ensure that evidence based clinical procedures are followed for administration of medication via different routes
+4.5 Medication Administration by Care Workers
+Care Workers administering medication at Quenby Rest Home must be appropriately trained, assessed as competent and meet relevant professional and regulatory standards and guidance
+Care Workers should only administer medicines that they have been trained to give. The Department of Health (2016) state this will generally include:
+Oral route - tablets, capsules, liquids
+Creams and ointments
+Inserting drops to eyes, ears, nose
+Inhaled medications
+Care Worker should refer to the Training and Competency on Medications Policy and Procedure at Quenby Rest Home
+Any Care Workers accepting the task of administering medication must take responsibility for ensuring their actions are carried out carefully, safely and correctly
+Delegation of a Specialised Technique:
+Both CQC and the Department of Health describe the administration of medicines by invasive or specialised techniques, such as injections (including insulin) or medication via a feeding tube as clinical tasks and normally the role of a Registered Nurse.
+However a Registered Nurse can delegate the administration of these medicines to a suitably trained and competent senior Care Worker as long as it has been deemed in the best interest of the Resident.
+Care Workers will:
+Need extra and more specific training and competency checks before undertaking these routes of administration
+Receive supervision and support
+Understand the delegated task fully
+Understand their limitations
+Know when and how to seek help and escalate concerns
+Be comfortable in carrying out the tasks safely and correctly
+Know what to do if the Resident refuses their medicine
+Be monitored to ensure required standards are met
+Care Workers should refer to the Department of Health's guidance 'Administration of medicines in care homes (with nursing) for older people by care assistants for further clarity (A link can be found in the Underpinning Knowledge section)
+Care Workers should refer to the Delegated Healthcare Activities Policy and Procedure
+4.6 Consent
+Before medication is administered to any Resident, formal consent must be obtained
+Where the Resident is unable to give valid consent due to mental incapacity, best interest meetings will take place and, where it is agreed that it is the best interest of the person, including their medical interests, that medication is administered, then formal authorisation for medication administration will be obtained and evidenced in the Resident’s Care Plan and medication records
+Medication must not be used as a form of restraint to sedate people for the convenience of the staff. This is abuse and a breach of human rights
+This policy should be read in conjunction with the Deprivation of Liberty Safeguards (DoLS) Policy and Procedure. This will ensure that consideration is given to mental capacity and whether the medication may constitute a deprivation of liberty
+Quenby Rest Home will ensure that staff do not administer medicines to the Resident without their knowledge (covert administration) if the Resident has capacity to make decisions about their treatment and care. Staff should follow the Covert Medication Policy and Procedure
+4.7 Timing for Administering Medications
+The Registered Manager, health professional prescribing the medicine and pharmacist should agree with the Resident the best time for the Resident to take their prescribed medicines.
+Medication errors are more common during morning medication rounds as this is a busy time. The Registered Manager should discuss with the Resident, care staff, prescriber and pharmacist medicines that do not need to be administered in the morning and could be administered at a time convenient for the Resident, to avoid busy times.
+4.8 Medicines Supply Systems
+The 2 widely used systems to provide medicines to Residents are:
+Original packs
+Monitored dosage systems (which may be single-dose or multi-dose)
+The Royal Pharmaceutical Society (RPS) and National Institute for Heath and Care Excellence (NICE) have both said that multi-compartment compliance aid (MCAs) sometimes referred to as a monitored dosage system (MDS) should not be the first-choice to help people manage their medicines.
+They recommend original packs of medicines as the preferred choice for the supply of medicines in the absence of a specific need for a Monitored Dosage System.
+Care Workers administering medication must be trained and competent to use systems adopted at Quenby Rest Home for medicines.
+4.9 Medicines Administration Records
+Quenby Rest Home is required to keep appropriate records of all medicines prescribed and administered to Residents. This is required under The Health and Social Care Act 2008 (Regulated Activities) Regulations 2014.
+Medicines administration records, also known as MARs or EMARs are for recording the administration and non-administration of medicines. This includes all prescribed medications for the Resident, such as tablets, dressings, creams, and medical devices.
+Medication administration records can be :
+Paper-based
+Electronic
+Pharmacies supplying medicines to Quenby Rest Home should produce medicines administration records wherever possible. (NICE 2014)
+If Quenby Rest Home produces its own medicines administration records, there should be a process in place to check that the details are correct for all entries made on the record and are signed by a second medication trained and competent staff member before use.
+Where electronic MAR are used, these must comply with data protection regulations, and clearly demonstrate which staff member has made the entry.
+Staff should refer to the Ordering and Receipt of Medication Policy and Procedure.
+Care Workers should ensure that all information included on the Resident's MAR is up-to-date and accurate. Staff should contact the Residents GP or supplying pharmacy to do this.
+Medication administration records should be retained by Quenby Rest Home for at least 8 years after the Resident's care ended at Quenby Rest Home.
+4.10 Controlled Drugs
+The administration of controlled drugs (CD's) is covered in the Controlled Drugs Policy and Procedure.
+4.11 Oxygen
+The administration of oxygen is covered in the Oxygen Use Policy and Procedure.
+4.12 Care Workers who administer medication should be able to access up-to-date information about medicines, including:
+The Medicines and Healthcare products Regulatory Agency (MHRA)
+NHS Choices
+Patient
+NICE British National Formulary (BNF)
+Links to the above can be found in the
