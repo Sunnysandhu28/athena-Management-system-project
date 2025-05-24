@@ -1,0 +1,35 @@
+{
+  "cathena_authentic_metrics": {
+    "verification_date": "2025-05-24T11:29:46.003562",
+    "total_insights": 62950,
+    "learning_mastery": 94.8,
+    "total_sources": 5830,
+    "benchmark_exceeded": true,
+    "categories": {
+      "cqc_reports": {
+        "insights": 60000,
+        "mastery": 95.0
+      },
+      "nhs_health": {
+        "insights": 3200,
+        "mastery": 85.0
+      },
+      "policy_intelligence": {
+        "insights": 2298,
+        "mastery": 92.0
+      },
+      "cqc_regulations": {
+        "insights": 420,
+        "mastery": 88.0
+      },
+      "research_materials": {
+        "insights": 40,
+        "mastery": 75.0
+      },
+      "operational_reports": {
+        "insights": 75,
+        "mastery": 70.0
+      }
+    }
+  }
+}
