@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulatory Terminology Assistant - Cathena Policy Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .term-card {
+            margin-bottom: 15px;
+            border-left: 4px solid #0d6efd;
+        }
+        .term-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #0d6efd;
+        }
+        .term-definition {
+            margin-top: 10px;
+        }
+        .term-relevance {
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 8px;
+        }
+        .term-citations {
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        .related-terms {
+            margin-top: 15px;
+        }
+        .related-term-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .framework-badge {
+            cursor: pointer;
+        }
+        .guideline-card {
+            margin-bottom: 20px;
+            border-left: 4px solid #198754;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .search-results {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Regulatory Terminology Assistant</h1>
+        
+        <div class="row">
+            <!-- Left Column: Search and Results -->
+            <div class="col-md-7">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Search Regulatory Terms</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="termSearchForm">
+                            <div class="mb-3">
+                                <label for="searchQuery" class="form-label">Search Term or Phrase</label>
+                                <input type="text" class="form-control" id="searchQuery" placeholder="Enter a regulatory term or phrase">
+                            </div>
+                            <div class="mb-3">
+                                <label for="frameworkSelect" class="form-label">Regulatory Framework</label>
+                                <select class="form-select" id="frameworkSelect">
+                                    <option value="CQC">CQC</option>
+                                    <option value="RIDDOR">RIDDOR</option>
+                                    <option value="Fire Safety">Fire Safety</option>
+                                    <option value="Financial/Accounting">Financial/Accounting</option>
+                                    <option value="UK Law">UK Law</option>
+                                    <option value="UK Commercial Law">UK Commercial Law</option>
+                                    <option value="UK Company Law">UK Company Law</option>
+                                    <option value="UK Tax Law">UK Tax Law</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Training">Training</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" id="searchButton">
+                                    <span class="spinner-border spinner-border-sm loading-spinner" id="searchSpinner" role="status" aria-hidden="true"></span>
+                                    Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Search Results</h5>
+                    </div>
+                    <div class="card-body search-results" id="searchResults">
+                        <p class="text-muted">Search for a regulatory term to see results.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Term Details and Context -->
+            <div class="col-md-5">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Term Details</h5>
+                    </div>
+                    <div class="card-body" id="termDetails">
+                        <p class="text-muted">Select a term from the search results to view details.</p>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Contextual Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="contextForm">
+                            <div class="mb-3">
+                                <label for="contextText" class="form-label">Provide Context for Analysis</label>
+                                <textarea class="form-control" id="contextText" rows="5" placeholder="Paste text containing the term for contextual analysis"></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success" id="analyzeButton" disabled>
+                                    <span class="spinner-border spinner-border-sm loading-spinner" id="analyzeSpinner" role="status" aria-hidden="true"></span>
+                                    Analyze in Context
+                                </button>
+                            </div>
+                        </form>
+                        <div id="contextResults" class="mt-3"></div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Document Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="documentForm" action="/regulatory/analyze_document" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="documentFile" class="form-label">Upload Document for Analysis</label>
+                                <input class="form-control" type="file" id="documentFile" name="document">
+                            </div>
+                            <div class="mb-3">
+                                <label for="documentFramework" class="form-label">Regulatory Framework</label>
+                                <select class="form-select" id="documentFramework" name="framework">
+                                    <option value="CQC">CQC</option>
+                                    <option value="RIDDOR">RIDDOR</option>
+                                    <option value="Fire Safety">Fire Safety</option>
+                                    <option value="Financial/Accounting">Financial/Accounting</option>
+                                    <option value="UK Law">UK Law</option>
+                                    <option value="UK Commercial Law">UK Commercial Law</option>
+                                    <option value="UK Company Law">UK Company Law</option>
+                                    <option value="UK Tax Law">UK Tax Law</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Training">Training</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-info">Analyze Document</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminology Map Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Regulatory Terminology Map</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="btn-group" role="group" aria-label="Framework filter">
+                                <button type="button" class="btn btn-outline-primary active" data-framework="all">All</button>
+                                <button type="button" class="btn btn-outline-primary" data-framework="CQC">CQC</button>
+                                <button type="button" class="btn btn-outline-primary" data-framework="RIDDOR">RIDDOR</button>
+                                <button type="button" class="btn btn-outline-primary" data-framework="Fire Safety">Fire Safety</button>
+                                <button type="button" class="btn btn-outline-primary" data-framework="Financial/Accounting">Financial</button>
+                                <button type="button" class="btn btn-outline-primary" data-framework="UK Law">UK Law</button>
+                            </div>
+                        </div>
+                        <div id="terminologyMap" style="height: 500px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <p class="text-muted">Select terms to visualize their relationships.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Term Details -->
+    <div class="modal fade" id="termModal" tabindex="-1" aria-labelledby="termModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termModalLabel">Term Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="termModalBody">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('termSearchForm');
+            const contextForm = document.getElementById('contextForm');
+            const searchResults = document.getElementById('searchResults');
+            const termDetails = document.getElementById('termDetails');
+            const contextResults = document.getElementById('contextResults');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const searchSpinner = document.getElementById('searchSpinner');
+            const analyzeSpinner = document.getElementById('analyzeSpinner');
+            
+            let currentTerm = null;
+            let currentFramework = null;
+            
+            // Search form submission
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const query = document.getElementById('searchQuery').value;
+                const framework = document.getElementById('frameworkSelect').value;
+                
+                if (!query) return;
+                
+                searchSpinner.style.display = 'inline-block';
+                
+                // Call the search API
+                fetch(`/regulatory/search_terms?query=${encodeURIComponent(query)}&framework=${encodeURIComponent(framework)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchSpinner.style.display = 'none';
+                        displaySearchResults(data, framework);
+                    })
+                    .catch(error => {
+                        searchSpinner.style.display = 'none';
+                        searchResults.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                    });
+            });
+            
+            // Context analysis form submission
+            contextForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!currentTerm) return;
+                
+                const contextText = document.getElementById('contextText').value;
+                if (!contextText) return;
+                
+                analyzeSpinner.style.display = 'inline-block';
+                
+                // Call the context analysis API
+                fetch('/regulatory/analyze_context', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        term: currentTerm,
+                        framework: currentFramework,
+                        context: contextText
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        analyzeSpinner.style.display = 'none';
+                        displayContextResults(data);
+                    })
+                    .catch(error => {
+                        analyzeSpinner.style.display = 'none';
+                        contextResults.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                    });
+            });
+            
+            // Display search results
+            function displaySearchResults(data, framework) {
+                if (!data.terms || data.terms.length === 0) {
+                    searchResults.innerHTML = '<p class="text-muted">No results found. Try a different search term or framework.</p>';
+                    return;
+                }
+                
+                let html = '<div class="list-group">';
+                data.terms.forEach(term => {
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action term-item" 
+                           data-term="${term.term}" data-framework="${framework}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${term.term}</h5>
+                                <small class="text-muted">${framework}</small>
+                            </div>
+                            <p class="mb-1">${term.definition ? term.definition.substring(0, 100) + '...' : 'No definition available'}</p>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+                
+                searchResults.innerHTML = html;
+                
+                // Add click event listeners to the term items
+                document.querySelectorAll('.term-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const term = this.getAttribute('data-term');
+                        const framework = this.getAttribute('data-framework');
+                        
+                        fetchTermDetails(term, framework);
+                    });
+                });
+            }
+            
+            // Fetch term details
+            function fetchTermDetails(term, framework) {
+                fetch(`/regulatory/term_details?term=${encodeURIComponent(term)}&framework=${encodeURIComponent(framework)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        displayTermDetails(data, term, framework);
+                        currentTerm = term;
+                        currentFramework = framework;
+                        analyzeButton.disabled = false;
+                    })
+                    .catch(error => {
+                        termDetails.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                    });
+            }
+            
+            // Display term details
+            function displayTermDetails(data, term, framework) {
+                if (!data || Object.keys(data).length === 0) {
+                    termDetails.innerHTML = '<p class="text-muted">No details available for this term.</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="term-card card p-3">
+                        <div class="term-title">${term}</div>
+                        <div class="term-definition">${data.definition || 'No definition available'}</div>
+                `;
+                
+                if (data.relevance) {
+                    html += `<div class="term-relevance">Relevance: ${data.relevance}</div>`;
+                }
+                
+                if (data.citations && data.citations.length > 0) {
+                    html += '<div class="term-citations"><strong>Citations:</strong><ul>';
+                    data.citations.forEach(citation => {
+                        html += `<li>${citation}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+                
+                if (data.related_terms && data.related_terms.length > 0) {
+                    html += '<div class="related-terms"><strong>Related Terms:</strong><div>';
+                    data.related_terms.forEach(relatedTerm => {
+                        html += `
+                            <span class="badge bg-secondary related-term-badge" 
+                                  data-term="${relatedTerm}" 
+                                  data-framework="${framework}">
+                                ${relatedTerm}
+                            </span>
+                        `;
+                    });
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+                
+                termDetails.innerHTML = html;
+                
+                // Add click event listeners to related terms
+                document.querySelectorAll('.related-term-badge').forEach(badge => {
+                    badge.addEventListener('click', function() {
+                        const term = this.getAttribute('data-term');
+                        const framework = this.getAttribute('data-framework');
+                        fetchTermDetails(term, framework);
+                    });
+                });
+            }
+            
+            // Display context analysis results
+            function displayContextResults(data) {
+                if (!data || !data.explanation) {
+                    contextResults.innerHTML = '<p class="text-muted">No contextual analysis available.</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="card guideline-card p-3">
+                        <h5>Contextual Explanation</h5>
+                        <p>${data.explanation}</p>
+                `;
+                
+                if (data.importance) {
+                    html += `
+                        <h6>Importance</h6>
+                        <p>${data.importance}</p>
+                    `;
+                }
+                
+                if (data.advice) {
+                    html += `
+                        <h6>Compliance Advice</h6>
+                        <p>${data.advice}</p>
+                    `;
+                }
+                
+                html += '</div>';
+                
+                contextResults.innerHTML = html;
+            }
+            
+            // Initialize terminology map (simplified version)
+            function initTerminologyMap() {
+                // This would be a placeholder for D3.js visualization
+                // For a real implementation, you would fetch the terminology data
+                // and create a force-directed graph or similar visualization
+            }
+            
+            // Initialize the page
+            initTerminologyMap();
+        });
+    </script>
+</body>
+</html>

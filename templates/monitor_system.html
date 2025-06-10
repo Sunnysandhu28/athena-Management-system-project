@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}System Monitoring - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>System Monitoring</h1>
+    <p class="lead">Monitor system health, security, and performance</p>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">System Statistics</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Policies
+                            <span class="badge bg-primary rounded-pill">{{ stats.total_policies }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Categories
+                            <span class="badge bg-primary rounded-pill">{{ stats.total_categories }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Users
+                            <span class="badge bg-primary rounded-pill">{{ stats.total_users }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Recent Downloads</h2>
+                </div>
+                <div class="card-body">
+                    {% if stats.recent_downloads %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Policy</th>
+                                        <th>Code</th>
+                                        <th>Downloads</th>
+                                        <th>Last Downloaded</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in stats.recent_downloads %}
+                                        <tr>
+                                            <td>{{ policy.name }}</td>
+                                            <td>{{ policy.policy_code }}</td>
+                                            <td>{{ policy.downloads }}</td>
+                                            <td>{{ policy.updated_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">No recent downloads</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">System Checks</h2>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('monitor_system') }}" method="post">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="check_type" id="check_all" value="all" checked>
+                            <label class="form-check-label" for="check_all">
+                                Run All Checks
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="check_type" id="check_security" value="security">
+                            <label class="form-check-label" for="check_security">
+                                Security Checks
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="check_type" id="check_performance" value="performance">
+                            <label class="form-check-label" for="check_performance">
+                                Performance Checks
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="check_type" id="check_data" value="data">
+                            <label class="form-check-label" for="check_data">
+                                Data Integrity Checks
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Run System Checks
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Maintenance Schedule</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Daily Maintenance</h4>
+                <p>Automated maintenance runs daily at 22:00 (10:00 PM) to ensure system health, security, and data integrity.</p>
+                <hr>
+                <p class="mb-0">Next scheduled maintenance: <strong>Today at 22:00</strong></p>
+            </div>
+
+            <div class="accordion" id="maintenanceAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Daily Tasks
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#maintenanceAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Security vulnerability scanning</li>
+                                <li>Performance monitoring and optimization</li>
+                                <li>Data integrity checks</li>
+                                <li>Temporary file cleanup</li>
+                                <li>Database backups</li>
+                                <li>Log rotation and analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Weekly Tasks
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#maintenanceAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Full system scan for malware and vulnerabilities</li>
+                                <li>Database optimization</li>
+                                <li>Storage cleanup and optimization</li>
+                                <li>System updates checks</li>
+                                <li>User account auditing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Monthly Tasks
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#maintenanceAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Full database backup</li>
+                                <li>Comprehensive security audit</li>
+                                <li>System performance review</li>
+                                <li>Software updates and patching</li>
+                                <li>Security compliance checks</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Maintenance Budget Allocation (£1,000/year)</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <canvas id="budgetChart" width="400" height="200"></canvas>
+                </div>
+                <div class="col-md-4">
+                    <h5>Budget Breakdown</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Security Monitoring
+                            <span class="badge bg-primary rounded-pill">£400</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Bug Fixes & Updates
+                            <span class="badge bg-success rounded-pill">£300</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            JavaScript Testing
+                            <span class="badge bg-info rounded-pill">£200</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Emergency Support
+                            <span class="badge bg-warning rounded-pill">£100</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Budget allocation chart
+        const ctx = document.getElementById('budgetChart').getContext('2d');
+        const budgetChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Security Monitoring', 'Bug Fixes & Updates', 'JavaScript Testing', 'Emergency Support'],
+                datasets: [{
+                    data: [400, 300, 200, 100],
+                    backgroundColor: [
+                        '#0d6efd',  // Primary
+                        '#198754',  // Success
+                        '#0dcaf0',  // Info
+                        '#ffc107',  // Warning
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

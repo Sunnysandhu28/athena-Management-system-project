@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Replication Job #{{ job.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Policy Replication</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Job #{{ job.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Replication Job #{{ job.id }}</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Replication Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Job Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Status:</dt>
+                        <dd class="col-sm-7">
+                            {% if job.status == 'completed' %}
+                                <span class="badge bg-success">{{ job.status }}</span>
+                            {% elif job.status == 'pending' or job.status == 'started' %}
+                                <span class="badge bg-primary">{{ job.status }}</span>
+                            {% elif job.status == 'running' %}
+                                <span class="badge bg-info">{{ job.status }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ job.status }}</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-5">Started:</dt>
+                        <dd class="col-sm-7">{{ job.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+
+                        {% if job.end_time %}
+                            <dt class="col-sm-5">Completed:</dt>
+                            <dd class="col-sm-7">{{ job.end_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+
+                            <dt class="col-sm-5">Duration:</dt>
+                            <dd class="col-sm-7">
+                                {% set duration = (job.end_time - job.start_time).total_seconds() %}
+                                {% if duration < 60 %}
+                                    {{ duration|round|int }} seconds
+                                {% else %}
+                                    {{ (duration / 60)|round|int }} minutes, {{ (duration % 60)|round|int }} seconds
+                                {% endif %}
+                            </dd>
+                        {% endif %}
+
+                        <dt class="col-sm-5">Total Policies:</dt>
+                        <dd class="col-sm-7">{{ job.total_policies or 0 }}</dd>
+
+                        <dt class="col-sm-5">Successful:</dt>
+                        <dd class="col-sm-7">
+                            <span class="text-success">{{ job.successful_policies or 0 }}</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Failed:</dt>
+                        <dd class="col-sm-7">
+                            <span class="text-danger">{{ job.failed_policies or 0 }}</span>
+                        </dd>
+
+                        {% if job.limit %}
+                            <dt class="col-sm-5">Policy Limit:</dt>
+                            <dd class="col-sm-7">{{ job.limit }}</dd>
+                        {% endif %}
+                    </dl>
+
+                    {% if job.message %}
+                        <h6>Message:</h6>
+                        <div class="alert {% if job.status == 'error' or job.status == 'failed' %}alert-danger{% else %}alert-info{% endif %}">
+                            {{ job.message }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if job.status == 'error' or job.status == 'failed' %}
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('policy_replicator.start_replication') }}" method="post">
+                            <input type="hidden" name="limit" value="{% if job.limit %}{{ job.limit }}{% else %}10{% endif %}">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-arrow-repeat"></i> Retry Replication
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Replicated Policies</h5>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Code</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies %}
+                                        <tr>
+                                            <td>{{ policy.id }}</td>
+                                            <td>{{ policy.qcs_name or policy.title }}</td>
+                                            <td>{{ policy.code }}</td>
+                                            <td>
+                                                {% if policy.status == 'replicated' %}
+                                                    <span class="badge bg-success">{{ policy.status }}</span>
+                                                {% elif policy.status == 'pending' %}
+                                                    <span class="badge bg-info">{{ policy.status }}</span>
+                                                {% elif policy.status == 'formatted' %}
+                                                    <span class="badge bg-primary">{{ policy.status }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">{{ policy.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#policyDetails{{ policy.id }}">
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Policy Details Modal -->
+                                        <div class="modal fade" id="policyDetails{{ policy.id }}" tabindex="-1" aria-labelledby="policyDetailsLabel{{ policy.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="policyDetailsLabel{{ policy.id }}">Policy Details</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <dl>
+                                                            <dt>Policy Name</dt>
+                                                            <dd>{{ policy.qcs_name or policy.title }}</dd>
+                                                            
+                                                            <dt>Code</dt>
+                                                            <dd>{{ policy.code or 'N/A' }}</dd>
+                                                            
+                                                            <dt>Status</dt>
+                                                            <dd>
+                                                                {% if policy.status == 'replicated' %}
+                                                                    <span class="badge bg-success">{{ policy.status }}</span>
+                                                                {% elif policy.status == 'pending' %}
+                                                                    <span class="badge bg-info">{{ policy.status }}</span>
+                                                                {% elif policy.status == 'formatted' %}
+                                                                    <span class="badge bg-primary">{{ policy.status }}</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-warning text-dark">{{ policy.status }}</span>
+                                                                {% endif %}
+                                                            </dd>
+                                                            
+                                                            <dt>QCS URL</dt>
+                                                            <dd>
+                                                                {% if policy.qcs_url %}
+                                                                    <a href="{{ policy.qcs_url }}" target="_blank">{{ policy.qcs_url }}</a>
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </dd>
+                                                            
+                                                            <dt>Last Checked</dt>
+                                                            <dd>
+                                                                {% if policy.last_checked %}
+                                                                    {{ policy.last_checked.strftime('%Y-%m-%d %H:%M:%S') }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </dd>
+                                                            
+                                                            <dt>Replicated At</dt>
+                                                            <dd>
+                                                                {% if policy.replicated_at %}
+                                                                    {{ policy.replicated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </dd>
+                                                            
+                                                            <dt>Version</dt>
+                                                            <dd>{{ policy.version or '1.0' }}</dd>
+                                                            
+                                                            {% if policy.file_path %}
+                                                                <dt>File Path</dt>
+                                                                <dd>{{ policy.file_path }}</dd>
+                                                            {% endif %}
+                                                            
+                                                            {% if policy.company_file_path %}
+                                                                <dt>Company File Path</dt>
+                                                                <dd>{{ policy.company_file_path }}</dd>
+                                                            {% endif %}
+                                                        </dl>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        {% if policy.content %}
+                                                            <a href="/download/{{ policy.id }}" class="btn btn-primary">Download</a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">No policies have been replicated for this job yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

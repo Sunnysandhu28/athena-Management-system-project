@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy_code }} - {{ policy_title }} | Cathena Policy Automation{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.ma_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/policy-categories/{{ category }}">{{ category.replace('_', ' ') }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ policy_code }}</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">{{ policy_code }} - {{ policy_title }}</h1>
+        <span class="category-badge">{{ category.replace('_', ' ') }}</span>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('policy_repository.view_policy', policy_code=policy_code) }}" class="btn btn-primary">
+                <i class="fas fa-pencil-alt me-2"></i> Customize
+            </a>
+            <a href="{{ url_for('policy_repository.download_policy', policy_code=policy_code) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-download me-2"></i> Download
+            </a>
+            <a href="{{ url_for('policy_comparison.comparison_report') }}?policy_code_1={{ policy_code }}" class="btn btn-outline-secondary">
+                <i class="fas fa-code-compare me-2"></i> Compare
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="policy-content">
+            <!-- Review Sheet Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">Review Sheet</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Last Reviewed:</strong> 
+                            <span>{{ policy_sections.review_date }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong>Summary:</strong>
+                    <div class="policy-section-content">{{ policy_sections.summary }}</div>
+                </div>
+                <div class="mb-3">
+                    <strong>Relevant Legislation:</strong>
+                    <div class="policy-section-content">{{ policy_sections.legislation }}</div>
+                </div>
+                <div class="mb-3">
+                    <strong>Underpinning Knowledge:</strong>
+                    <div class="policy-section-content">{{ policy_sections.knowledge }}</div>
+                </div>
+            </div>
+
+            <!-- Purpose Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">1. Purpose</h2>
+                <div class="policy-section-content">{{ policy_sections.purpose }}</div>
+            </div>
+
+            <!-- Scope Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">2. Scope</h2>
+                <div class="policy-section-content">{{ policy_sections.scope }}</div>
+            </div>
+
+            <!-- Objectives Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">3. Objectives</h2>
+                <div class="policy-section-content">{{ policy_sections.objectives }}</div>
+            </div>
+
+            <!-- Policy Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">4. Policy</h2>
+                <div class="policy-section-content">{{ policy_sections.policy }}</div>
+            </div>
+
+            <!-- Procedure Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">5. Procedure</h2>
+                <div class="policy-section-content">{{ policy_sections.procedure }}</div>
+            </div>
+
+            <!-- Definitions Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">6. Definitions</h2>
+                <div class="policy-section-content">{{ policy_sections.definitions }}</div>
+            </div>
+
+            <!-- Key Facts - Professionals Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">7. Key Facts - Professionals</h2>
+                <div class="policy-section-content">{{ policy_sections.key_facts_prof }}</div>
+            </div>
+
+            <!-- Key Facts - People Affected Section -->
+            <div class="policy-section">
+                <h2 class="policy-section-title">8. Key Facts - People Affected by The Service</h2>
+                <div class="policy-section-content">{{ policy_sections.key_facts_people }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action buttons at the bottom -->
+<div class="row mt-4">
+    <div class="col-md-12 text-center">
+        <div class="btn-group" role="group">
+            <a href="/policy-categories/{{ category }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to {{ category.replace('_', ' ') }}
+            </a>
+            <a href="{{ url_for('policy_repository.view_policy', policy_code=policy_code) }}" class="btn btn-primary">
+                <i class="fas fa-pencil-alt me-2"></i> Customize
+            </a>
+            <a href="{{ url_for('policy_repository.download_policy', policy_code=policy_code) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-download me-2"></i> Download
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

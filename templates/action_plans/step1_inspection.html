@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Action Plan - Step 1: Inspection Requirements{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Create Action Plan</h1>
+            
+            <!-- Progress Bar -->
+            <div class="progress mb-4" style="height: 20px;">
+                <div class="progress-bar" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Step 1 of 5</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Inspection Requirements</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Upload requirements from CQC or Local Authority inspections/reports.</p>
+                    
+                    <form id="step1-form" action="/action-plans/create/step2" method="post" enctype="multipart/form-data">
+                        <!-- Store form data from previous steps -->
+                        {% for key, value in form_data.items() %}
+                            {% if key != 'csrf_token' and key != '_method' %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <div class="mb-4">
+                            <label for="attendance_notes" class="form-label">Inspection Attendance & Notes</label>
+                            <textarea class="form-control" id="attendance_notes" name="attendanceNotes" rows="4" placeholder="Record who attended the inspection, key discussions, and other important details (e.g., 'Seven people attended, including Dr. Smith, Jane Doe from HR...')">{{ form_data.get('attendanceNotes', '') }}</textarea>
+                            <small class="text-muted">Document who was present during the inspection and any contextual information.</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="h6">Inspection Visits</h3>
+                            
+                            <div id="inspection-visits-container">
+                                {% set visit_dates = form_data.getlist('inspectionDate[]') or [''] %}
+                                {% set visit_types = form_data.getlist('inspectionType[]') or [''] %}
+                                
+                                {% for i in range(visit_dates|length) %}
+                                <div class="inspection-visit card mb-3">
+                                    <div class="card-header">
+                                        <h4 class="h6 mb-0">Inspection Visit {% if i > 0 %}{{ i + 1 }}{% endif %}</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="inspection-date-{{ i }}" class="form-label">Inspection Date</label>
+                                                <input type="date" class="form-control" id="inspection-date-{{ i }}" name="inspectionDate[]" value="{{ visit_dates[i] }}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="inspection-type-{{ i }}" class="form-label">Inspection Type</label>
+                                                <select class="form-select" id="inspection-type-{{ i }}" name="inspectionType[]">
+                                                    <option value="" {% if not visit_types[i] %}selected{% endif %}>Select inspection type</option>
+                                                    <option value="cqc" {% if visit_types[i] == 'cqc' %}selected{% endif %}>CQC</option>
+                                                    <option value="local-authority" {% if visit_types[i] == 'local-authority' %}selected{% endif %}>Local Authority</option>
+                                                    <option value="internal" {% if visit_types[i] == 'internal' %}selected{% endif %}>Internal</option>
+                                                    <option value="safeguarding" {% if visit_types[i] == 'safeguarding' %}selected{% endif %}>Safeguarding</option>
+                                                    <option value="other" {% if visit_types[i] == 'other' %}selected{% endif %}>Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="reports-container">
+                                            <h5 class="h6 mb-3">Reports from this Visit</h5>
+                                            
+                                            {% set report_types = form_data.getlist('reportType[]') or ['main'] %}
+                                            <div class="report-item row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Upload Report</label>
+                                                    <input type="file" class="form-control" name="reportFile_{{ i }}_0">
+                                                    <small class="text-muted">Selected file: <span class="selected-filename">None</span></small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Report Type</label>
+                                                    <select class="form-select" name="reportType[]">
+                                                        <option value="main" {% if report_types[i] == 'main' %}selected{% endif %}>Main Report</option>
+                                                        <option value="summary" {% if report_types[i] == 'summary' %}selected{% endif %}>Summary</option>
+                                                        <option value="evidence" {% if report_types[i] == 'evidence' %}selected{% endif %}>Evidence</option>
+                                                        <option value="action-plan" {% if report_types[i] == 'action-plan' %}selected{% endif %}>Action Plan</option>
+                                                        <option value="other" {% if report_types[i] == 'other' %}selected{% endif %}>Other</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="text-end">
+                                                <button type="button" class="btn btn-outline-primary btn-sm add-report-btn" 
+                                                        data-visit-index="{{ i }}">
+                                                    <i class="fas fa-plus"></i> Add Another Report for this Visit
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if i > 0 %}
+                                        <div class="text-end mt-3">
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-visit-btn">
+                                                <i class="fas fa-trash"></i> Remove this Visit
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="text-end mt-2">
+                                <button type="button" class="btn btn-outline-primary" id="add-visit-btn">
+                                    <i class="fas fa-plus"></i> Add Another Visit
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="h6">Requirement Type</h3>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="requirementType" id="requirement-cqc" value="cqc" {% if form_data.get('requirementType') == 'cqc' %}checked{% endif %}>
+                                <label class="form-check-label" for="requirement-cqc">
+                                    CQC Requirement
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="requirementType" id="requirement-local" value="local" {% if form_data.get('requirementType') == 'local' %}checked{% endif %}>
+                                <label class="form-check-label" for="requirement-local">
+                                    Local Authority Requirement
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="requirementType" id="requirement-internal" value="internal" {% if form_data.get('requirementType') == 'internal' %}checked{% endif %}>
+                                <label class="form-check-label" for="requirement-internal">
+                                    Internal Requirement
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="requirementType" id="requirement-other" value="other" {% if form_data.get('requirementType') == 'other' %}checked{% endif %}>
+                                <label class="form-check-label" for="requirement-other">
+                                    Other
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="h6">Urgency Level</h3>
+                            
+                            <select class="form-select" name="urgencyLevel">
+                                <option value="Select urgency level" {% if form_data.get('urgencyLevel') == 'Select urgency level' %}selected{% endif %}>Select urgency level</option>
+                                <option value="high" {% if form_data.get('urgencyLevel') == 'high' %}selected{% endif %}>High - Immediate action required (24-48 hours)</option>
+                                <option value="medium" {% if form_data.get('urgencyLevel') == 'medium' %}selected{% endif %}>Medium - Action required within 2 weeks</option>
+                                <option value="low" {% if form_data.get('urgencyLevel') == 'low' %}selected{% endif %}>Low - Action required within 1 month</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Next <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File input change handlers to display selected filename
+        document.querySelectorAll('input[type="file"]').forEach(function(fileInput) {
+            fileInput.addEventListener('change', function() {
+                const filenameDisplay = this.parentElement.querySelector('.selected-filename');
+                if (filenameDisplay) {
+                    filenameDisplay.textContent = this.files.length ? this.files[0].name : 'None';
+                }
+            });
+        });
+        
+        // Add visit button
+        document.getElementById('add-visit-btn').addEventListener('click', function() {
+            const visitsContainer = document.getElementById('inspection-visits-container');
+            const visitCount = visitsContainer.querySelectorAll('.inspection-visit').length;
+            
+            const newVisit = document.createElement('div');
+            newVisit.className = 'inspection-visit card mb-3';
+            newVisit.innerHTML = `
+                <div class="card-header">
+                    <h4 class="h6 mb-0">Inspection Visit ${visitCount + 1}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="inspection-date-${visitCount}" class="form-label">Inspection Date</label>
+                            <input type="date" class="form-control" id="inspection-date-${visitCount}" name="inspectionDate[]">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="inspection-type-${visitCount}" class="form-label">Inspection Type</label>
+                            <select class="form-select" id="inspection-type-${visitCount}" name="inspectionType[]">
+                                <option value="" selected>Select inspection type</option>
+                                <option value="cqc">CQC</option>
+                                <option value="local-authority">Local Authority</option>
+                                <option value="internal">Internal</option>
+                                <option value="safeguarding">Safeguarding</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="reports-container">
+                        <h5 class="h6 mb-3">Reports from this Visit</h5>
+                        
+                        <div class="report-item row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Upload Report</label>
+                                <input type="file" class="form-control" name="reportFile_${visitCount}_0">
+                                <small class="text-muted">Selected file: <span class="selected-filename">None</span></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Report Type</label>
+                                <select class="form-select" name="reportType[]">
+                                    <option value="main" selected>Main Report</option>
+                                    <option value="summary">Summary</option>
+                                    <option value="evidence">Evidence</option>
+                                    <option value="action-plan">Action Plan</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-primary btn-sm add-report-btn" 
+                                    data-visit-index="${visitCount}">
+                                <i class="fas fa-plus"></i> Add Another Report for this Visit
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-visit-btn">
+                            <i class="fas fa-trash"></i> Remove this Visit
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to new elements
+            const fileInput = newVisit.querySelector('input[type="file"]');
+            fileInput.addEventListener('change', function() {
+                const filenameDisplay = this.parentElement.querySelector('.selected-filename');
+                filenameDisplay.textContent = this.files.length ? this.files[0].name : 'None';
+            });
+            
+            const addReportBtn = newVisit.querySelector('.add-report-btn');
+            addReportBtn.addEventListener('click', addReportHandler);
+            
+            const removeVisitBtn = newVisit.querySelector('.remove-visit-btn');
+            removeVisitBtn.addEventListener('click', function() {
+                newVisit.remove();
+                updateVisitNumbers();
+            });
+            
+            visitsContainer.appendChild(newVisit);
+            updateVisitNumbers();
+        });
+        
+        // Add report button handlers
+        document.querySelectorAll('.add-report-btn').forEach(function(button) {
+            button.addEventListener('click', addReportHandler);
+        });
+        
+        function addReportHandler() {
+            const visitIndex = this.getAttribute('data-visit-index');
+            const reportsContainer = this.closest('.reports-container');
+            const reportItems = reportsContainer.querySelectorAll('.report-item');
+            const reportIndex = reportItems.length;
+            
+            const newReport = document.createElement('div');
+            newReport.className = 'report-item row mb-3';
+            newReport.innerHTML = `
+                <div class="col-md-6">
+                    <label class="form-label">Upload Report</label>
+                    <input type="file" class="form-control" name="reportFile_${visitIndex}_${reportIndex}">
+                    <small class="text-muted">Selected file: <span class="selected-filename">None</span></small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Report Type</label>
+                    <select class="form-select" name="reportType[]">
+                        <option value="main">Main Report</option>
+                        <option value="summary">Summary</option>
+                        <option value="evidence">Evidence</option>
+                        <option value="action-plan">Action Plan</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="mt-2 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-report-btn">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to new elements
+            const fileInput = newReport.querySelector('input[type="file"]');
+            fileInput.addEventListener('change', function() {
+                const filenameDisplay = this.parentElement.querySelector('.selected-filename');
+                filenameDisplay.textContent = this.files.length ? this.files[0].name : 'None';
+            });
+            
+            const removeReportBtn = newReport.querySelector('.remove-report-btn');
+            removeReportBtn.addEventListener('click', function() {
+                newReport.remove();
+            });
+            
+            // Insert before the "Add Another Report" button
+            reportsContainer.insertBefore(newReport, this.parentElement);
+        }
+        
+        // Add remove visit button handlers
+        document.querySelectorAll('.remove-visit-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                this.closest('.inspection-visit').remove();
+                updateVisitNumbers();
+            });
+        });
+        
+        // Update visit numbers function
+        function updateVisitNumbers() {
+            const visits = document.querySelectorAll('.inspection-visit');
+            visits.forEach(function(visit, index) {
+                const header = visit.querySelector('.card-header h4');
+                if (index === 0) {
+                    header.textContent = 'Inspection Visit';
+                } else {
+                    header.textContent = `Inspection Visit ${index + 1}`;
+                }
+            });
+        }
+        
+        // Initialize validation
+        const form = document.getElementById('step1-form');
+        form.addEventListener('submit', function(event) {
+            // Simple validation - ensure at least one visit is added with date and type
+            const visits = document.querySelectorAll('.inspection-visit');
+            let valid = true;
+            let errorFields = [];
+            
+            if (visits.length > 0) {
+                visits.forEach(function(visit) {
+                    const dateInput = visit.querySelector('input[type="date"]');
+                    const typeSelect = visit.querySelector('select[id^="inspection-type-"]');
+                    
+                    if (!dateInput.value) {
+                        dateInput.classList.add('is-invalid');
+                        valid = false;
+                        errorFields.push('Inspection Date');
+                    } else {
+                        dateInput.classList.remove('is-invalid');
+                    }
+                    
+                    if (!typeSelect.value) {
+                        typeSelect.classList.add('is-invalid');
+                        valid = false;
+                        errorFields.push('Inspection Type');
+                    } else {
+                        typeSelect.classList.remove('is-invalid');
+                    }
+                });
+            }
+            
+            // Require at least one requirement type
+            const requirementTypes = document.querySelectorAll('input[name="requirementType"]:checked');
+            if (requirementTypes.length === 0) {
+                document.querySelectorAll('input[name="requirementType"]').forEach(function(radio) {
+                    radio.parentElement.classList.add('text-danger');
+                });
+                valid = false;
+                errorFields.push('Requirement Type');
+            } else {
+                document.querySelectorAll('input[name="requirementType"]').forEach(function(radio) {
+                    radio.parentElement.classList.remove('text-danger');
+                });
+            }
+            
+            // Validate urgency level
+            const urgencySelect = document.querySelector('select[name="urgencyLevel"]');
+            if (urgencySelect.value === 'Select urgency level') {
+                urgencySelect.classList.add('is-invalid');
+                valid = false;
+                errorFields.push('Urgency Level');
+            } else {
+                urgencySelect.classList.remove('is-invalid');
+            }
+            
+            if (!valid) {
+                event.preventDefault();
+                alert('Please complete the following required fields: ' + errorFields.join(', '));
+            }
+        });
+    });
+</script>
+{% endblock %}

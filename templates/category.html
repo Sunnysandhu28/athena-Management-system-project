@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category.name }} - Cathena Policy Automation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="/">Cathena Policy System</a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/categories">Categories</a></li>
+                    <li><a href="/health">System Health</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div style="margin-bottom: 15px;">
+            <a href="/categories" class="btn btn-primary" style="display: inline-flex; align-items: center;">
+                <span style="margin-right: 5px;">←</span> Back
+            </a>
+        </div>
+        
+        <div class="category-header">
+            <h1>{{ category.name }}</h1>
+            <p>{{ category.description }}</p>
+        </div>
+        
+        <div class="policy-section">
+            <h2>Policies in this category</h2>
+            
+            {% if policies %}
+            <ul class="policy-list">
+                {% for policy in policies %}
+                <li class="policy-item">
+                    <h3 class="policy-title">
+                        <a href="{{ url_for('view_policy', policy_id=policy.id) }}">
+                            {{ policy.title }}
+                        </a>
+                    </h3>
+                    <div class="policy-meta">
+                        <span class="policy-code">{{ policy.code }}</span>
+                        <span class="policy-version">Version: {{ policy.version }}</span>
+                        {% if policy.is_qcs_policy %}
+                        <span class="badge badge-info">QCS Policy</span>
+                        {% endif %}
+                        {% if policy.is_adapted %}
+                        <span class="badge badge-success">Adapted</span>
+                        {% endif %}
+                    </div>
+                    {% if policy.description %}
+                    <div class="policy-description">
+                        {{ policy.description }}
+                    </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="card">
+                <p>No policies found in this category.</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container footer-content">
+            <ul class="footer-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/categories">Categories</a></li>
+                <li><a href="/health">System Health</a></li>
+            </ul>
+            <div class="copyright">
+                &copy; {{ now.year|default(2025) }} Cathena Policy Automation System
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

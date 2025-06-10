@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Testing Menu - Cathena Policy Automation System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Testing Menu</h1>
+            <p class="lead">This section contains testing utilities and features for the Cathena Policy Automation System.</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Uncategorized Policies</h5>
+                    <p class="card-text">View and manage policies that have not been categorized.</p>
+                    <a href="{{ url_for('uncategorized.list_uncategorized_policies') }}" class="btn btn-primary">
+                        <i class="fas fa-folder-open me-2"></i>View Uncategorized
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Can add more testing utilities here in the future -->
+    </div>
+</div>
+{% endblock %}

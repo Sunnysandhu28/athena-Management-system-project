@@ -1,0 +1,197 @@
+{% extends 'action_plan_steps/base_wizard.html' %}
+
+{% set current_step = 3 %}
+{% set progress_percentage = 60 %}
+
+{% block step_title %}Action Definition{% endblock %}
+{% block step_description %}Define the specific actions required to address the regulatory requirements.{% endblock %}
+{% block form_action %}/action-plans/step4{% endblock %}
+
+{% block step_content %}
+<div class="mb-4">
+    <label for="actionPlanTitle" class="form-label">Action Plan Title</label>
+    <input type="text" class="form-control" id="actionPlanTitle" name="actionPlanTitle" placeholder="E.g., CQC Regulation 12 Compliance Plan">
+</div>
+
+<div class="mb-4">
+    <label for="description" class="form-label">Description of Non-Compliance</label>
+    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe the specific areas of non-compliance identified in the inspection"></textarea>
+</div>
+
+<div class="mb-4" id="required-actions-container">
+    <label class="form-label">Required Actions</label>
+    
+    <div class="required-action-group mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-7">
+                <label class="form-label">Action Description</label>
+                <input type="text" class="form-control" name="requiredAction[]" placeholder="Specific action needed to address non-compliance">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Due Date</label>
+                <input type="date" class="form-control" name="actionDueDate[]">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-action" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="add-action">
+            <i class="bi bi-plus-circle"></i> Add Another Action
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('required-actions-container');
+        const addButton = document.getElementById('add-action');
+        
+        // Function to add a new required action
+        addButton.addEventListener('click', function() {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'required-action-group mb-3';
+            newGroup.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-7">
+                        <label class="form-label">Action Description</label>
+                        <input type="text" class="form-control" name="requiredAction[]" placeholder="Specific action needed to address non-compliance">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" class="form-control" name="actionDueDate[]">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-action">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert the new group before the add button div
+            container.insertBefore(newGroup, document.querySelector('#required-actions-container .text-end'));
+            
+            // Add event listener for the remove button
+            newGroup.querySelector('.remove-action').addEventListener('click', function() {
+                container.removeChild(newGroup);
+                updateRemoveButtons();
+            });
+            
+            updateRemoveButtons();
+        });
+        
+        // Function to update the visibility of remove buttons
+        function updateRemoveButtons() {
+            const groups = container.querySelectorAll('.required-action-group');
+            if (groups.length === 1) {
+                groups[0].querySelector('.remove-action').style.display = 'none';
+            } else {
+                groups.forEach(group => {
+                    group.querySelector('.remove-action').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup
+        updateRemoveButtons();
+    });
+</script>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <label for="targetCompletionDate" class="form-label">Target Completion Date</label>
+        <input type="date" class="form-control" id="targetCompletionDate" name="targetCompletionDate">
+    </div>
+    <div class="col-md-6">
+        <label for="priority" class="form-label">Priority Level</label>
+        <select class="form-select" id="priority" name="priority">
+            <option selected>Select priority level</option>
+            <option value="critical">Critical - Immediate</option>
+            <option value="high">High - Within 1-2 weeks</option>
+            <option value="medium">Medium - Within 30 days</option>
+            <option value="low">Low - Within 60-90 days</option>
+        </select>
+    </div>
+</div>
+
+<div class="mb-4" id="evidence-required-container">
+    <label class="form-label">Evidence Required</label>
+    
+    <div class="evidence-required-group mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label">Evidence Description</label>
+                <input type="text" class="form-control" name="evidenceRequired[]" placeholder="Describe what evidence will be needed to demonstrate compliance">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-evidence-required" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="add-evidence-required">
+            <i class="bi bi-plus-circle"></i> Add Another Evidence
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('evidence-required-container');
+        const addButton = document.getElementById('add-evidence-required');
+        
+        // Function to add a new evidence required entry
+        addButton.addEventListener('click', function() {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'evidence-required-group mb-3';
+            newGroup.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-10">
+                        <label class="form-label">Evidence Description</label>
+                        <input type="text" class="form-control" name="evidenceRequired[]" placeholder="Describe what evidence will be needed to demonstrate compliance">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-evidence-required">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert the new group before the add button div
+            container.insertBefore(newGroup, document.querySelector('#evidence-required-container .text-end'));
+            
+            // Add event listener for the remove button
+            newGroup.querySelector('.remove-evidence-required').addEventListener('click', function() {
+                container.removeChild(newGroup);
+                updateRemoveButtons();
+            });
+            
+            updateRemoveButtons();
+        });
+        
+        // Function to update the visibility of remove buttons
+        function updateRemoveButtons() {
+            const groups = container.querySelectorAll('.evidence-required-group');
+            if (groups.length === 1) {
+                groups[0].querySelector('.remove-evidence-required').style.display = 'none';
+            } else {
+                groups.forEach(group => {
+                    group.querySelector('.remove-evidence-required').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup
+        updateRemoveButtons();
+    });
+</script>
+{% endblock %}

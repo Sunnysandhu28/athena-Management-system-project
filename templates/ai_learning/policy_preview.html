@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Policy: {{ policy.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_learning.index') }}">AI Learning</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_learning.generate_policy') }}">Generate Policy</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Preview</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-4">{{ policy.title }}</h1>
+            {% if policy.description %}
+                <p class="lead">
+                    {{ policy.description }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Generated Policy Content</h5>
+                        <span class="badge bg-light text-dark">AI Generated</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="policy-content" style="white-space: pre-wrap;">{{ policy.content }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Save Policy</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('ai_learning.save_generated_policy') }}" method="post">
+                        <input type="hidden" name="title" value="{{ policy.title }}">
+                        <input type="hidden" name="description" value="{{ policy.description }}">
+                        <input type="hidden" name="content" value="{{ policy.content }}">
+                        
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">-- Uncategorized --</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select a category for this policy</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('ai_learning.generate_policy') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Generator
+                            </a>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Policy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

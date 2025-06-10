@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Diagnostic Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Diagnostic Report</h1>
+                <div>
+                    <a href="{{ url_for('diagnostics.download_report', filename=report_filename) }}" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i> Download Report
+                    </a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Diagnostics
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ report_filename }}</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="report-content mb-0">{{ report_content }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .report-content {
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    /* Highlight critical sections */
+    .report-content:not(:empty) {
+        counter-reset: line;
+    }
+    
+    /* Color coding for errors */
+    .report-content {
+        color: #212529;
+    }
+    
+    /* Match error patterns and apply colors */
+    .highlight-500 {
+        color: #dc3545;
+        font-weight: bold;
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .highlight-404 {
+        color: #fd7e14;
+        font-weight: bold;
+        background-color: rgba(253, 126, 20, 0.1);
+    }
+    
+    .highlight-error {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .highlight-warning {
+        color: #fd7e14;
+    }
+    
+    .highlight-success {
+        color: #198754;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reportContent = document.querySelector('.report-content');
+        if (reportContent) {
+            // Highlight 500 errors
+            reportContent.innerHTML = reportContent.innerHTML.replace(
+                /(HTTP Error 500|status_code: 500|500 Internal Server Error|Server Error)/g,
+                '<span class="highlight-500">$1</span>'
+            );
+            
+            // Highlight 404 errors
+            reportContent.innerHTML = reportContent.innerHTML.replace(
+                /(HTTP Error 404|status_code: 404|404 Not Found|Page Not Found)/g,
+                '<span class="highlight-404">$1</span>'
+            );
+            
+            // Highlight general errors
+            reportContent.innerHTML = reportContent.innerHTML.replace(
+                /(ERROR|CRITICAL|FATAL|Exception|failed|crash|traceback)/gi,
+                '<span class="highlight-error">$1</span>'
+            );
+            
+            // Highlight warnings
+            reportContent.innerHTML = reportContent.innerHTML.replace(
+                /(WARNING|WARN|Caution|Attention)/gi,
+                '<span class="highlight-warning">$1</span>'
+            );
+            
+            // Highlight success messages
+            reportContent.innerHTML = reportContent.innerHTML.replace(
+                /(SUCCESS|PASSED|All tests passed|Complete|OK)/gi,
+                '<span class="highlight-success">$1</span>'
+            );
+        }
+    });
+</script>
+{% endblock %}

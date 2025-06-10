@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ policy.title }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            line-height: 1.6; 
+            color: #333; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+        .policy-title {
+            color: #004080;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        .carbon-copy-tag {
+            color: #004080;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        .policy-info {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0 30px 0;
+        }
+        .policy-reference-code {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .policy-category {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .policy-location {
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        .policy-address {
+            margin-bottom: 20px;
+        }
+        h2 { 
+            color: #004080; 
+            border-bottom: 2px solid #004080;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #004080;
+            margin-top: 20px;
+        }
+        .card { 
+            border: 1px solid #ddd; 
+            padding: 20px 30px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        .policy-content { 
+            line-height: 1.6;
+            font-size: 16px;
+            white-space: pre-wrap;
+        }
+        .policy-content p {
+            margin-bottom: 15px;
+        }
+        .policy-content ul, 
+        .policy-content ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+        .button { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            background-color: #004080; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin-top: 20px;
+            margin-right: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .button:hover { 
+            background-color: #002850; 
+        }
+        .button.secondary {
+            background-color: #6c757d;
+        }
+        .button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* QCS Style Formatting */
+        .section-header {
+            background-color: #e6f0ff;
+            padding: 8px 15px;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid #004080;
+            font-weight: bold;
+        }
+        
+        /* Review sheet styling */
+        .review-sheet {
+            margin-top: 30px;
+            font-weight: bold;
+        }
+        .review-table {
+            margin-top: 15px;
+            display: table;
+            width: 100%;
+        }
+        .review-row {
+            display: table-row;
+        }
+        .review-cell {
+            display: table-cell;
+            padding: 5px 15px 5px 0;
+            vertical-align: top;
+        }
+        .review-cell.header {
+            font-weight: bold;
+            color: #333;
+        }
+        .review-cell.data {
+            font-weight: normal;
+        }
+        
+        /* Info box */
+        .info-box {
+            background-color: #e8f4fd;
+            border: 1px solid #b8daff;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box-title {
+            font-weight: bold;
+            color: #004085;
+            margin-bottom: 10px;
+        }
+        .carbon-copy-badge {
+            display: inline-block;
+            background-color: #17a2b8;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="policy-title">
+            {{ policy.title }}
+            {% if policy.is_carbon_copy %}
+                <span class="carbon-copy-badge">Enhanced Carbon Copy</span>
+            {% endif %}
+        </div>
+        
+        {% if policy.is_carbon_copy %}
+            <div class="info-box">
+                <div class="info-box-title">Enhanced Carbon Copy Information</div>
+                <p>
+                    This is an enhanced carbon copy created with real-time word-by-word validation.
+                    Each section has been formatted to meet QCS standards while preserving the original content.
+                </p>
+                {% if policy.source_policy_id %}
+                    <p>
+                        <a href="{{ url_for('real_time_validation.view_real_time_policy', policy_id=policy.source_policy_id) }}" class="button secondary">View Original Policy</a>
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="policy-content">
+                {{ policy.content }}
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <a href="{{ url_for('real_time_validation.real_time_validation_dashboard') }}" class="button">Back to Dashboard</a>
+            <a href="{{ url_for('real_time_validation.create_carbon_copy_with_real_time_validation', policy_id=policy.id) }}" class="button">Create Carbon Copy</a>
+            <a href="/" class="button secondary">Back to Home</a>
+        </div>
+        
+        <div class="footer">
+            <p>© Quality Compliance Systems (QCS) Ltd. Copyright Policy and Procedure content is provided under license by QCS.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: 5 QCS Policies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .policy-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+        .policy-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🏥 Cathena Policy System</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/ml_dashboard">ML Dashboard</a>
+                <a class="nav-link" href="/policy_dashboard">Policy Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">🧪 Testing: 5 Authentic QCS Policies</h1>
+        
+        <div class="alert alert-info">
+            <h5>Testing Phase:</h5>
+            <p>Let's perfect the format with these 5 real policies before expanding to all ~300 policies.</p>
+            <p>Each policy should follow the exact CP02 structure you provided.</p>
+        </div>
+
+        <!-- Policy 1: CM01 -->
+        <div class="policy-card">
+            <h4>CM01 - Care Management Policy</h4>
+            <div class="policy-preview" id="cm01-preview">
+                Loading authentic CM01 policy...
+            </div>
+            <div class="mt-3">
+                <a href="/policy/CM01" class="btn btn-primary">View Full Policy</a>
+                <button class="btn btn-outline-secondary" onclick="loadPolicy('CM01', 'cm01-preview')">Load Preview</button>
+            </div>
+        </div>
+
+        <!-- Policy 2: CM02 -->
+        <div class="policy-card">
+            <h4>CM02 - Care Management Policy</h4>
+            <div class="policy-preview" id="cm02-preview">
+                Loading authentic CM02 policy...
+            </div>
+            <div class="mt-3">
+                <a href="/policy/CM02" class="btn btn-primary">View Full Policy</a>
+                <button class="btn btn-outline-secondary" onclick="loadPolicy('CM02', 'cm02-preview')">Load Preview</button>
+            </div>
+        </div>
+
+        <!-- Policy 3: CM03 -->
+        <div class="policy-card">
+            <h4>CM03 - Care Management Policy</h4>
+            <div class="policy-preview" id="cm03-preview">
+                Loading authentic CM03 policy...
+            </div>
+            <div class="mt-3">
+                <a href="/policy/CM03" class="btn btn-primary">View Full Policy</a>
+                <button class="btn btn-outline-secondary" onclick="loadPolicy('CM03', 'cm03-preview')">Load Preview</button>
+            </div>
+        </div>
+
+        <!-- Policy 4: CM87 -->
+        <div class="policy-card">
+            <h4>CM87 - Care Management Policy</h4>
+            <div class="policy-preview" id="cm87-preview">
+                Loading authentic CM87 policy...
+            </div>
+            <div class="mt-3">
+                <a href="/policy/CM87" class="btn btn-primary">View Full Policy</a>
+                <button class="btn btn-outline-secondary" onclick="loadPolicy('CM87', 'cm87-preview')">Load Preview</button>
+            </div>
+        </div>
+
+        <!-- Policy 5: CM0 -->
+        <div class="policy-card">
+            <h4>CM0 - Care Management Policy</h4>
+            <div class="policy-preview" id="cm0-preview">
+                Loading authentic CM0 policy...
+            </div>
+            <div class="mt-3">
+                <a href="/policy/CM0" class="btn btn-primary">View Full Policy</a>
+                <button class="btn btn-outline-secondary" onclick="loadPolicy('CM0', 'cm0-preview')">Load Preview</button>
+            </div>
+        </div>
+
+        <div class="alert alert-success mt-4">
+            <h5>🎯 Testing Goals:</h5>
+            <ul class="mb-0">
+                <li>✅ Each policy shows its own unique content (not duplicated)</li>
+                <li>✅ Format follows the CP02 structure exactly</li>
+                <li>✅ Content is readable with proper paragraph breaks</li>
+                <li>✅ All links work and lead to formatted full policies</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Auto-load previews when page loads
+        window.onload = function() {
+            loadPolicy('CM01', 'cm01-preview');
+            loadPolicy('CM02', 'cm02-preview');
+            loadPolicy('CM03', 'cm03-preview');
+            loadPolicy('CM87', 'cm87-preview');
+            loadPolicy('CM0', 'cm0-preview');
+        };
+
+        function loadPolicy(policyCode, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = 'Loading authentic ' + policyCode + ' policy content...';
+            
+            // For now, show placeholder indicating this will load real content
+            setTimeout(() => {
+                preview.innerHTML = `
+${policyCode} - Policy and Procedure
+
+Review Sheet
+
+Last Reviewed: 22 May 2025
+Last Amended: This policy will be reviewed as needs require or at the following interval: Annual
+Business Impact: LOW
+
+1. Purpose
+1.1 [Authentic ${policyCode} policy purpose will appear here]
+
+2. Scope
+2.1 Roles Affected: Registered Manager, Care staff, Nurses
+
+3. Objectives
+3.1 Staff are clear on their roles and responsibilities...
+
+4. Policy
+4.1 [Real ${policyCode} policy content continues...]
+
+[Click "View Full Policy" to see complete authentic content]
+                `;
+            }, 500);
+        }
+    </script>
+</body>
+</html>

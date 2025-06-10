@@ -1,0 +1,90 @@
+{% extends "policy_learning/base.html" %}
+
+{% block learning_content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>AI Policy Learning Dashboard</h2>
+    </div>
+    <div class="card-body">
+        <p class="lead">This dashboard shows the current statistics for AI policy learning.</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Total Policies</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ stats.total_policies }}</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Enhanced Policies</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ stats.enhanced_policies }}</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-header">Patterns Learned</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ stats.patterns_learned }}</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-secondary mb-3">
+                    <div class="card-header">Average Confidence</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ "%.2f"|format(stats.average_confidence) if stats.average_confidence is defined else "N/A" }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h3>What is AI Policy Learning?</h3>
+            <p>AI Policy Learning is a feature that allows the system to analyze policies and learn from their structure and content. This helps to:</p>
+            <ul>
+                <li>Extract metadata from policies to make them more searchable</li>
+                <li>Identify common patterns in policy structures</li>
+                <li>Generate missing sections based on policy context</li>
+                <li>Improve the quality and consistency of policies</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Quick Actions</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Batch Enhance Policies</h5>
+                        <p class="card-text">Process multiple policies at once to extract and enhance metadata.</p>
+                        <a href="{{ url_for('ai_policy_learning.batch_enhance') }}" class="btn btn-primary">Go to Batch Enhancement</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Learn from Template</h5>
+                        <p class="card-text">Upload a template policy to learn its structure and apply it to other policies.</p>
+                        <a href="{{ url_for('ai_policy_learning.learn_template') }}" class="btn btn-primary">Learn from Template</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

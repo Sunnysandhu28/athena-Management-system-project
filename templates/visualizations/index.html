@@ -1,0 +1,59 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Compliance Visualizations{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>AI-Powered Compliance Journey Visualization</h1>
+    <p class="lead">Interactive visualizations of compliance progress and regulatory analysis</p>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Visualization Actions</h5>
+        </div>
+        <div class="card-body">
+            <a href="{{ url_for('visualizations.generate') }}" class="btn btn-success">
+                <i class="fas fa-chart-line"></i> Generate New Visualizations
+            </a>
+            <p class="mt-2">Generate a new set of AI-powered compliance visualizations based on the latest requirements analysis.</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Available Visualizations</h5>
+        </div>
+        <div class="card-body">
+            {% if visualizations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date Generated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for viz in visualizations %}
+                            <tr>
+                                <td>{{ viz.date }}</td>
+                                <td>
+                                    <a href="{{ url_for('visualizations.view', timestamp=viz.id) }}" class="btn btn-primary btn-sm" target="_blank">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No visualizations have been generated yet. Click the "Generate New Visualizations" button to create your first set of visualizations.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Statistical Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">CQC Inspector Rating Analysis</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> This analysis is for curiosity purposes only and is not included in any generated reports.
+            </div>
+            
+            <p class="lead">
+                This dashboard provides statistical analysis of CQC inspection reports to identify patterns, consistency, and potential variations in inspector ratings.
+            </p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h4>Inspector Consistency Analysis</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if inspector_consistency_image %}
+                                <img src="{{ inspector_consistency_image }}" class="img-fluid" alt="Inspector Consistency Analysis">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No inspector consistency data available. Run a demo analysis to see example data.
+                                </div>
+                                <a href="{{ url_for('dashboard.run_cqc_demo') }}" class="btn btn-primary">
+                                    Run Demo Analysis
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h4>Care Home Rating Consistency</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if same_home_comparison_image %}
+                                <img src="{{ same_home_comparison_image }}" class="img-fluid" alt="Same Home Comparison">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No care home comparison data available.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Inspector Rating Variation - Example Analysis</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if extreme_difference_image %}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <img src="{{ extreme_difference_image }}" class="img-fluid" alt="Extreme Difference Analysis">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5>Statistical Insights</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                {% if extreme_difference_stats %}
+                                                    <p><strong>Overall Difference:</strong> {{ extreme_difference_stats.overall_difference|round(2) }}</p>
+                                                    <p><strong>Standard Deviation:</strong> {{ extreme_difference_stats.standard_deviation|round(2) }}</p>
+                                                    <p><strong>Assessment:</strong> {{ extreme_difference_stats.consistency_assessment }}</p>
+                                                    {% if extreme_difference_stats.inference %}
+                                                        <p><strong>Inference:</strong> {{ extreme_difference_stats.inference }}</p>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <p>No statistical insights available.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No extreme difference analysis available.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Understanding Statistical Measures</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Standard Deviation in CQC Ratings</h5>
+                                    <p>
+                                        Standard deviation measures the amount of variation in a set of values. In the context of CQC ratings:
+                                    </p>
+                                    <ul>
+                                        <li><strong>SD = 0:</strong> Identical ratings across all domains - perfect consistency</li>
+                                        <li><strong>SD &lt; 1.0:</strong> Minor variations in ratings - good consistency</li>
+                                        <li><strong>SD = 1.0-1.5:</strong> Moderate variations - some inconsistency</li>
+                                        <li><strong>SD &gt; 2.0:</strong> Major variations (e.g., Good vs Inadequate) - significant inconsistency</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Correlation in Inspector Ratings</h5>
+                                    <p>
+                                        Correlation measures the relationship between two sets of ratings:
+                                    </p>
+                                    <ul>
+                                        <li><strong>r = 1.0:</strong> Perfect positive correlation - identical rating patterns</li>
+                                        <li><strong>r &gt; 0.7:</strong> Strong positive correlation - similar rating patterns</li>
+                                        <li><strong>r = 0:</strong> No correlation - independent rating patterns</li>
+                                        <li><strong>r &lt; -0.7:</strong> Strong negative correlation - opposite rating patterns</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

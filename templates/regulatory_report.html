@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block title %}Regulatory Analysis Report: {{ document_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Report Header -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between">
+                        <h2 class="mb-0">Regulatory Analysis Report</h2>
+                        <div class="text-white">
+                            <strong>Generated:</strong> {{ timestamp }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>{{ document_name }}</h3>
+                            <p class="lead">
+                                Regulatory frameworks analyzed: 
+                                {% for framework in frameworks %}
+                                <span class="badge bg-secondary">{{ framework }}</span>
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-primary" onclick="window.print()">
+                                <i class="fas fa-print"></i> Print Report
+                            </button>
+                            <a href="{{ url_for('regulatory.analyze_document') }}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-file-alt"></i> New Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Executive Summary -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Executive Summary</h3>
+                </div>
+                <div class="card-body">
+                    {% if analysis_results and analysis_results.overall_compliance_score is defined %}
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="compliance-score-circle 
+                                    {% if analysis_results.overall_compliance_score > 80 %}score-high
+                                    {% elif analysis_results.overall_compliance_score > 60 %}score-medium
+                                    {% else %}score-low{% endif %}">
+                                    <h1>{{ analysis_results.overall_compliance_score }}</h1>
+                                    <div>OVERALL SCORE</div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h4>Key Findings</h4>
+                                <ul class="list-group">
+                                    {% if improvement_suggestions and improvement_suggestions.suggestions %}
+                                        {% for suggestion in improvement_suggestions.suggestions[:3] %}
+                                            <li class="list-group-item">{{ suggestion }}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li class="list-group-item">No specific improvement suggestions available</li>
+                                    {% endif %}
+                                </ul>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <strong>Note:</strong> This analysis is based on AI-powered assessment of the document content against the selected regulatory frameworks. It should not replace professional legal advice.
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No overall compliance score available. Please re-run the analysis.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Compliance Scores by Framework -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Compliance Scores by Framework</h3>
+                </div>
+                <div class="card-body">
+                    {% if analysis_results and analysis_results.compliance_scores %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Framework</th>
+                                        <th>Score</th>
+                                        <th>Strengths</th>
+                                        <th>Gaps</th>
+                                        <th>Critical Issues</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for score in analysis_results.compliance_scores %}
+                                        <tr>
+                                            <td><strong>{{ score.framework }}</strong></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if score.score > 80 %}bg-success
+                                                        {% elif score.score > 60 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ score.score }}%;" 
+                                                        aria-valuenow="{{ score.score }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">{{ score.score }}%</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <ul class="mb-0 ps-3">
+                                                    {% for strength in score.strengths[:2] %}
+                                                        <li>{{ strength }}</li>
+                                                    {% else %}
+                                                        <li class="text-muted">None identified</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <ul class="mb-0 ps-3">
+                                                    {% for gap in score.gaps[:2] %}
+                                                        <li>{{ gap }}</li>
+                                                    {% else %}
+                                                        <li class="text-muted">None identified</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                {% if score.critical_issues and score.critical_issues|length > 0 %}
+                                                    <span class="badge bg-danger">{{ score.critical_issues|length }} Issues</span>
+                                                    <ul class="mt-1 mb-0 ps-3">
+                                                        {% for issue in score.critical_issues[:1] %}
+                                                            <li>{{ issue }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% else %}
+                                                    <span class="badge bg-success">No Critical Issues</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No compliance scores available. Please re-run the analysis.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Regulatory Terminology Analysis -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Regulatory Terminology Analysis</h3>
+                </div>
+                <div class="card-body">
+                    {% if terminology_analysis %}
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h4>Key Regulatory Terms</h4>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        {% if terminology_analysis.key_terms %}
+                                            <div class="d-flex flex-wrap">
+                                                {% for term in terminology_analysis.key_terms %}
+                                                    <span class="badge bg-primary me-2 mb-2 p-2">{{ term }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted">No key terms identified</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <h4 class="mt-4">Complex Terminology</h4>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        {% if terminology_analysis.complex_terms %}
+                                            <div class="d-flex flex-wrap">
+                                                {% for term in terminology_analysis.complex_terms %}
+                                                    <span class="badge bg-warning text-dark me-2 mb-2 p-2">{{ term }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted">No complex terms identified</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-7">
+                                <h4>Terminology Glossary</h4>
+                                {% if terminology_analysis.glossary and terminology_analysis.glossary|length > 0 %}
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="table table-bordered table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Term</th>
+                                                    <th>Definition</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for term, definition in terminology_analysis.glossary.items() %}
+                                                    <tr>
+                                                        <td><strong>{{ term }}</strong></td>
+                                                        <td>{{ definition }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        No glossary definitions available.
+                                    </div>
+                                {% endif %}
+                                
+                                {% if terminology_analysis.summary %}
+                                    <div class="card mt-3">
+                                        <div class="card-header bg-info text-white">
+                                            Terminology Summary
+                                        </div>
+                                        <div class="card-body">
+                                            <p>{{ terminology_analysis.summary }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No terminology analysis available. Please re-run the analysis.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Improvement Recommendations -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Improvement Recommendations</h3>
+                </div>
+                <div class="card-body">
+                    {% if improvement_suggestions %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% if improvement_suggestions.summary %}
+                                    <div class="alert alert-info">
+                                        <strong>Summary:</strong> {{ improvement_suggestions.summary }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-warning text-dark">
+                                                <h4 class="mb-0">Language Improvements</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                {% if improvement_suggestions.language_improvements %}
+                                                    <ol class="ps-3">
+                                                        {% for improvement in improvement_suggestions.language_improvements %}
+                                                            <li class="mb-2">{{ improvement }}</li>
+                                                        {% endfor %}
+                                                    </ol>
+                                                {% else %}
+                                                    <p class="text-muted">No specific language improvements suggested</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-primary text-white">
+                                                <h4 class="mb-0">Structure Recommendations</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                {% if improvement_suggestions.structure_recommendations %}
+                                                    <ol class="ps-3">
+                                                        {% for recommendation in improvement_suggestions.structure_recommendations %}
+                                                            <li class="mb-2">{{ recommendation }}</li>
+                                                        {% endfor %}
+                                                    </ol>
+                                                {% else %}
+                                                    <p class="text-muted">No specific structure recommendations suggested</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mt-4">
+                                    <div class="card-header bg-danger text-white">
+                                        <h4 class="mb-0">Compliance Gaps</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if improvement_suggestions.compliance_gaps %}
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Gap Description</th>
+                                                            <th>Priority</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for i, gap in enumerate(improvement_suggestions.compliance_gaps) %}
+                                                            <tr>
+                                                                <td>{{ i + 1 }}</td>
+                                                                <td>{{ gap }}</td>
+                                                                <td>
+                                                                    {% if "urgent" in gap.lower() or "critical" in gap.lower() or "immediate" in gap.lower() %}
+                                                                        <span class="badge bg-danger">High</span>
+                                                                    {% elif "should" in gap.lower() or "recommend" in gap.lower() %}
+                                                                        <span class="badge bg-warning text-dark">Medium</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-info">Standard</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-success">
+                                                No critical compliance gaps identified.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No improvement suggestions available. Please re-run the analysis.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Regulatory Requirements -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Key Regulatory Requirements</h3>
+                </div>
+                <div class="card-body">
+                    {% if analysis_results and analysis_results.regulatory_requirements %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul class="list-group">
+                                    {% for requirement in analysis_results.regulatory_requirements %}
+                                        <li class="list-group-item">{{ requirement }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No regulatory requirements information available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">
+                        <small>Report generated by Cathena Policy Management System on {{ timestamp }}</small><br>
+                        <small>This analysis is provided for informational purposes only and should not be considered legal advice.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body {
+            font-size: 12pt;
+        }
+        
+        .card {
+            break-inside: avoid;
+            border: 1px solid #ddd !important;
+            margin-bottom: 20px !important;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+            font-weight: bold;
+        }
+        
+        .bg-primary, .bg-success, .bg-info, .bg-warning, .bg-danger {
+            color: #000 !important;
+            background-color: #f8f9fa !important;
+        }
+        
+        .badge {
+            border: 1px solid #000;
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+        
+        .btn {
+            display: none !important;
+        }
+        
+        .progress {
+            border: 1px solid #000;
+        }
+        
+        .progress-bar {
+            background-color: #ccc !important;
+            color: #000 !important;
+        }
+    }
+    
+    .compliance-score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .score-high {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .score-medium {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .score-low {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .compliance-score-circle h1 {
+        font-size: 48px;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .compliance-score-circle div {
+        font-size: 14px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

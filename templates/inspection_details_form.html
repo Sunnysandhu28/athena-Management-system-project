@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Details Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #2c3e50;
+            --primary-light: #3498db;
+            --secondary-color: #e8f4fc;
+            --accent-color: #3498db;
+            --accent-bright: #2ecc71;
+            --text-color: #2c3e50;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --gradient-start: #3498db;
+            --gradient-end: #2c3e50;
+            --box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 5px solid var(--accent-bright);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 L50 0 L0 50 Z" fill="rgba(255,255,255,0.1)"/><path d="M100 0 L100 50 L50 0 Z" fill="rgba(255,255,255,0.1)"/><path d="M0 100 L0 50 L50 100 Z" fill="rgba(255,255,255,0.1)"/><path d="M100 100 L50 100 L100 50 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            margin: 1rem 0 0;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 2;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: -3rem auto 4rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .content-wrapper {
+            padding: 2.5rem;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+            counter-reset: step;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            height: 4px;
+            width: 100%;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .progress-step {
+            position: relative;
+            z-index: 5;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: white;
+            border: 4px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step::before {
+            counter-increment: step;
+            content: counter(step);
+        }
+        
+        .progress-step.active {
+            border-color: var(--accent-color);
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .progress-step.completed {
+            border-color: var(--success-color);
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .progress-step.completed::before {
+            content: "✓";
+        }
+        
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--accent-color);
+            transition: all 0.3s ease;
+        }
+        
+        .form-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        
+        input[type="text"], 
+        input[type="date"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+        }
+        
+        input[type="text"]:focus, 
+        input[type="date"]:focus, 
+        textarea:focus, 
+        select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            background-color: white;
+        }
+        
+        select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+            padding-right: 2.5rem;
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .inspector-entry {
+            background: linear-gradient(to right, #f9f9f9, #ffffff);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .inspector-entry:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .remove-btn:hover {
+            background-color: #c0392b;
+            transform: scale(1.1);
+        }
+        
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .button:focus {
+            outline: none;
+        }
+        
+        .add-btn {
+            background-color: white;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            margin-top: 1rem;
+        }
+        
+        .add-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .add-btn i {
+            margin-right: 8px;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: white;
+            padding: 1rem 2rem;
+            width: 100%;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        
+        .submit-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .submit-btn i {
+            margin-right: 10px;
+        }
+        
+        .optional-label {
+            font-size: 0.85rem;
+            color: #777;
+            font-style: italic;
+            margin-left: 5px;
+            font-weight: 400;
+        }
+        
+        .date-range {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .date-range input {
+            flex: 1;
+        }
+        
+        .date-range span {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .checkbox-group {
+            margin-top: 0.75rem;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-label:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+        
+        .hint-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 8px;
+            padding-left: 0.25rem;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 10px;
+        }
+        
+        .notification-group {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .notification-group:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        }
+        
+        .notification-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .freq-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 1rem;
+        }
+        
+        .freq-option {
+            flex: 1;
+            min-width: 110px;
+        }
+        
+        .freq-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            background-color: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 100%;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .freq-option label span:first-child {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .freq-option label span:last-child {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .freq-option input[type="radio"] {
+            display: none;
+        }
+        
+        .freq-option input[type="radio"]:checked + label {
+            background-color: var(--secondary-color);
+            border-color: var(--accent-color);
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .freq-option label:hover {
+            background-color: var(--secondary-color);
+            border-color: #bbb;
+        }
+        
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: -2rem 15px 3rem;
+            }
+            
+            .content-wrapper {
+                padding: 1.5rem;
+            }
+            
+            .form-section {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .header {
+                padding: 1.5rem 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-footer {
+                flex-direction: column;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-section {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .form-section:nth-child(2) { animation-delay: 0.1s; }
+        .form-section:nth-child(3) { animation-delay: 0.2s; }
+        .form-section:nth-child(4) { animation-delay: 0.3s; }
+        .form-section:nth-child(5) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header">
+        <h1>Cathena Compliance Dashboard</h1>
+        <p>Complete the inspection details below to generate a comprehensive, data-driven compliance report that meets all regulatory requirements.</p>
+    </div>
+    
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="progress-bar">
+                <div class="progress-step active"></div>
+                <div class="progress-step"></div>
+                <div class="progress-step"></div>
+                <div class="progress-step"></div>
+            </div>
+            
+            <form action="/submit-inspection-details" method="POST">
+                <!-- Inspection Details Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-info-circle"></i></div>
+                        <h2>Report Information</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="report-title">Report Title</label>
+                        <input type="text" id="report-title" name="report-title" placeholder="e.g., CQC Comprehensive Compliance Assessment" required>
+                        <div class="hint-text">Enter a descriptive title for the compliance report</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="report-reference">Reference Code</label>
+                        <input type="text" id="report-reference" name="report-reference" placeholder="e.g., Cat/Qu/M/aj.sandhu/0001/CQC" required>
+                        <div class="hint-text">Enter the unique reference code for this report</div>
+                    </div>
+                </div>
+                
+                <!-- Regulatory Body Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-landmark"></i></div>
+                        <h2>Regulatory Body</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regulatory-body">Primary Regulatory Body</label>
+                        <select id="regulatory-body" name="regulatory-body" required>
+                            <option value="">Select Regulatory Body</option>
+                            <option value="CQC">Care Quality Commission (CQC)</option>
+                            <option value="Cathena">Cathena Internal Audit</option>
+                            <option value="HSE">Health and Safety Executive (HSE)</option>
+                            <option value="ICO">Information Commissioner's Office (ICO)</option>
+                            <option value="LocalAuth">Local Authority</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="hint-text">Select the primary regulatory body related to this inspection</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="other-regulatory-body">Other Regulatory Body <span class="optional-label">(if applicable)</span></label>
+                        <input type="text" id="other-regulatory-body" name="other-regulatory-body" placeholder="Enter name of other regulatory body">
+                    </div>
+                </div>
+                
+                <!-- Visit Information Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-calendar-check"></i></div>
+                        <h2>Visit Information</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="visit-type">Visit Type</label>
+                        <select id="visit-type" name="visit-type" required>
+                            <option value="">Select Visit Type</option>
+                            <option value="Inspection">Inspection</option>
+                            <option value="Enquiry">Enquiry</option>
+                            <option value="Investigation">Investigation</option>
+                            <option value="Audit">Audit</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Follow-up">Follow-up Visit</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="hint-text">Select the type of visit that was conducted</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="visit-purpose">Purpose of Visit</label>
+                        <textarea id="visit-purpose" name="visit-purpose" placeholder="Describe the specific purpose of this visit..." required></textarea>
+                        <div class="hint-text">Clearly state why this visit was conducted and what was assessed</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="visit-date-range">Date Range</label>
+                        <div class="date-range">
+                            <input type="date" id="visit-start-date" name="visit-start-date" required>
+                            <span>to</span>
+                            <input type="date" id="visit-end-date" name="visit-end-date" required>
+                        </div>
+                        <div class="hint-text">Specify the start and end date of the compliance visit</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specific-date">Specific Date <span class="optional-label">(if applicable)</span></label>
+                        <input type="date" id="specific-date" name="specific-date">
+                        <div class="hint-text">If the visit occurred on a single specific date, enter it here</div>
+                    </div>
+                </div>
+                
+                <!-- Inspector Information Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-user-tie"></i></div>
+                        <h2>Inspector Information</h2>
+                    </div>
+                    
+                    <div id="inspectors-container">
+                        <div class="inspector-entry">
+                            <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+                            
+                            <div class="form-group">
+                                <label for="inspector-name-1">Inspector Name</label>
+                                <input type="text" id="inspector-name-1" name="inspector-name[]" placeholder="Full name of the inspector" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="inspector-role-1">Role/Position</label>
+                                <input type="text" id="inspector-role-1" name="inspector-role[]" placeholder="e.g., Lead Inspector, Clinical Specialist" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="inspector-org-1">Organization</label>
+                                <input type="text" id="inspector-org-1" name="inspector-org[]" placeholder="e.g., Care Quality Commission" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="add-inspector" class="button add-btn">
+                        <i class="fas fa-plus"></i> Add Another Inspector
+                    </button>
+                </div>
+                
+                <!-- Report Frequency Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-sync-alt"></i></div>
+                        <h2>Report Frequency</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>How often should this report be generated?</label>
+                        
+                        <div class="freq-box">
+                            <div class="freq-option">
+                                <input type="radio" id="freq-weekly" name="frequency" value="weekly">
+                                <label for="freq-weekly">
+                                    <span>Weekly</span>
+                                    <span>Every 7 days</span>
+                                </label>
+                            </div>
+                            
+                            <div class="freq-option">
+                                <input type="radio" id="freq-biweekly" name="frequency" value="biweekly">
+                                <label for="freq-biweekly">
+                                    <span>Bi-Weekly</span>
+                                    <span>Every 14 days</span>
+                                </label>
+                            </div>
+                            
+                            <div class="freq-option">
+                                <input type="radio" id="freq-monthly" name="frequency" value="monthly" checked>
+                                <label for="freq-monthly">
+                                    <span>Monthly</span>
+                                    <span>Every 30 days</span>
+                                </label>
+                            </div>
+                            
+                            <div class="freq-option">
+                                <input type="radio" id="freq-quarterly" name="frequency" value="quarterly">
+                                <label for="freq-quarterly">
+                                    <span>Quarterly</span>
+                                    <span>Every 3 months</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Notes Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-sticky-note"></i></div>
+                        <h2>Additional Notes</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additional-notes">Special Instructions or Context <span class="optional-label">(optional)</span></label>
+                        <textarea id="additional-notes" name="additional-notes" placeholder="Any additional information or context about this inspection..."></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="button submit-btn">
+                    <i class="fas fa-file-alt"></i> Generate Comprehensive Report
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add new inspector field
+            const addInspectorBtn = document.getElementById('add-inspector');
+            const inspectorsContainer = document.getElementById('inspectors-container');
+            let inspectorCount = 1;
+            
+            addInspectorBtn.addEventListener('click', function() {
+                inspectorCount++;
+                
+                const newInspector = document.createElement('div');
+                newInspector.className = 'inspector-entry';
+                newInspector.innerHTML = `
+                    <button type="button" class="remove-btn"><i class="fas fa-times"></i></button>
+                    
+                    <div class="form-group">
+                        <label for="inspector-name-${inspectorCount}">Inspector Name</label>
+                        <input type="text" id="inspector-name-${inspectorCount}" name="inspector-name[]" placeholder="Full name of the inspector" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="inspector-role-${inspectorCount}">Role/Position</label>
+                        <input type="text" id="inspector-role-${inspectorCount}" name="inspector-role[]" placeholder="e.g., Lead Inspector, Clinical Specialist" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="inspector-org-${inspectorCount}">Organization</label>
+                        <input type="text" id="inspector-org-${inspectorCount}" name="inspector-org[]" placeholder="e.g., Care Quality Commission" required>
+                    </div>
+                `;
+                
+                inspectorsContainer.appendChild(newInspector);
+                
+                // Add remove button functionality to the new inspector entry
+                const removeBtn = newInspector.querySelector('.remove-btn');
+                removeBtn.addEventListener('click', function() {
+                    newInspector.remove();
+                });
+            });
+            
+            // Remove inspector entry
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-btn') && inspectorsContainer.children.length > 1) {
+                    e.target.closest('.inspector-entry').remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

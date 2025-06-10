@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Policy Operations</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .header-bar {
+            background-color: #0d6efd;
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        .category-item {
+            background-color: #f1f3f5;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .policy-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .policy-item {
+            padding: 8px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        .policy-item:hover {
+            background-color: #f8f9fa;
+        }
+        .policy-item.selected {
+            background-color: #e6f2ff;
+        }
+        .policy-code {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 50px;
+        }
+        .tab-button {
+            cursor: pointer;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-right: 10px;
+            border: 1px solid transparent;
+        }
+        .tab-button.active {
+            background-color: #fff;
+            border-color: #dee2e6;
+            border-bottom: 3px solid #0d6efd;
+        }
+        .operation-panel {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .preview-document {
+            border: 1px solid #dee2e6;
+            padding: 25px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .preview-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .preview-footer {
+            font-size: 0.8rem;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .btn-group-toggle .btn input {
+            position: absolute;
+            clip: rect(0,0,0,0);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="container">
+            <h1>Cathena Policy Management System</h1>
+            <p class="mb-0">Batch Policy Operations</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col-lg-4">
+                <!-- Policy Selection Area -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Select Policies</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select-all">
+                            <label class="form-check-label" for="select-all">Select All</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="search-policies" placeholder="Search policies...">
+                                <button class="btn btn-outline-secondary" type="button" id="clear-search">Clear</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Categories and Policies -->
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#health-safety">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="health-safety-all">
+                                <i class="bi bi-folder-fill text-warning me-2"></i>
+                                <span>Health & Safety</span>
+                                <span class="ms-auto badge bg-light text-dark">12 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse show" id="health-safety">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="ME02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-ME02" checked>
+                                    <span class="policy-code">ME02</span>
+                                    <span>Legionella Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="ME03">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-ME03">
+                                    <span class="policy-code">ME03</span>
+                                    <span>Fire Safety Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="ME04">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-ME04">
+                                    <span class="policy-code">ME04</span>
+                                    <span>Health & Safety Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="ME05">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-ME05">
+                                    <span class="policy-code">ME05</span>
+                                    <span>First Aid Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="ME06">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-ME06">
+                                    <span class="policy-code">ME06</span>
+                                    <span>Risk Assessment Policy</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#care-management">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="care-management-all">
+                                <i class="bi bi-folder-fill text-info me-2"></i>
+                                <span>Care Management</span>
+                                <span class="ms-auto badge bg-light text-dark">15 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="care-management">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="CM01">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-CM01">
+                                    <span class="policy-code">CM01</span>
+                                    <span>Person-Centered Care</span>
+                                </div>
+                                <div class="policy-item" data-policy="CM02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-CM02">
+                                    <span class="policy-code">CM02</span>
+                                    <span>Medication Management</span>
+                                </div>
+                                <div class="policy-item" data-policy="CM03">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-CM03">
+                                    <span class="policy-code">CM03</span>
+                                    <span>Falls Prevention</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#human-resources">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="human-resources-all">
+                                <i class="bi bi-folder-fill text-success me-2"></i>
+                                <span>Human Resources</span>
+                                <span class="ms-auto badge bg-light text-dark">8 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="human-resources">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="HR01">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-HR01">
+                                    <span class="policy-code">HR01</span>
+                                    <span>Recruitment Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="HR02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-HR02">
+                                    <span class="policy-code">HR02</span>
+                                    <span>Staff Training Policy</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#medications">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="medications-all">
+                                <i class="bi bi-folder-fill text-danger me-2"></i>
+                                <span>Medications</span>
+                                <span class="ms-auto badge bg-light text-dark">10 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="medications">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="MM01">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-MM01">
+                                    <span class="policy-code">MM01</span>
+                                    <span>Medication Administration</span>
+                                </div>
+                                <div class="policy-item" data-policy="MM02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-MM02">
+                                    <span class="policy-code">MM02</span>
+                                    <span>Controlled Drugs Policy</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#gdpr">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="gdpr-all">
+                                <i class="bi bi-folder-fill text-primary me-2"></i>
+                                <span>GDPR & Data Protection</span>
+                                <span class="ms-auto badge bg-light text-dark">5 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="gdpr">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="DP01">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-DP01">
+                                    <span class="policy-code">DP01</span>
+                                    <span>Data Protection Policy</span>
+                                </div>
+                                <div class="policy-item" data-policy="DP02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-DP02">
+                                    <span class="policy-code">DP02</span>
+                                    <span>Privacy Notice</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-item" data-bs-toggle="collapse" data-bs-target="#governance">
+                            <div class="d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="governance-all">
+                                <i class="bi bi-folder-fill text-secondary me-2"></i>
+                                <span>Governance</span>
+                                <span class="ms-auto badge bg-light text-dark">7 policies</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="governance">
+                            <div class="policy-list mb-3">
+                                <div class="policy-item" data-policy="GV01">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-GV01">
+                                    <span class="policy-code">GV01</span>
+                                    <span>Complaints Procedure</span>
+                                </div>
+                                <div class="policy-item" data-policy="GV02">
+                                    <input class="form-check-input me-2" type="checkbox" id="policy-GV02">
+                                    <span class="policy-code">GV02</span>
+                                    <span>Quality Assurance</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3 mb-0">
+                            <strong>1 policy selected</strong> for batch operations
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <!-- Operations Panel -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Batch Operations</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tab Navigation -->
+                        <div class="d-flex mb-3 tab-navigation">
+                            <div class="tab-button active" id="tab-reference">Reference Format</div>
+                            <div class="tab-button" id="tab-care-home">Care Home Details</div>
+                            <div class="tab-button" id="tab-dates">Dates & Review</div>
+                            <div class="tab-button" id="tab-format">Formatting</div>
+                        </div>
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content">
+                            <!-- Reference Format Tab -->
+                            <div class="operation-panel" id="panel-reference">
+                                <h5 class="mb-3">Change Policy Reference Format</h5>
+                                <p>Update the reference format for all selected policies.</p>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Reference Style</label>
+                                    <select class="form-select" id="reference-style">
+                                        <option value="qcs">QCS Style (ME02, CC87, etc.)</option>
+                                        <option value="category-sequential" selected>Category-Sequential (HS-002, CM-001, etc.)</option>
+                                        <option value="descriptive">Descriptive (HEALTH-SAFETY-02, CARE-01, etc.)</option>
+                                        <option value="custom">Custom Format</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="custom-format-container" style="display:none">
+                                    <label class="form-label">Custom Format Pattern</label>
+                                    <input type="text" class="form-control" id="custom-format" placeholder="[CAT]-[NUM]">
+                                    <div class="form-text">Use [CAT] for category and [NUM] for number</div>
+                                </div>
+                                
+                                <div class="alert alert-light border">
+                                    <strong>Changes Preview:</strong>
+                                    <p class="mb-0 mt-2">ME02 → <span class="text-success">HS-002</span></p>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="log-reference-changes" checked>
+                                    <label class="form-check-label" for="log-reference-changes">
+                                        Log reference changes in history (recommended)
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Care Home Details Tab -->
+                            <div class="operation-panel" id="panel-care-home" style="display:none">
+                                <h5 class="mb-3">Update Care Home Details</h5>
+                                <p>Update care home information across all selected policies.</p>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Care Home Name</label>
+                                    <input type="text" class="form-control" id="care-home-name" value="Quenby Care Home">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" id="care-home-address" rows="2">15 Quenby Road, Leicester LE5 0TD</textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Phone Number</label>
+                                            <input type="text" class="form-control" id="care-home-phone" value="0116 276 9999">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="care-home-email" value="info@quenbycare.co.uk">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dates & Review Tab -->
+                            <div class="operation-panel" id="panel-dates" style="display:none">
+                                <h5 class="mb-3">Update Dates and Version</h5>
+                                <p>Update review dates and version numbers for all selected policies.</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Last Updated</label>
+                                            <input type="date" class="form-control" id="last-updated" value="2025-05-19">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Next Review Date</label>
+                                            <input type="date" class="form-control" id="review-date" value="2026-05-19">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Version Update</label>
+                                    <select class="form-select" id="version-update">
+                                        <option value="minor">Minor Update (1.0 → 1.1)</option>
+                                        <option value="major">Major Update (1.0 → 2.0)</option>
+                                        <option value="custom">Custom Version</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="custom-version-container" style="display:none">
+                                    <label class="form-label">Custom Version Number</label>
+                                    <input type="text" class="form-control" id="custom-version" placeholder="1.5">
+                                </div>
+                            </div>
+                            
+                            <!-- Formatting Tab -->
+                            <div class="operation-panel" id="panel-format" style="display:none">
+                                <h5 class="mb-3">Update Document Formatting</h5>
+                                <p>Change the appearance of all selected policies.</p>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Font Family</label>
+                                    <select class="form-select" id="font-family">
+                                        <option value="segoe-ui">Segoe UI (Default)</option>
+                                        <option value="calibri">Calibri</option>
+                                        <option value="arial">Arial</option>
+                                        <option value="times-new-roman">Times New Roman</option>
+                                        <option value="georgia">Georgia</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Header Color</label>
+                                            <input type="color" class="form-control form-control-color w-100" id="header-color" value="#0d6efd">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Text Color</label>
+                                            <input type="color" class="form-control form-control-color w-100" id="text-color" value="#212529">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-4 d-flex justify-content-between">
+                            <button class="btn btn-outline-secondary" id="preview-changes">
+                                <i class="bi bi-eye me-1"></i> Preview Changes
+                            </button>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="create-backup" checked>
+                                    <label class="form-check-label" for="create-backup">Create Backup</label>
+                                </div>
+                                <button class="btn btn-primary" id="apply-changes">
+                                    <i class="bi bi-check2-circle me-1"></i> Apply Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview Panel -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Preview</h5>
+                        <span class="badge bg-success">After Changes</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="empty-preview" class="text-center py-5">
+                            <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #dee2e6;"></i>
+                            <p class="text-muted mt-2">Click "Preview Changes" to see how your changes will look</p>
+                        </div>
+                        
+                        <div id="policy-preview" style="display: none;" class="p-4">
+                            <div class="preview-document">
+                                <div class="preview-header">
+                                    <h2><span id="display-reference">HS-002</span> - Legionella Policy and Procedure</h2>
+                                    <hr>
+                                    <div style="font-size: 0.9rem;">
+                                        <p class="mb-1"><strong>Version:</strong> <span id="display-version">1.1</span></p>
+                                        <p class="mb-1"><strong>Last Updated:</strong> <span id="display-updated">19 May 2025</span></p>
+                                        <p class="mb-1"><strong>Review Date:</strong> <span id="display-review">19 May 2026</span></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4>Table of Contents</h4>
+                                    <ol>
+                                        <li>Purpose</li>
+                                        <li>Scope</li>
+                                        <li>Policy Statement</li>
+                                        <li>Definition</li>
+                                        <li>Legislation and Guidance</li>
+                                        <li>Procedure</li>
+                                        <li>Related Policies</li>
+                                        <li>Training Requirements</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4>Purpose</h4>
+                                    <p>This policy describes the procedures and responsibilities for managing Legionella bacteria within the organisation's water systems. It helps ensure compliance with relevant laws and provides guidance for all staff members.</p>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4>Scope</h4>
+                                    <p>This policy covers all employees, contractors, visitors, and anyone who might be affected by the organisation's water systems and associated equipment.</p>
+                                </div>
+                                
+                                <div class="preview-footer">
+                                    <div id="display-care-home">Quenby Care Home</div>
+                                    <div>Page 1 of 5</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/batch_operations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const operationPanels = document.querySelectorAll('.operation-panel');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabButtons.forEach(tab => tab.classList.remove('active'));
+                    // Hide all panels
+                    operationPanels.forEach(panel => panel.style.display = 'none');
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding panel
+                    const panelId = this.id.replace('tab-', 'panel-');
+                    document.getElementById(panelId).style.display = 'block';
+                });
+            });
+            
+            // Reference style change
+            const referenceStyle = document.getElementById('reference-style');
+            const customFormatContainer = document.getElementById('custom-format-container');
+            
+            referenceStyle.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customFormatContainer.style.display = 'block';
+                } else {
+                    customFormatContainer.style.display = 'none';
+                }
+                
+                updateReferencePreview();
+            });
+            
+            // Version update change
+            const versionUpdate = document.getElementById('version-update');
+            const customVersionContainer = document.getElementById('custom-version-container');
+            
+            versionUpdate.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customVersionContainer.style.display = 'block';
+                } else {
+                    customVersionContainer.style.display = 'none';
+                }
+            });
+            
+            // Preview button
+            const previewButton = document.getElementById('preview-changes');
+            const emptyPreview = document.getElementById('empty-preview');
+            const policyPreview = document.getElementById('policy-preview');
+            
+            previewButton.addEventListener('click', function() {
+                // Hide empty state and show preview
+                emptyPreview.style.display = 'none';
+                policyPreview.style.display = 'block';
+                
+                // Update preview content based on selected options
+                updatePreview();
+            });
+            
+            // Apply changes button
+            const applyButton = document.getElementById('apply-changes');
+            
+            applyButton.addEventListener('click', function() {
+                const selectedCount = document.querySelectorAll('input[type="checkbox"]:checked:not(#select-all):not(#health-safety-all):not(#care-management-all):not(#human-resources-all)').length;
+                
+                if (selectedCount === 0) {
+                    alert('Please select at least one policy to apply changes to.');
+                    return;
+                }
+                
+                // Show preview with final changes
+                emptyPreview.style.display = 'none';
+                policyPreview.style.display = 'block';
+                updatePreview();
+                
+                // Show success message
+                alert(`Changes successfully applied to ${selectedCount} policies.`);
+            });
+            
+            // Select all checkbox
+            const selectAll = document.getElementById('select-all');
+            const categoryCheckboxes = document.querySelectorAll('input[id$="-all"]');
+            const policyCheckboxes = document.querySelectorAll('input[id^="policy-"]');
+            
+            selectAll.addEventListener('change', function() {
+                const isChecked = this.checked;
+                
+                // Check/uncheck all category checkboxes
+                categoryCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                
+                // Check/uncheck all policy checkboxes
+                policyCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                
+                updateSelectedCount();
+            });
+            
+            // Category checkbox behavior
+            categoryCheckboxes.forEach(categoryCheckbox => {
+                categoryCheckbox.addEventListener('change', function() {
+                    const categoryId = this.id.replace('-all', '');
+                    const categoryPolicies = document.querySelectorAll(`#${categoryId} input[type="checkbox"]`);
+                    
+                    categoryPolicies.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    
+                    updateSelectedCount();
+                });
+            });
+            
+            // Policy checkbox behavior
+            policyCheckboxes.forEach(policyCheckbox => {
+                policyCheckbox.addEventListener('change', function() {
+                    updateSelectedCount();
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('search-policies');
+            const clearSearch = document.getElementById('clear-search');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                // Filter policy items
+                policyCheckboxes.forEach(checkbox => {
+                    const policyItem = checkbox.closest('.policy-item');
+                    const policyText = policyItem.textContent.toLowerCase();
+                    
+                    if (policyText.includes(searchTerm)) {
+                        policyItem.style.display = '';
+                    } else {
+                        policyItem.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide categories based on visible policies
+                categoryCheckboxes.forEach(checkbox => {
+                    const categoryId = checkbox.id.replace('-all', '');
+                    const category = document.getElementById(categoryId);
+                    const categoryPolicies = Array.from(category.querySelectorAll('.policy-item'));
+                    const hasVisiblePolicies = categoryPolicies.some(policy => policy.style.display !== 'none');
+                    
+                    if (!hasVisiblePolicies && searchTerm !== '') {
+                        checkbox.closest('.category-item').style.display = 'none';
+                        category.style.display = 'none';
+                    } else {
+                        checkbox.closest('.category-item').style.display = '';
+                        if (categoryPolicies.length > 0) {
+                            category.style.display = '';
+                        }
+                    }
+                });
+            });
+            
+            clearSearch.addEventListener('click', function() {
+                searchInput.value = '';
+                
+                // Show all policies
+                policyCheckboxes.forEach(checkbox => {
+                    const policyItem = checkbox.closest('.policy-item');
+                    policyItem.style.display = '';
+                });
+                
+                // Show all categories
+                categoryCheckboxes.forEach(checkbox => {
+                    const categoryId = checkbox.id.replace('-all', '');
+                    const category = document.getElementById(categoryId);
+                    checkbox.closest('.category-item').style.display = '';
+                    category.style.display = '';
+                });
+            });
+            
+            // Update selected count
+            function updateSelectedCount() {
+                const selectedCount = document.querySelectorAll('input[id^="policy-"]:checked').length;
+                const alertInfo = document.querySelector('.alert-info strong');
+                
+                alertInfo.textContent = `${selectedCount} ${selectedCount === 1 ? 'policy' : 'policies'} selected`;
+            }
+            
+            // Update reference preview based on selected style
+            function updateReferencePreview() {
+                const style = referenceStyle.value;
+                let newReference = 'ME02';
+                
+                switch(style) {
+                    case 'category-sequential':
+                        newReference = 'HS-002';
+                        break;
+                    case 'descriptive':
+                        newReference = 'HEALTH-SAFETY-02';
+                        break;
+                    case 'custom':
+                        const customFormat = document.getElementById('custom-format').value || '[CAT]-[NUM]';
+                        newReference = customFormat
+                            .replace('[CAT]', 'HS')
+                            .replace('[NUM]', '002');
+                        break;
+                }
+                
+                document.querySelector('.alert-light p').innerHTML = `ME02 → <span class="text-success">${newReference}</span>`;
+            }
+            
+            // Update policy preview with all selected options
+            function updatePreview() {
+                // Reference format
+                const style = referenceStyle.value;
+                let newReference = 'ME02';
+                
+                switch(style) {
+                    case 'category-sequential':
+                        newReference = 'HS-002';
+                        break;
+                    case 'descriptive':
+                        newReference = 'HEALTH-SAFETY-02';
+                        break;
+                    case 'custom':
+                        const customFormat = document.getElementById('custom-format').value || '[CAT]-[NUM]';
+                        newReference = customFormat
+                            .replace('[CAT]', 'HS')
+                            .replace('[NUM]', '002');
+                        break;
+                    default:
+                        newReference = 'ME02';
+                }
+                
+                document.getElementById('display-reference').textContent = newReference;
+                
+                // Care home details
+                const careHomeName = document.getElementById('care-home-name').value;
+                document.getElementById('display-care-home').textContent = careHomeName;
+                
+                // Dates
+                const lastUpdated = document.getElementById('last-updated').value;
+                const reviewDate = document.getElementById('review-date').value;
+                
+                const formattedLastUpdated = new Date(lastUpdated).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                
+                const formattedReviewDate = new Date(reviewDate).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                
+                document.getElementById('display-updated').textContent = formattedLastUpdated;
+                document.getElementById('display-review').textContent = formattedReviewDate;
+                
+                // Version
+                const versionUpdateType = document.getElementById('version-update').value;
+                let currentVersion = document.getElementById('display-version').textContent.split('.');
+                let majorVersion = parseInt(currentVersion[0]);
+                let minorVersion = parseInt(currentVersion[1]);
+                
+                switch(versionUpdateType) {
+                    case 'minor':
+                        document.getElementById('display-version').textContent = `${majorVersion}.${minorVersion + 1}`;
+                        break;
+                    case 'major':
+                        document.getElementById('display-version').textContent = `${majorVersion + 1}.0`;
+                        break;
+                    case 'custom':
+                        const customVersion = document.getElementById('custom-version').value;
+                        if (customVersion) {
+                            document.getElementById('display-version').textContent = customVersion;
+                        }
+                        break;
+                }
+                
+                // Formatting
+                const fontFamily = document.getElementById('font-family').value;
+                const headerColor = document.getElementById('header-color').value;
+                const textColor = document.getElementById('text-color').value;
+                
+                const previewDocument = document.querySelector('.preview-document');
+                const headings = previewDocument.querySelectorAll('h2, h4');
+                
+                switch(fontFamily) {
+                    case 'segoe-ui':
+                        previewDocument.style.fontFamily = "'Segoe UI', sans-serif";
+                        break;
+                    case 'calibri':
+                        previewDocument.style.fontFamily = "Calibri, sans-serif";
+                        break;
+                    case 'arial':
+                        previewDocument.style.fontFamily = "Arial, sans-serif";
+                        break;
+                    case 'times-new-roman':
+                        previewDocument.style.fontFamily = "'Times New Roman', serif";
+                        break;
+                    case 'georgia':
+                        previewDocument.style.fontFamily = "Georgia, serif";
+                        break;
+                }
+                
+                headings.forEach(heading => {
+                    heading.style.color = headerColor;
+                });
+                
+                previewDocument.style.color = textColor;
+            }
+            
+            // Custom format input
+            const customFormat = document.getElementById('custom-format');
+            customFormat?.addEventListener('input', updateReferencePreview);
+            
+            // Initialize
+            updateSelectedCount();
+        });
+    </script>
+</body>
+</html>

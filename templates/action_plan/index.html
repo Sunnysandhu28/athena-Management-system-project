@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Action Plan Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Action Plan Generator</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome to the Action Plan Generator</h5>
+                    <p class="card-text">This tool helps you create comprehensive action plans based on regulatory requirements and evidence. Use the tabs below to navigate.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="actionPlanTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="requirements-tab" data-bs-toggle="tab" data-bs-target="#requirements" type="button" role="tab" aria-controls="requirements" aria-selected="true">
+                <i class="fas fa-clipboard-list"></i> Requirements
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="evidence-tab" data-bs-toggle="tab" data-bs-target="#evidence" type="button" role="tab" aria-controls="evidence" aria-selected="false">
+                <i class="fas fa-file-alt"></i> Evidence
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="generator-tab" data-bs-toggle="tab" data-bs-target="#generator" type="button" role="tab" aria-controls="generator" aria-selected="false">
+                <i class="fas fa-cogs"></i> Generator
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="learning-tab" data-bs-toggle="tab" data-bs-target="#learning" type="button" role="tab" aria-controls="learning" aria-selected="false">
+                <i class="fas fa-graduation-cap"></i> Learning Resources
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="actionPlanTabsContent">
+        <!-- Requirements Tab -->
+        <div class="tab-pane fade show active" id="requirements" role="tabpanel" aria-labelledby="requirements-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Regulatory Requirements</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Add and manage regulatory requirements from CQC, UK law, or internal policies.</p>
+                            
+                            <!-- Add Requirement Button -->
+                            <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addRequirementModal">
+                                <i class="fas fa-plus"></i> Add Requirement
+                            </button>
+                            
+                            <!-- Requirements List -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Source</th>
+                                            <th>Reference</th>
+                                            <th>Priority</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No requirements added yet. Add your first requirement using the button above.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evidence Tab -->
+        <div class="tab-pane fade" id="evidence" role="tabpanel" aria-labelledby="evidence-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Compliance Evidence</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Upload and manage evidence that demonstrates compliance with requirements.</p>
+                            
+                            <!-- Add Evidence Button -->
+                            <button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addEvidenceModal">
+                                <i class="fas fa-plus"></i> Add Evidence
+                            </button>
+                            
+                            <!-- Evidence List -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Requirement</th>
+                                            <th>Type</th>
+                                            <th>Compliance Level</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No evidence added yet. Add your first evidence using the button above.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Generator Tab -->
+        <div class="tab-pane fade" id="generator" role="tabpanel" aria-labelledby="generator-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Report & Action Plan Generator</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Generate comprehensive reports and action plans based on requirements and evidence.</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <!-- Generate Report Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">Generate Report</div>
+                                        <div class="card-body">
+                                            <p>Create a detailed report on compliance status based on selected requirements and evidence.</p>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                                                <i class="fas fa-file-alt"></i> Generate Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Generate Action Plan Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-success text-white">Generate Action Plan</div>
+                                        <div class="card-body">
+                                            <p>Create an actionable plan with specific tasks to address compliance gaps.</p>
+                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generateActionPlanModal">
+                                                <i class="fas fa-clipboard-check"></i> Generate Action Plan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Reports & Action Plans Lists -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h5>Generated Reports</h5>
+                                    <div class="list-group">
+                                        <div class="list-group-item text-center">No reports generated yet.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Action Plans</h5>
+                                    <div class="list-group">
+                                        <div class="list-group-item text-center">No action plans generated yet.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Learning Resources Tab -->
+        <div class="tab-pane fade" id="learning" role="tabpanel" aria-labelledby="learning-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Learning Resources</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Upload documents to enhance AI recommendations and guidance. These materials help the system better understand your requirements and provide more tailored insights.</p>
+                            
+                            <!-- Upload Learning Material Button -->
+                            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#uploadLearningModal">
+                                <i class="fas fa-upload"></i> Upload Learning Material
+                            </button>
+                            
+                            <!-- Learning Materials List -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th>Uploaded On</th>
+                                            <th>Processed</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No learning materials uploaded yet. Add materials using the button above.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Placeholder for Modals (will be implemented in future) -->
+<!-- These will include:
+     - Add Requirement Modal
+     - Add Evidence Modal
+     - Generate Report Modal
+     - Generate Action Plan Modal
+     - Upload Learning Material Modal
+-->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the tab from URL hash and activate it
+        const hash = window.location.hash;
+        if (hash) {
+            const tabId = hash.substring(1);
+            const tab = document.querySelector(`#actionPlanTabs button[data-bs-target="#${tabId}"]`);
+            if (tab) {
+                const bsTab = new bootstrap.Tab(tab);
+                bsTab.show();
+            }
+        }
+        
+        // Update URL hash when changing tabs
+        const tabs = document.querySelectorAll('#actionPlanTabs button');
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                const targetId = e.target.getAttribute('data-bs-target').substring(1);
+                window.location.hash = targetId;
+            });
+        });
+    });
+</script>
+{% endblock %}

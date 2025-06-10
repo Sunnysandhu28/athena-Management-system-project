@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Regulatory Terminology Assistant{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h1 class="mb-4">Regulatory Terminology Assistant</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Search for Regulatory Terms</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('regulatory.search_terms') }}">
+                        <div class="mb-3">
+                            <label for="query" class="form-label">Search Term</label>
+                            <input type="text" class="form-control" id="query" name="query" placeholder="Enter a regulatory term">
+                        </div>
+                        <div class="mb-3">
+                            <label for="framework" class="form-label">Regulatory Framework</label>
+                            <select class="form-select" id="framework" name="framework">
+                                <option value="CQC">CQC</option>
+                                <option value="RIDDOR">RIDDOR</option>
+                                <option value="Fire Safety">Fire Safety</option>
+                                <option value="Financial/Accounting">Financial/Accounting</option>
+                                <option value="UK Law">UK Law</option>
+                                <option value="UK Commercial Law">UK Commercial Law</option>
+                                <option value="UK Company Law">UK Company Law</option>
+                                <option value="UK Tax Law">UK Tax Law</option>
+                                <option value="Education">Education</option>
+                                <option value="Training">Training</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upload Document for Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('regulatory.analyze_document') }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Document File</label>
+                            <input class="form-control" type="file" id="document" name="document">
+                            <div class="form-text">Supported formats: PDF, DOC, DOCX, TXT, RTF, MD</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="framework" class="form-label">Regulatory Framework</label>
+                            <select class="form-select" id="framework" name="framework">
+                                <option value="CQC">CQC</option>
+                                <option value="RIDDOR">RIDDOR</option>
+                                <option value="Fire Safety">Fire Safety</option>
+                                <option value="Financial/Accounting">Financial/Accounting</option>
+                                <option value="UK Law">UK Law</option>
+                                <option value="UK Commercial Law">UK Commercial Law</option>
+                                <option value="UK Company Law">UK Company Law</option>
+                                <option value="UK Tax Law">UK Tax Law</option>
+                                <option value="Education">Education</option>
+                                <option value="Training">Training</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Analyze Document</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Terminology Map</h5>
+                </div>
+                <div class="card-body">
+                    <p>The terminology map visualizes relationships between regulatory terms across different frameworks.</p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('regulatory.index') }}" class="btn btn-info">View Terminology Map</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

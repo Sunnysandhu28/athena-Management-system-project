@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Extract Policy Data{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">AI Document Processing</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Extract Policy Data</li>
+        </ol>
+    </nav>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="h3 mb-0">Extract Policy Data</h1>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">Upload a policy document to extract structured policy data. This is useful for creating templates or replicating policies.</p>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file">Select Policy Document</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="file" name="file" required accept=".pdf,.doc,.docx">
+                        <label class="custom-file-label" for="file">Choose file...</label>
+                    </div>
+                    <small class="form-text text-muted">Supported formats: PDF, Word documents (.doc, .docx)</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-file-alt mr-2"></i> Extract Policy Data
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Update file input label with selected filename
+    document.querySelector('.custom-file-input').addEventListener('change', function (e) {
+        var fileName = e.target.files[0].name;
+        var nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = fileName;
+    });
+</script>
+{% endblock %}
+{% endblock %}

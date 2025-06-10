@@ -1,0 +1,203 @@
+{% extends "policy_learning/base.html" %}
+
+{% block learning_content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Batch Process Results</h2>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-success">
+            <h4 class="alert-heading">Process Completed</h4>
+            {% if result.structure_learning is defined or result.metadata_learning is defined %}
+            <p>The learning process has completed with the following results:</p>
+            {% else %}
+            <p>The batch enhancement process has completed with the following results:</p>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Policies Processed</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.policies_processed }}</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                {% if result.policies_enhanced is defined %}
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Policies Enhanced</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.policies_enhanced }}</h5>
+                    </div>
+                </div>
+                {% elif result.metadata_learning is defined and result.metadata_learning.metadata_extracted is defined %}
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Metadata Extraction</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.metadata_learning.metadata_extracted }}</h5>
+                    </div>
+                </div>
+                {% elif result.metadata_extracted is defined %}
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Metadata Extraction</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.metadata_extracted }}</h5>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-header">Errors</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ result.errors|length }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if result.structure_learning is defined %}
+        <!-- Structure Learning Results -->
+        <div class="mt-4">
+            <h3>Structure Learning Results</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">Section Patterns</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ result.structure_learning.section_patterns_extracted }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">Header Patterns</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ result.structure_learning.header_patterns_extracted }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">Styling Patterns</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ result.structure_learning.styling_patterns_extracted }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if result.metadata_learning is defined and result.metadata_learning.section_frequency is defined %}
+        <!-- Metadata Learning Results -->
+        <div class="mt-4">
+            <h3>Metadata Learning Results</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Metadata Field</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field in result.metadata_learning.section_frequency %}
+                        <tr>
+                            <td>{{ field.field }}</td>
+                            <td>{{ field.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if result.section_frequency is defined %}
+        <!-- Metadata Learning Results (Direct) -->
+        <div class="mt-4">
+            <h3>Metadata Learning Results</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Metadata Field</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field in result.section_frequency %}
+                        <tr>
+                            <td>{{ field.field }}</td>
+                            <td>{{ field.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if result.selected_policies is defined %}
+        <!-- Selected Policies -->
+        <div class="mt-4">
+            <h3>Policies Used for Learning</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Reference Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in result.selected_policies %}
+                        <tr>
+                            <td>{{ policy.id }}</td>
+                            <td>{{ policy.title }}</td>
+                            <td>{{ policy.reference_code or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if result.errors %}
+        <div class="mt-4">
+            <h3>Errors</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Policy ID</th>
+                            <th>Error Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for error in result.errors %}
+                        <tr>
+                            <td>{{ error.policy_id }}</td>
+                            <td>{{ error.error }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('ai_policy_learning.batch_enhance') }}" class="btn btn-primary">Process More Policies</a>
+            <a href="{{ url_for('ai_policy_learning.index') }}" class="btn btn-secondary">Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

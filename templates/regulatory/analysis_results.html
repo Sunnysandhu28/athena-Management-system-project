@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Document Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Document Analysis Results</h1>
+            <p class="lead">Regulatory analysis for {% if document_name %}{{ document_name }}{% else %}Unnamed Document{% endif %}</p>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Document Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3"><strong>Document Name:</strong></div>
+                        <div class="col-md-9">{{ document_name or "Unnamed Document" }}</div>
+                    </div>
+                    
+                    {% if document_type %}
+                    <div class="row mb-3">
+                        <div class="col-md-3"><strong>Document Type:</strong></div>
+                        <div class="col-md-9">{{ document_type }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if regulatory_framework %}
+                    <div class="row mb-3">
+                        <div class="col-md-3"><strong>Regulatory Framework:</strong></div>
+                        <div class="col-md-9">{{ regulatory_framework }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3"><strong>Compliance Score:</strong></div>
+                        <div class="col-md-9">
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if compliance_score >= 7 %}bg-success
+                                    {% elif compliance_score >= 4 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ compliance_score * 10 }}%" 
+                                    aria-valuenow="{{ compliance_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="10">
+                                    {{ compliance_score }} / 10
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1 d-block">
+                                {% if compliance_score >= 7 %}
+                                Good compliance - Minor improvements recommended
+                                {% elif compliance_score >= 4 %}
+                                Moderate compliance - Several improvements needed
+                                {% else %}
+                                Poor compliance - Significant improvements required
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-7">
+                    <!-- Key Terminology Section -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">Key Regulatory Terminology</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if identified_terms %}
+                                {% for term in identified_terms %}
+                                <div class="term-item mb-4 pb-3 border-bottom">
+                                    <h4>{{ term.term }}</h4>
+                                    <p>{{ term.explanation }}</p>
+                                    
+                                    {% if term.related_terms %}
+                                    <div class="related-terms bg-light p-2 rounded">
+                                        <strong>Related Terms:</strong>
+                                        {% for related in term.related_terms %}
+                                        <span class="badge bg-primary me-1">{{ related }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No key terminology identified in this document.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-5">
+                    <!-- Improvement Suggestions Section -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">Improvement Suggestions</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if improvement_suggestions %}
+                                <ul class="list-group">
+                                {% for suggestion in improvement_suggestions %}
+                                    <li class="list-group-item 
+                                        {% if suggestion.importance == 'high' %}border-danger
+                                        {% elif suggestion.importance == 'medium' %}border-warning
+                                        {% else %}border-success{% endif %}">
+                                        
+                                        {% if suggestion.importance == 'high' %}
+                                        <span class="badge bg-danger float-end">High Priority</span>
+                                        {% elif suggestion.importance == 'medium' %}
+                                        <span class="badge bg-warning text-dark float-end">Medium Priority</span>
+                                        {% else %}
+                                        <span class="badge bg-success float-end">Low Priority</span>
+                                        {% endif %}
+                                        
+                                        <p class="mb-0">{{ suggestion.text }}</p>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">No improvement suggestions identified for this document.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Report Button -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h3 class="mb-0">Generate Comprehensive Report</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <p>Generate a comprehensive regulatory analysis report with all the findings above.</p>
+                            <a href="{{ url_for('regulatory.generate_report') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-file-pdf"></i> Generate Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('regulatory.analyze_document') }}" class="btn btn-outline-primary">Analyze Another Document</a>
+                <a href="{{ url_for('regulatory.index') }}" class="btn btn-outline-secondary">Back to Regulatory Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

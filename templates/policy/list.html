@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy List{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Policy List</h3>
+                    <div>
+                        <a href="{{ url_for('policy.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Create New Policy
+                        </a>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search and filter controls -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <form method="GET" class="d-flex">
+                                <input type="text" name="search" class="form-control" placeholder="Search policies..." value="{{ request.args.get('search', '') }}">
+                                <button type="submit" class="btn btn-outline-primary ms-2">Search</button>
+                            </form>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-end">
+                                <div class="me-2">
+                                    <select class="form-select" name="category" id="category-filter">
+                                        <option value="">All Categories</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                                                {{ category.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <select class="form-select" name="status" id="status-filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Active</option>
+                                        <option value="draft" {% if request.args.get('status') == 'draft' %}selected{% endif %}>Draft</option>
+                                        <option value="archived" {% if request.args.get('status') == 'archived' %}selected{% endif %}>Archived</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Version</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies.items %}
+                                        <tr>
+                                            <td>{{ policy.reference_code }}</td>
+                                            <td>{{ policy.title }}</td>
+                                            <td>{{ policy.category.name if policy.category else 'Uncategorized' }}</td>
+                                            <td>{{ policy.version }}</td>
+                                            <td>
+                                                <span class="badge {% if policy.status == 'active' %}bg-success{% elif policy.status == 'draft' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ policy.status|capitalize }}
+                                                </span>
+                                            </td>
+                                            <td>{{ policy.updated_at|format_datetime }}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ url_for('policy.view', id=policy.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </a>
+                                                    <a href="{{ url_for('policy.edit', id=policy.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                        data-policy-id="{{ policy.id }}" data-policy-title="{{ policy.title }}">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <nav aria-label="Policy pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if policies.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('policy.list', page=policies.prev_num, search=request.args.get('search', ''), category=request.args.get('category', ''), status=request.args.get('status', '')) }}">Previous</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Previous</span>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in policies.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                    {% if page_num %}
+                                        {% if page_num == policies.page %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('policy.list', page=page_num, search=request.args.get('search', ''), category=request.args.get('category', ''), status=request.args.get('status', '')) }}">{{ page_num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if policies.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('policy.list', page=policies.next_num, search=request.args.get('search', ''), category=request.args.get('category', ''), status=request.args.get('status', '')) }}">Next</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Next</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No policies found. {% if request.args.get('search') or request.args.get('category') or request.args.get('status') %}Try adjusting your filters.{% else %}Create your first policy using the button above.{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the policy "<span id="policy-title"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="delete-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle filter changes
+        document.getElementById('category-filter').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        document.getElementById('status-filter').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        // Handle delete modal
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const policyId = button.getAttribute('data-policy-id');
+                const policyTitle = button.getAttribute('data-policy-title');
+                
+                document.getElementById('policy-title').textContent = policyTitle;
+                document.getElementById('delete-form').action = '/policy/' + policyId + '/delete';
+            });
+        }
+    });
+    
+    function applyFilters() {
+        const category = document.getElementById('category-filter').value;
+        const status = document.getElementById('status-filter').value;
+        const search = new URLSearchParams(window.location.search).get('search') || '';
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('category', category);
+        url.searchParams.set('status', status);
+        
+        if (search) {
+            url.searchParams.set('search', search);
+        } else {
+            url.searchParams.delete('search');
+        }
+        
+        // Reset page to 1 when filtering
+        url.searchParams.set('page', 1);
+        
+        window.location.href = url.toString();
+    }
+</script>
+{% endblock %}

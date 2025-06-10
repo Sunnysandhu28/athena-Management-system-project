@@ -1,0 +1,299 @@
+{% extends 'action_plan_steps/base_wizard.html' %}
+
+{% set current_step = 1 %}
+{% set progress_percentage = 20 %}
+
+{% block step_title %}Inspection Requirements{% endblock %}
+{% block step_description %}Upload requirements from CQC or Local Authority inspections/reports.{% endblock %}
+{% block form_action %}/action-plans/step2{% endblock %}
+
+{% block step_content %}
+<div class="mb-4">
+    <label for="attendanceNotes" class="form-label">Inspection Attendance & Notes</label>
+    <textarea class="form-control" id="attendanceNotes" name="attendanceNotes" rows="3" placeholder="Record who attended the inspection, key discussions, and other important details (e.g., 'Seven people attended, including Dr. Smith, Jane Doe from HR...')"></textarea>
+    <div class="form-text">Document who was present during the inspection and any contextual information.</div>
+</div>
+
+<div class="mb-4" id="inspection-groups-container">
+    <label class="form-label">Inspection Visits</label>
+    
+    <!-- This is a single inspection visit container -->
+    <div class="inspection-visit-container mb-4 card">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Inspection Visit</h6>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-visit" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove Visit
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Inspection Date</label>
+                    <input type="date" class="form-control" name="inspectionDate[]">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Inspection Type</label>
+                    <select class="form-select" name="inspectionType[]">
+                        <option value="">Select inspection type</option>
+                        <option value="cqc">CQC Inspection</option>
+                        <option value="local_authority">Local Authority</option>
+                        <option value="corporate">Corporate Head Office</option>
+                        <option value="safeguarding">Safeguarding</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Report Frequency</label>
+                    <select class="form-select" name="reportFrequency[]">
+                        <option value="M" selected>Monthly Report</option>
+                        <option value="W">Weekly Report</option>
+                        <option value="B">Bi-weekly Report</option>
+                        <option value="Q">Quarterly Report</option>
+                        <option value="Y">Yearly Report</option>
+                    </select>
+                    <div class="form-text">How often this report will be generated.</div>
+                </div>
+            </div>
+            
+            <!-- Multiple reports for this inspection visit -->
+            <div class="inspection-reports-container mb-2">
+                <label class="form-label">Reports from this Visit</label>
+                
+                <div class="inspection-report-group mb-2 border-bottom pb-2">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-7">
+                            <label class="form-label">Upload Report</label>
+                            <input class="form-control" type="file" name="inspectionFile[]">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-select" name="reportType[]">
+                                <option value="main">Main Report</option>
+                                <option value="follow_up">Follow-up</option>
+                                <option value="audit">Audit</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-report" style="display: none;">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-start mt-2 mb-3">
+                    <button type="button" class="btn btn-outline-info btn-sm add-report">
+                        <i class="bi bi-plus-circle"></i> Add Another Report for this Visit
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-text mt-2">Multiple reports can be uploaded for a single inspection date.</div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-3 mb-3">
+        <button type="button" class="btn btn-outline-primary" id="add-inspection-visit">
+            <i class="bi bi-plus-circle"></i> Add Another Inspection Visit
+        </button>
+    </div>
+    
+    <div class="form-text mt-2">Add each inspection visit separately with its date and all associated reports.</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('inspection-groups-container');
+        const addVisitButton = document.getElementById('add-inspection-visit');
+        
+        // Function to handle adding a new report to a specific visit
+        function setupAddReportButton(visitContainer) {
+            const reportsContainer = visitContainer.querySelector('.inspection-reports-container');
+            const addReportButton = visitContainer.querySelector('.add-report');
+            
+            addReportButton.addEventListener('click', function() {
+                const reportGroup = document.createElement('div');
+                reportGroup.className = 'inspection-report-group mb-2 border-bottom pb-2';
+                reportGroup.innerHTML = `
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-7">
+                            <label class="form-label">Upload Report</label>
+                            <input class="form-control" type="file" name="inspectionFile[]">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-select" name="reportType[]">
+                                <option value="main">Main Report</option>
+                                <option value="follow_up">Follow-up</option>
+                                <option value="audit">Audit</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-report">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Insert before the add report button
+                reportsContainer.insertBefore(reportGroup, addReportButton.parentNode);
+                
+                // Add event listener for the remove button
+                reportGroup.querySelector('.remove-report').addEventListener('click', function() {
+                    reportsContainer.removeChild(reportGroup);
+                    updateRemoveReportButtons(reportsContainer);
+                });
+                
+                updateRemoveReportButtons(reportsContainer);
+            });
+            
+            // Initial setup for report buttons
+            updateRemoveReportButtons(reportsContainer);
+        }
+        
+        // Function to update remove buttons for reports
+        function updateRemoveReportButtons(reportsContainer) {
+            const reportGroups = reportsContainer.querySelectorAll('.inspection-report-group');
+            if (reportGroups.length === 1) {
+                reportGroups[0].querySelector('.remove-report').style.display = 'none';
+            } else {
+                reportGroups.forEach(group => {
+                    group.querySelector('.remove-report').style.display = 'block';
+                });
+            }
+        }
+        
+        // Function to add a new inspection visit
+        addVisitButton.addEventListener('click', function() {
+            const newVisit = document.createElement('div');
+            newVisit.className = 'inspection-visit-container mb-4 card';
+            newVisit.innerHTML = `
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Inspection Visit</h6>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-visit">
+                            <i class="bi bi-trash"></i> Remove Visit
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Inspection Date</label>
+                            <input type="date" class="form-control" name="inspectionDate[]">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Inspection Type</label>
+                            <select class="form-select" name="inspectionType[]">
+                                <option value="">Select inspection type</option>
+                                <option value="cqc">CQC Inspection</option>
+                                <option value="local_authority">Local Authority</option>
+                                <option value="corporate">Corporate Head Office</option>
+                                <option value="safeguarding">Safeguarding</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Multiple reports for this inspection visit -->
+                    <div class="inspection-reports-container mb-2">
+                        <label class="form-label">Reports from this Visit</label>
+                        
+                        <div class="inspection-report-group mb-2 border-bottom pb-2">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-7">
+                                    <label class="form-label">Upload Report</label>
+                                    <input class="form-control" type="file" name="inspectionFile[]">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Report Type</label>
+                                    <select class="form-select" name="reportType[]">
+                                        <option value="main">Main Report</option>
+                                        <option value="follow_up">Follow-up</option>
+                                        <option value="audit">Audit</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-report" style="display: none;">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-start mt-2 mb-3">
+                            <button type="button" class="btn btn-outline-info btn-sm add-report">
+                                <i class="bi bi-plus-circle"></i> Add Another Report for this Visit
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-text mt-2">Multiple reports can be uploaded for a single inspection date.</div>
+                </div>
+            `;
+            
+            // Insert before the add button
+            container.insertBefore(newVisit, addVisitButton.parentNode);
+            
+            // Add event listener for the remove button
+            newVisit.querySelector('.remove-visit').addEventListener('click', function() {
+                container.removeChild(newVisit);
+                updateRemoveVisitButtons();
+            });
+            
+            // Set up the add report functionality for this new visit
+            setupAddReportButton(newVisit);
+            
+            updateRemoveVisitButtons();
+        });
+        
+        // Function to update the visibility of remove visit buttons
+        function updateRemoveVisitButtons() {
+            const visitContainers = container.querySelectorAll('.inspection-visit-container');
+            if (visitContainers.length === 1) {
+                visitContainers[0].querySelector('.remove-visit').style.display = 'none';
+            } else {
+                visitContainers.forEach(visit => {
+                    visit.querySelector('.remove-visit').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup for the first visit
+        const firstVisit = container.querySelector('.inspection-visit-container');
+        setupAddReportButton(firstVisit);
+        updateRemoveVisitButtons();
+    });
+</script>
+
+<div class="mb-4">
+    <label for="requirementType" class="form-label">Requirement Type</label>
+    <select class="form-select" id="requirementType" name="requirementType">
+        <option selected>Select requirement type</option>
+        <option value="cqc">CQC Inspection</option>
+        <option value="localAuthority">Local Authority</option>
+        <option value="internal">Internal Audit</option>
+        <option value="external">External Audit</option>
+        <option value="other">Other Regulatory Body</option>
+    </select>
+</div>
+
+<div class="mb-4">
+    <label for="urgencyLevel" class="form-label">Urgency Level</label>
+    <select class="form-select" id="urgencyLevel" name="urgencyLevel">
+        <option selected>Select urgency level</option>
+        <option value="high">High - Immediate action required</option>
+        <option value="medium">Medium - Action required within 30 days</option>
+        <option value="low">Low - Action required within 60-90 days</option>
+    </select>
+</div>
+{% endblock %}

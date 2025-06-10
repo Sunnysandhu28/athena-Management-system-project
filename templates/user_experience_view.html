@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}User Experience - Cathena Policy Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Policy Feedback System</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Request Policy Changes</h5>
+                </div>
+                <div class="card-body">
+                    <form id="policyChangeForm">
+                        <div class="mb-3">
+                            <label for="policySelect" class="form-label">Select Policy</label>
+                            <select class="form-select" id="policySelect" name="policy_id" required>
+                                <option value="">-- Select a policy --</option>
+                                <!-- This would be populated with actual policies -->
+                                <option value="1">Safeguarding Policy</option>
+                                <option value="2">Health and Safety Policy</option>
+                                <option value="3">Medication Management Policy</option>
+                                <option value="4">Data Protection Policy</option>
+                                <option value="5">Infection Control Policy</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Section to Change</label>
+                            <select class="form-select" id="sectionSelect" name="section" required>
+                                <option value="">-- Select a section --</option>
+                                <option value="summary">Summary</option>
+                                <option value="legislation">Legislation</option>
+                                <option value="review">Review</option>
+                                <option value="scope">Scope</option>
+                                <option value="purpose">Purpose</option>
+                                <option value="procedure">Procedure</option>
+                                <option value="forms">Forms</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Change Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="change_type" id="addRadio" value="add" required>
+                                <label class="form-check-label" for="addRadio">
+                                    Add new content
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="change_type" id="editRadio" value="edit">
+                                <label class="form-check-label" for="editRadio">
+                                    Edit existing content
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="change_type" id="deleteRadio" value="delete">
+                                <label class="form-check-label" for="deleteRadio">
+                                    Delete content
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="changeDetailsContainer" class="mb-3">
+                            <!-- Content will be dynamically loaded based on change type -->
+                            <div id="addContent" class="d-none">
+                                <label for="addTextarea" class="form-label">Content to Add</label>
+                                <textarea class="form-control" id="addTextarea" name="add_content" rows="4" placeholder="Type the content you want to add"></textarea>
+                            </div>
+                            
+                            <div id="editContent" class="d-none">
+                                <label for="editTextarea" class="form-label">Proposed Edit</label>
+                                <textarea class="form-control" id="editTextarea" name="edit_content" rows="4" placeholder="Describe how the content should be edited"></textarea>
+                            </div>
+                            
+                            <div id="deleteContent" class="d-none">
+                                <label for="deleteTextarea" class="form-label">Content to Delete</label>
+                                <textarea class="form-control" id="deleteTextarea" name="delete_content" rows="4" placeholder="Describe what content should be deleted"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reasonTextarea" class="form-label">Reason for Change</label>
+                            <textarea class="form-control" id="reasonTextarea" name="reason" rows="3" placeholder="Please explain why this change is needed" required></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Your Recent Requests</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Medication Management Policy</h6>
+                                <small class="text-muted">3 days ago</small>
+                            </div>
+                            <p class="mb-1">Request to add content to Procedure section</p>
+                            <span class="badge bg-warning">Pending Review</span>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Health and Safety Policy</h6>
+                                <small class="text-muted">1 week ago</small>
+                            </div>
+                            <p class="mb-1">Request to edit content in Scope section</p>
+                            <span class="badge bg-success">Approved</span>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Data Protection Policy</h6>
+                                <small class="text-muted">2 weeks ago</small>
+                            </div>
+                            <p class="mb-1">Request to delete content from Legislation section</p>
+                            <span class="badge bg-danger">Rejected</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="#" class="btn btn-outline-primary btn-sm">View All Requests</a>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Help & Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="accordionHelp">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    How to Request Changes
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionHelp">
+                                <div class="accordion-body">
+                                    <p>Select the policy, section, and type of change you want to make. Provide clear details about your proposed changes and the reason for the request.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Review Process
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionHelp">
+                                <div class="accordion-body">
+                                    <p>All requests are reviewed by administrators. You will be notified when your request is approved, rejected, or requires additional information.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Tips for Good Requests
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionHelp">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Be specific about what you want to change</li>
+                                        <li>Provide a clear reason for the change</li>
+                                        <li>Reference legislation or best practices if applicable</li>
+                                        <li>Keep requests focused on one issue at a time</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide appropriate content based on change type selection
+        const radioButtons = document.querySelectorAll('input[name="change_type"]');
+        const addContent = document.getElementById('addContent');
+        const editContent = document.getElementById('editContent');
+        const deleteContent = document.getElementById('deleteContent');
+        
+        radioButtons.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                // Hide all content divs
+                addContent.classList.add('d-none');
+                editContent.classList.add('d-none');
+                deleteContent.classList.add('d-none');
+                
+                // Show the selected content div
+                if (this.value === 'add') {
+                    addContent.classList.remove('d-none');
+                } else if (this.value === 'edit') {
+                    editContent.classList.remove('d-none');
+                } else if (this.value === 'delete') {
+                    deleteContent.classList.remove('d-none');
+                }
+            });
+        });
+        
+        // Handle form submission
+        const form = document.getElementById('policyChangeForm');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Here you would normally send the form data to the server
+            // For now, just show a success message
+            alert('Your policy change request has been submitted successfully.');
+            form.reset();
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

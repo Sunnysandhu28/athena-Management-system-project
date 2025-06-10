@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Policies - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Generated Policies</h1>
+    <a href="{{ url_for('generate_from_qcs') }}" class="btn btn-primary">Generate New Policies</a>
+</div>
+
+{% if policies %}
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="card-title mb-0">Your Policy Library</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Policy Name</th>
+                        <th>Size</th>
+                        <th>Generated Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for policy in policies %}
+                    <tr>
+                        <td>{{ policy.code }}</td>
+                        <td>{{ policy.filename }}</td>
+                        <td>{{ (policy.size / 1024) | round(1) }} KB</td>
+                        <td>{{ policy.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            <a href="{{ policy.download_url }}" class="btn btn-sm btn-outline-primary">Download</a>
+                            <!-- We'll add preview functionality in a future update -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <h4 class="alert-heading">No Policies Found</h4>
+    <p>You haven't generated any policies yet. Get started by generating your first policy now!</p>
+    <hr>
+    <p class="mb-0">
+        <a href="{{ url_for('generate_from_qcs') }}" class="btn btn-primary">Generate Your First Policy</a>
+    </p>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="card-title mb-0">Policy Management Tips</h5>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Generated policies are in Microsoft Word format (.docx) and can be edited with any compatible word processor</li>
+            <li class="list-group-item">Policies are automatically named with their policy code for easy identification</li>
+            <li class="list-group-item">Regular backups of your policy library are recommended for data security</li>
+            <li class="list-group-item">Policy content follows British English spelling and grammar conventions</li>
+            <li class="list-group-item">Updates to QCS policies are regularly incorporated into the generator</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

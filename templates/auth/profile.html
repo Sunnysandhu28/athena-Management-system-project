@@ -1,0 +1,287 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile - Cathena Policy Management System{% endblock %}
+
+{% block styles %}
+<style>
+    .profile-section {
+        margin-bottom: 2rem;
+    }
+    
+    .profile-header {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+    
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-role {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-card {
+        height: 100%;
+    }
+    
+    .profile-card h5 {
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .profile-stats {
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-stat-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+    }
+    
+    .profile-stat-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: #044e8c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center text-md-start">
+                <img src="{{ current_user.profile_image_url or 'https://ui-avatars.com/api/?name=' + current_user.username }}" alt="Profile" class="profile-image">
+            </div>
+            <div class="col-md-6">
+                <h1 class="profile-name">{{ current_user.first_name or '' }} {{ current_user.last_name or '' }}</h1>
+                <p class="profile-role">{{ current_user.role.name|title if current_user.role else 'User' }}</p>
+                <div>
+                    <span class="badge bg-primary">{{ current_user.username }}</span>
+                    {% if current_user.email %}
+                    <span class="badge bg-secondary">{{ current_user.email }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                <a href="#" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-edit me-1"></i> Edit Profile
+                </a>
+                <a href="{{ url_for('auth_bp.logout') }}" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-4">
+            <!-- Account Information -->
+            <div class="card profile-card mb-4">
+                <div class="card-body">
+                    <h5>Account Information</h5>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Username</p>
+                                <p class="mb-0">{{ current_user.username }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Email</p>
+                                <p class="mb-0">{{ current_user.email or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-icon">
+                                <i class="fas fa-id-badge"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Role</p>
+                                <p class="mb-0">{{ current_user.role.name|title if current_user.role else 'User' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Edit Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Settings -->
+            <div class="card profile-card">
+                <div class="card-body">
+                    <h5>Security Settings</h5>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Password</p>
+                                <p class="mb-0">************</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-stat-item">
+                            <div class="profile-stat-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Last Login</p>
+                                <p class="mb-0">Today</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-key me-1"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="col-md-8">
+            <!-- Activity Summary -->
+            <div class="card profile-card mb-4">
+                <div class="card-body">
+                    <h5>Activity Summary</h5>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="mb-1 fw-bold">5</h3>
+                                <p class="mb-0">Policies Created</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="mb-1 fw-bold">8</h3>
+                                <p class="mb-0">Policies Edited</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h3 class="mb-1 fw-bold">15</h3>
+                                <p class="mb-0">Policies Viewed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card profile-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">Recent Activity</h5>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="fas fa-edit"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-bold">Edited Policy CM25</p>
+                                    <p class="mb-1">Updated content and fixed formatting</p>
+                                    <small class="text-muted">Today, 10:23 AM</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="bg-success rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-bold">Created New Policy</p>
+                                    <p class="mb-1">Added HS42 Health & Safety Policy</p>
+                                    <small class="text-muted">Yesterday, 2:15 PM</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="bg-info rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="fas fa-eye"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-bold">Viewed Policies</p>
+                                    <p class="mb-1">Reviewed 5 Care Management policies</p>
+                                    <small class="text-muted">Yesterday, 11:30 AM</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="mb-1 fw-bold">Exported Policy</p>
+                                    <p class="mb-1">Downloaded CM17 as Markdown</p>
+                                    <small class="text-muted">3 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

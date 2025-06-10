@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Neural System Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Neural System Dashboard</h1>
+            
+            <div class="alert alert-info">
+                <p><strong>The Neural System</strong> is a comprehensive policy validation and learning framework that combines multiple validation approaches with a neural memory architecture to perfect policy extraction and validation.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">QCS Extraction & Validation</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Extract a policy from QCS, analyze its structure, replicate it exactly, and validate the replication through the neural system.</p>
+                            <p>This process logs into QCS, selects a policy, and performs a perfect replication and validation cycle.</p>
+                            
+                            <form action="{{ url_for('extract_qcs_policy') }}" method="get">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Policy Category</label>
+                                    <select class="form-select" id="category" name="category">
+                                        <option value="Care Management">Care Management</option>
+                                        <option value="HR & Staffing">HR & Staffing</option>
+                                        <option value="Health & Safety">Health & Safety</option>
+                                        <option value="Clinical Governance">Clinical Governance</option>
+                                        <option value="Administration">Administration</option>
+                                        <option value="Management System">Management System</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        Start Extraction & Validation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Iterative Learning</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Run iterative learning on a single policy to systematically improve extraction and validation.</p>
+                            <p>This process repeatedly extracts, replicates, and validates the same policy from QCS multiple times. Each iteration learns from previous attempts to perfect the process.</p>
+                            
+                            <div class="d-grid">
+                                <a href="{{ url_for('iterative_learning') }}" class="btn btn-primary">
+                                    Start Iterative Learning
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Batch Validation</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Validate multiple policies at once using the integrated validation system.</p>
+                            <p>Process an entire category or all policies to find and fix any validation issues.</p>
+                            
+                            <div class="d-grid">
+                                <a href="{{ url_for('batch_validation') }}" class="btn btn-primary">
+                                    Go to Batch Validation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Neural Memory</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>View and manage the neural memory system that learns from valid policies.</p>
+                            <p>The neural memory system builds a database of policy patterns and uses this knowledge to validate new policies.</p>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary" disabled>
+                                    View Neural Memory (Coming Soon)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12 text-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

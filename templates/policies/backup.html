@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Firebase Backup - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .backup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .category-count {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    
+    .backup-form {
+        background-color: #f8f9fa;
+        padding: 25px;
+        border-radius: 5px;
+        margin-top: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .backup-history {
+        margin-top: 40px;
+    }
+    
+    .alert-icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="backup-header">
+        <div>
+            <h1 class="display-4">Firebase Policy Backup</h1>
+            <p class="lead">Securely backup your policies to Firebase Cloud Storage</p>
+        </div>
+        <a href="{{ url_for('policies.index') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to Policies
+        </a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle alert-icon"></i>
+                    {% elif category == 'danger' %}
+                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    {% elif category == 'warning' %}
+                        <i class="fas fa-exclamation-circle alert-icon"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle alert-icon"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Policies</h5>
+                    <p class="category-count">{{ policy_stats.total }}</p>
+                    <p class="card-text text-muted">Available for backup</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Categories</h5>
+                    <p class="category-count">{{ policy_stats.by_category|length }}</p>
+                    <p class="card-text text-muted">With at least one policy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Backup Form -->
+    <div class="backup-form">
+        <h3 class="mb-4">Backup Policies to Firebase</h3>
+        
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle alert-icon"></i>
+            <strong>Important:</strong> Make sure Firebase is properly configured with the correct project ID and credentials before proceeding.
+        </div>
+        
+        <form action="{{ url_for('policies.execute_backup') }}" method="post">
+            <div class="mb-3">
+                <label for="category" class="form-label">Select Category:</label>
+                <select class="form-select" id="category" name="category_id">
+                    <option value="all" selected>All Categories ({{ policy_stats.total }} policies)</option>
+                    {% for category_name, count in policy_stats.by_category.items() %}
+                        <option value="{{ loop.index }}">{{ category_name }} ({{ count }} policies)</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Choose a specific category or backup all policies</div>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="confirm" required>
+                <label class="form-check-label" for="confirm">I confirm that I want to backup these policies to Firebase</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-cloud-upload-alt"></i> Start Backup
+            </button>
+        </form>
+    </div>
+    
+    <!-- Firebase Configuration Check -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Firebase Configuration</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <p><strong>Project ID:</strong> 
+                    {% if firebase_config_ok %}
+                        <span class="text-success">{{ firebase_project_id }}</span>
+                    {% else %}
+                        <span class="text-danger">Not configured</span>
+                    {% endif %}
+                </p>
+                <p><strong>Status:</strong>
+                    {% if firebase_config_ok %}
+                        <span class="badge bg-success">Ready</span>
+                    {% else %}
+                        <span class="badge bg-danger">Not Configured</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            {% if not firebase_config_ok %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <strong>Missing Configuration:</strong> Please set the following environment variables:
+                    <ul class="mb-0 mt-2">
+                        <li>FIREBASE_PROJECT_ID</li>
+                        <li>FIREBASE_SERVICE_ACCOUNT_PATH (optional)</li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript for the backup page here
+    });
+</script>
+{% endblock %}

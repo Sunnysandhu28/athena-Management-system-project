@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.name }} - NICE CKS - Policy Learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .topic-header {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .guideline-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    
+    .evidence-badge {
+        background-color: #28a745;
+    }
+    
+    .recommendation-badge {
+        background-color: #fd7e14;
+    }
+    
+    .section-heading {
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-back {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+    
+    .btn-back:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+    
+    .btn-external {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+    
+    .btn-external:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_learning.index') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_learning.nice_cks') }}">NICE CKS</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ topic.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="topic-header">
+                <h1 class="mb-2">{{ topic.name }}</h1>
+                <p class="mb-1">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    Last revised: {{ topic.last_revised or 'Unknown' }}
+                </p>
+                <div class="d-flex mt-3">
+                    <a href="{{ url_for('policy_learning.nice_cks') }}" class="btn btn-back text-white me-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Topics
+                    </a>
+                    <a href="{{ topic.url }}" target="_blank" class="btn btn-external text-white">
+                        <i class="fas fa-external-link-alt me-1"></i> View on NICE CKS
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Summary</h2>
+                    <p>{{ topic.content.summary }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h2 class="h4 section-heading">Clinical Guidelines</h2>
+            <p class="mb-4">
+                Evidence-based guidelines for {{ topic.name }} management in primary care settings.
+                These guidelines are used to enhance healthcare policy generation.
+            </p>
+            
+            {% for guideline in topic.guidelines %}
+                {% if guideline.content_type == 'guideline' %}
+                <div class="guideline-card p-3 mb-4">
+                    <h3 class="h5 mb-2">{{ guideline.title }}</h3>
+                    
+                    {% if guideline.evidence_level or guideline.recommendation_strength %}
+                    <div class="mb-3">
+                        {% if guideline.evidence_level %}
+                        <span class="badge evidence-badge me-2">Evidence Level: {{ guideline.evidence_level }}</span>
+                        {% endif %}
+                        
+                        {% if guideline.recommendation_strength %}
+                        <span class="badge recommendation-badge">Recommendation: {{ guideline.recommendation_strength }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="guideline-content">
+                        {{ guideline.content }}
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No specific guidelines available for this topic.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h2 class="h4 section-heading">Background Information</h2>
+            
+            {% for section in topic.content.sections %}
+                {% if section.section_id == 'background' %}
+                <div class="mb-4">
+                    <h3 class="h5 mb-2">{{ section.title }}</h3>
+                    <div>{{ section.content }}</div>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No background information available for this topic.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h2 class="h4 section-heading">Management Approach</h2>
+            
+            {% for section in topic.content.sections %}
+                {% if section.section_id == 'management' %}
+                <div class="mb-4">
+                    <h3 class="h5 mb-2">{{ section.title }}</h3>
+                    
+                    {% if section.subsections %}
+                    {% for subsection in section.subsections %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            {{ subsection.title }}
+                        </div>
+                        <div class="card-body">
+                            <p>{{ subsection.content }}</p>
+                            
+                            {% if subsection.guidelines %}
+                            <h4 class="h6 mt-3 mb-2">Guidelines:</h4>
+                            <ul class="list-group">
+                                {% for guideline in subsection.guidelines %}
+                                <li class="list-group-item">
+                                    {{ guideline.content }}
+                                    {% if guideline.evidence_level %}
+                                    <span class="badge evidence-badge float-end">Evidence: {{ guideline.evidence_level }}</span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No management approach information available for this topic.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

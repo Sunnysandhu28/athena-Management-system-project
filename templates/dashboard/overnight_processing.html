@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Overnight CQC Report Processing{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">Overnight CQC Report Processing</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> The system will process CQC reports overnight to enhance ML knowledge without affecting daytime performance.
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h4>Current Status</h4>
+                        </div>
+                        <div class="card-body" id="status-card">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Processing Active:</span>
+                                <span class="badge {% if status.active %}badge-success{% else %}badge-secondary{% endif %}" id="active-badge">
+                                    {% if status.active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                            
+                            {% if status.active %}
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         style="width: {{ status.progress_percentage }}%;" 
+                                         aria-valuenow="{{ status.progress_percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"
+                                         id="progress-bar">
+                                        {{ status.progress_percentage }}%
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Started At:</span>
+                                    <span id="started-at">{{ status.started_at }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Reports Processed:</span>
+                                    <span id="processed-reports">{{ status.processed_reports }} / {{ status.target_reports }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Current Report:</span>
+                                    <span id="current-report">{{ status.current_report or 'None' }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Estimated Completion:</span>
+                                    <span id="estimated-completion">{{ status.estimated_completion or 'Calculating...' }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Current Knowledge Score:</span>
+                                    <span id="current-knowledge-score">{{ status.current_knowledge_score or 'Unknown' }}</span>
+                                </div>
+                            {% else %}
+                                <p>No processing is currently active. Schedule or start processing below.</p>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Current Time:</span>
+                                <span id="current-time">{{ current_time }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Processing Controls</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <form action="{{ url_for('dashboard.start_overnight_processing') }}" method="post">
+                                        <button type="submit" class="btn btn-success btn-block" {% if status.active %}disabled{% endif %}>
+                                            <i class="fas fa-play"></i> Start Processing Now
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <form action="{{ url_for('dashboard.stop_overnight_processing') }}" method="post">
+                                        <button type="submit" class="btn btn-danger btn-block" {% if not status.active %}disabled{% endif %}>
+                                            <i class="fas fa-stop"></i> Stop Processing
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <form action="{{ url_for('dashboard.schedule_overnight_processing') }}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="start_time">Start Time</label>
+                                                <input type="time" class="form-control" id="start_time" name="start_time" value="20:00">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="end_time">End Time</label>
+                                                <input type="time" class="form-control" id="end_time" name="end_time" value="06:00">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="target_count">Target Reports</label>
+                                                <input type="number" class="form-control" id="target_count" name="target_count" value="2000" min="1" max="10000">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block mt-2">
+                                        <i class="fas fa-calendar"></i> Schedule Overnight Processing
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Processing Statistics</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Last Run Start:</span>
+                                <span>{{ stats.last_run_start or 'Never' }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Last Run End:</span>
+                                <span>{{ stats.last_run_end or 'Never' }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Reports Processed:</span>
+                                <span>{{ stats.reports_processed or 0 }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Reports Remaining:</span>
+                                <span>{{ stats.reports_remaining or 0 }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Errors Encountered:</span>
+                                <span>{{ stats.errors_encountered or 0 }}</span>
+                            </div>
+                            
+                            {% if stats.knowledge_score_before and stats.knowledge_score_after %}
+                                <div class="card mt-3">
+                                    <div class="card-header bg-light">
+                                        <h5>Knowledge Score Change</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-5 text-center">
+                                                <h6>Before</h6>
+                                                <div class="display-4">{{ (stats.knowledge_score_before * 100)|round|int }}%</div>
+                                            </div>
+                                            <div class="col-md-2 text-center d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-arrow-right fa-2x"></i>
+                                            </div>
+                                            <div class="col-md-5 text-center">
+                                                <h6>After</h6>
+                                                <div class="display-4">{{ (stats.knowledge_score_after * 100)|round|int }}%</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="progress mt-3" style="height: 20px;">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (stats.knowledge_score_after * 100)|round|int }}%;" 
+                                                 aria-valuenow="{{ (stats.knowledge_score_after * 100)|round|int }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ (stats.knowledge_score_after * 100)|round|int }}%
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center mt-2">
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-plus"></i> {{ ((stats.knowledge_score_after - stats.knowledge_score_before) * 100)|round(1) }}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>About Overnight Processing</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                The overnight processing feature allows the system to analyze and learn from CQC reports during off-hours without impacting daytime performance.
+                                This helps continuously improve the ML system's knowledge and capabilities.
+                            </p>
+                            
+                            <h5>How It Works</h5>
+                            <ul>
+                                <li>Processing starts automatically at the scheduled time (default: 8:00 PM)</li>
+                                <li>The system processes up to the target number of reports (default: 2,000)</li>
+                                <li>Processing automatically stops at the end time (default: 6:00 AM) or when complete</li>
+                                <li>Knowledge scores are updated as reports are processed</li>
+                                <li>All processing is done in the background without affecting normal system operation</li>
+                            </ul>
+                            
+                            <h5>Benefits</h5>
+                            <ul>
+                                <li>Continuously improves ML system knowledge without disrupting users</li>
+                                <li>Optimizes resource usage during off-hours</li>
+                                <li>Provides transparent tracking of learning progress</li>
+                                <li>Enables processing of large batches of reports automatically</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Auto-refresh status every 30 seconds when processing is active
+    {% if status.active %}
+    $(document).ready(function() {
+        setInterval(function() {
+            $.ajax({
+                url: "{{ url_for('dashboard.get_processing_status') }}",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    updateStatusDisplay(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching status:", error);
+                }
+            });
+        }, 30000); // 30 seconds
+    });
+    
+    function updateStatusDisplay(data) {
+        // Update status card
+        var status = data.status;
+        var stats = data.stats;
+        
+        // Update active badge
+        $("#active-badge").text(status.active ? "Active" : "Inactive");
+        $("#active-badge").removeClass("badge-success badge-secondary");
+        $("#active-badge").addClass(status.active ? "badge-success" : "badge-secondary");
+        
+        // Update progress
+        $("#progress-bar").css("width", status.progress_percentage + "%");
+        $("#progress-bar").text(status.progress_percentage + "%");
+        
+        // Update other status fields
+        $("#started-at").text(status.started_at || "");
+        $("#processed-reports").text(status.processed_reports + " / " + status.target_reports);
+        $("#current-report").text(status.current_report || "None");
+        $("#estimated-completion").text(status.estimated_completion || "Calculating...");
+        $("#current-knowledge-score").text(status.current_knowledge_score || "Unknown");
+        $("#current-time").text(data.current_time);
+        
+        // Update buttons
+        $("button.btn-success").prop("disabled", status.active);
+        $("button.btn-danger").prop("disabled", !status.active);
+    }
+    {% endif %}
+</script>
+{% endblock %}
+{% endblock %}

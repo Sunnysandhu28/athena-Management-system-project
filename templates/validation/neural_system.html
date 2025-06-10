@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Neural Memory System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('validation.index') }}">Validation System</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Neural Memory System</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-3">Neural Memory System</h1>
+            
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Neural Pattern Recognition</h4>
+                <p>The neural memory system uses pattern recognition to identify and validate policy formats, content structure, and compliance with QCS standards.</p>
+                <p>This system learns from existing policies to improve validation accuracy over time.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Memory Patterns</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>The system has detected the following patterns in QCS policies:</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5>Structure Patterns</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Pattern</th>
+                                            <th>Strength</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pattern in patterns if pattern.type == 'structure' %}
+                                        <tr>
+                                            <td>{{ pattern.name }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if pattern.strength >= 0.8 %}bg-success
+                                                        {% elif pattern.strength >= 0.5 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ pattern.strength * 100 }}%;" 
+                                                        aria-valuenow="{{ pattern.strength * 100 }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                        {{ "%.0f"|format(pattern.strength * 100) }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Content Patterns</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Pattern</th>
+                                            <th>Strength</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pattern in patterns if pattern.type == 'content' %}
+                                        <tr>
+                                            <td>{{ pattern.name }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if pattern.strength >= 0.8 %}bg-success
+                                                        {% elif pattern.strength >= 0.5 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ pattern.strength * 100 }}%;" 
+                                                        aria-valuenow="{{ pattern.strength * 100 }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                        {{ "%.0f"|format(pattern.strength * 100) }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Section Benchmarks</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>The following benchmarks are used to evaluate policy sections:</p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Section Type</th>
+                                            <th>Minimum Words</th>
+                                            <th>Maximum Words</th>
+                                            <th>Range Visualization</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for section, data in benchmarks.items() %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ section|capitalize }}</strong>
+                                            </td>
+                                            <td>{{ data.min_words }}</td>
+                                            <td>{{ data.max_words }}</td>
+                                            <td>
+                                                <div class="word-range">
+                                                    <div class="word-range-bar" style="left: {{ data.min_words / 2000 * 100 }}%; right: {{ 100 - (data.max_words / 2000 * 100) }}%;"></div>
+                                                    <div class="word-range-min" style="left: {{ data.min_words / 2000 * 100 }}%;">{{ data.min_words }}</div>
+                                                    <div class="word-range-max" style="left: {{ data.max_words / 2000 * 100 }}%;">{{ data.max_words }}</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Neural Network Visualization</h4>
+                </div>
+                <div class="card-body">
+                    <div class="neural-network-visualization">
+                        <div class="layer input-layer">
+                            <div class="layer-label">Input Layer</div>
+                            <div class="nodes">
+                                <div class="node"></div>
+                                <div class="node"></div>
+                                <div class="node"></div>
+                                <div class="node"></div>
+                                <div class="node"></div>
+                                <div class="node"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="layer hidden-layer">
+                            <div class="layer-label">Pattern Recognition</div>
+                            <div class="nodes">
+                                <div class="node active"></div>
+                                <div class="node active"></div>
+                                <div class="node"></div>
+                                <div class="node active"></div>
+                                <div class="node"></div>
+                                <div class="node active"></div>
+                                <div class="node"></div>
+                                <div class="node active"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="layer hidden-layer">
+                            <div class="layer-label">Analysis Layer</div>
+                            <div class="nodes">
+                                <div class="node"></div>
+                                <div class="node active"></div>
+                                <div class="node active"></div>
+                                <div class="node"></div>
+                                <div class="node active"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="layer output-layer">
+                            <div class="layer-label">Output Layer</div>
+                            <div class="nodes">
+                                <div class="node active" title="Valid Structure"></div>
+                                <div class="node" title="Valid Content"></div>
+                                <div class="node active" title="QCS Compliance"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">A stylized representation of the neural memory system's validation process</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 text-center mb-4">
+            <a href="{{ url_for('validation.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Validation Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Word range styling */
+    .word-range {
+        position: relative;
+        height: 30px;
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        width: 100%;
+    }
+    
+    .word-range-bar {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background-color: #0d6efd;
+        border-radius: 15px;
+    }
+    
+    .word-range-min, .word-range-max {
+        position: absolute;
+        top: 5px;
+        font-size: 12px;
+        transform: translateX(-50%);
+    }
+    
+    .word-range-min {
+        color: #fff;
+    }
+    
+    .word-range-max {
+        color: #000;
+    }
+    
+    /* Neural network visualization */
+    .neural-network-visualization {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        height: 300px;
+    }
+    
+    .layer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 22%;
+    }
+    
+    .layer-label {
+        margin-bottom: 15px;
+        font-weight: bold;
+        text-align: center;
+    }
+    
+    .nodes {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-evenly;
+    }
+    
+    .node {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        margin: 5px 0;
+        border: 2px solid #ced4da;
+    }
+    
+    .node.active {
+        background-color: #0d6efd;
+        border: 2px solid #0a58ca;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+    }
+    
+    /* Neural network connections - simplified for performance */
+    .neural-network-visualization {
+        background-image: 
+            repeating-linear-gradient(90deg, 
+                transparent 0%, transparent 22%, 
+                #dee2e6 22%, #dee2e6 22.5%, 
+                transparent 22.5%, transparent 44.5%, 
+                #dee2e6 44.5%, #dee2e6 45%, 
+                transparent 45%, transparent 67%, 
+                #dee2e6 67%, #dee2e6 67.5%, 
+                transparent 67.5%, transparent 100%
+            );
+    }
+</style>
+{% endblock %}

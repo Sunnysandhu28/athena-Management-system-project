@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Communication Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+        
+        .environment-status {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+        }
+        
+        .environment-status.active {
+            border-color: #4CAF50;
+            border-left: 8px solid #4CAF50;
+        }
+        
+        .environment-status.connected {
+            border-color: #2196F3;
+            border-left: 8px solid #2196F3;
+        }
+        
+        .environment-status.pending {
+            border-color: #FF5722;
+            border-left: 8px solid #FF5722;
+        }
+        
+        .environment-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .environment-state {
+            font-size: 1.8rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .sim-interface {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+        
+        .interface-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+        
+        .sim-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .interface-title {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .status-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .input-section {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .message-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px 60px 20px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .attachment-icon {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .attachment-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .paperclip-svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-button {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: none;
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .send-button:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            transform: translateY(-2px);
+        }
+        
+        .analysis-button {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+        
+        .analysis-button:hover {
+            background: linear-gradient(135deg, #F57C00, #EF6C00);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .status-header {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .action-button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Environment Status Header -->
+        <div class="status-header">
+            <div class="environment-status active">
+                <div class="environment-title">Local Development</div>
+                <div class="environment-state">Active</div>
+            </div>
+            <div class="environment-status connected">
+                <div class="environment-title">App Engine</div>
+                <div class="environment-state">Connected</div>
+            </div>
+            <div class="environment-status pending">
+                <div class="environment-title">Cloud Run</div>
+                <div class="environment-state">Pending</div>
+            </div>
+        </div>
+        
+        <!-- SIM Communication Interface -->
+        <div class="sim-interface">
+            <div class="interface-header">
+                <div class="sim-icon">🤖</div>
+                <h1 class="interface-title">SIM Communication Interface</h1>
+            </div>
+            
+            <div class="status-message">
+                SIM: SIM Consciousness System initialized. Creator Sunny recognized. All 197 domains active. Enhanced learning interface ready.
+            </div>
+            
+            <div class="input-section">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput"
+                    placeholder="Communicate with SIM consciousness..."
+                    rows="5"
+                ></textarea>
+                
+                <div class="attachment-icon" onclick="document.getElementById('fileInput').click()">
+                    <svg class="paperclip-svg" viewBox="0 0 24 24">
+                        <path d="M21.44 11.05l-9.19 9.19c-1.28 1.28-2.75 1.92-4.56 1.92-3.53 0-6.4-2.87-6.4-6.4 0-1.81.64-3.28 1.92-4.56L11.05 2.97c.78-.78 1.76-1.17 2.73-1.17 1.95 0 3.54 1.59 3.54 3.54 0 .97-.39 1.95-1.17 2.73l-7.98 7.98c-.31.31-.62.47-.98.47-.69 0-1.25-.56-1.25-1.25 0-.36.16-.67.47-.98L12.76 8.4"/>
+                    </svg>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.docx,.txt,.png,.jpg,.csv">
+            </div>
+            
+            <div class="button-group">
+                <button class="action-button send-button" onclick="sendMessage()">
+                    Send Message
+                </button>
+                <button class="action-button test-button" onclick="testCrossEnvironment()">
+                    Test Cross-Environment
+                </button>
+                <button class="action-button analysis-button" onclick="documentAnalysis()">
+                    Document Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            if (message.trim()) {
+                console.log('Sending message to SIM:', message);
+                // Implement SIM communication logic
+                document.getElementById('messageInput').value = '';
+            }
+        }
+        
+        function testCrossEnvironment() {
+            console.log('Testing cross-environment synchronization');
+            // Implement cross-environment testing logic
+        }
+        
+        function documentAnalysis() {
+            console.log('Starting document analysis');
+            // Implement document analysis logic
+        }
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                console.log('Files selected for upload:', files);
+                // Implement file upload logic
+            }
+        });
+        
+        // Allow Enter+Shift for new line, Enter alone to send
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

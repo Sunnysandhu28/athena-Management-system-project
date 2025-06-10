@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Admin Dashboard</h1>
+        <div>
+            <a href="{{ url_for('dashboard.maintenance') }}" class="btn btn-primary">
+                <i class="fas fa-cogs"></i> Maintenance
+            </a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Total Users</h6>
+                            <h2 class="mb-0">{{ users|length }}</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x text-white-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a href="#users" class="text-white">View Details</a>
+                    <i class="fas fa-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Total Sites</h6>
+                            <h2 class="mb-0">{{ sites|length }}</h2>
+                        </div>
+                        <i class="fas fa-building fa-2x text-white-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a href="#sites" class="text-white">View Details</a>
+                    <i class="fas fa-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Critical Diagnostics</h6>
+                            <h2 class="mb-0">{{ critical_diagnostics }}</h2>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x text-white-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('dashboard.system_health') }}" class="text-white">View Details</a>
+                    <i class="fas fa-arrow-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Total Activities</h6>
+                            <h2 class="mb-0">{{ total_activities }}</h2>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x text-white-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <span class="text-white">{{ login_activities }} logins</span>
+                    <i class="fas fa-user-clock text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4" id="users">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Users</h5>
+                    <a href="#" class="btn btn-sm btn-primary">Add User</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Site</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'success' if user.role == 'manager' else 'secondary' }}">
+                                            {{ user.role }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.site.name if user.site else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                            {{ 'Active' if user.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary">Edit</a>
+                                            {% if user.is_active %}
+                                            <a href="#" class="btn btn-outline-danger">Deactivate</a>
+                                            {% else %}
+                                            <a href="#" class="btn btn-outline-success">Activate</a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4" id="sites">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Sites</h5>
+                    <a href="#" class="btn btn-sm btn-primary">Add Site</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for site in sites %}
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ site.name }}</h6>
+                                <small class="text-muted">{{ site.code }}</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-{{ 'success' if site.is_active else 'danger' }} rounded-pill">
+                                    {{ 'Active' if site.is_active else 'Inactive' }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('dashboard.maintenance') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cogs me-2"></i> System Maintenance
+                        </a>
+                        <a href="{{ url_for('dashboard.system_health') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heartbeat me-2"></i> System Health
+                        </a>
+                        <a href="{{ url_for('dashboard.troubleshooting') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tools me-2"></i> Troubleshooting Guide
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-database me-2"></i> Database Management
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-export me-2"></i> Export System Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

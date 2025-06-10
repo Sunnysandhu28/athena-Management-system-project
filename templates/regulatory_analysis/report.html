@@ -1,0 +1,1314 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ report.title }} - Analysis Report{% endblock %}
+
+{% block head %}
+<style>
+    .border-left-danger {
+        border-left: 5px solid #dc3545;
+    }
+    
+    .border-left-warning {
+        border-left: 5px solid #ffc107;
+    }
+    
+    .border-left-info {
+        border-left: 5px solid #17a2b8;
+    }
+    
+    .action-item {
+        border-left: 4px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .action-item.high {
+        border-left-color: #dc3545;
+    }
+    
+    .action-item.medium {
+        border-left-color: #ffc107;
+    }
+    
+    .action-item.low {
+        border-left-color: #0dcaf0;
+    }
+    
+    .sticky-sidebar {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+    
+    .framework-score {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .risk-indicator {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .tags-container .badge {
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .evidence-file-icon {
+        font-size: 2.5rem;
+        color: #6c757d;
+    }
+    
+    /* Colors for scores */
+    .score-high {
+        background-color: #28a745;
+    }
+    
+    .score-medium {
+        background-color: #ffc107;
+        color: #212529 !important;
+    }
+    
+    .score-low {
+        background-color: #dc3545;
+    }
+    
+    /* PDF viewer styles */
+    .document-preview {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
+    
+    .text-content {
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>{{ report.title }}</h1>
+            <p class="lead">Regulatory Analysis Report</p>
+        </div>
+        <div class="col-auto d-flex align-items-center">
+            <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+            <div class="dropdown me-2">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="reportActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cog me-2"></i> Actions
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="reportActionsDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i> Export as PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-envelope me-2"></i> Email Report</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addEvidenceModal"><i class="fas fa-folder-plus me-2"></i> Add Evidence</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i> Delete Report</a></li>
+                </ul>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareReportModal">
+                <i class="fas fa-share-alt me-2"></i> Share
+            </button>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Main Content Column -->
+        <div class="col-md-8">
+            <!-- Overall Scoring Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Overall Compliance Scoring</h5>
+                    <span class="badge {% if report.overall_score >= 90 %}bg-success{% elif report.overall_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %} px-3 py-2">
+                        {{ report.overall_score }}%
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <canvas id="overallScoreChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <h5>Framework Scores</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Framework</th>
+                                            <th class="text-center">Score</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for framework in framework_scores %}
+                                        <tr>
+                                            <td>{{ framework.name }}</td>
+                                            <td class="text-center">
+                                                <div class="framework-score {% if framework.score >= 90 %}score-high{% elif framework.score >= 70 %}score-medium{% else %}score-low{% endif %} mx-auto">
+                                                    {{ framework.score }}%
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if framework.score >= 90 %}
+                                                <span class="badge bg-success">Excellent</span>
+                                                {% elif framework.score >= 80 %}
+                                                <span class="badge bg-success">Good</span>
+                                                {% elif framework.score >= 70 %}
+                                                <span class="badge bg-warning text-dark">Satisfactory</span>
+                                                {% elif framework.score >= 60 %}
+                                                <span class="badge bg-warning text-dark">Needs Improvement</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Critical</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Document Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Document Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th style="width: 40%">Document Type:</th>
+                                    <td>{{ report.document_type }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Regulatory Body:</th>
+                                    <td>{{ report.regulatory_body }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Inspector:</th>
+                                    <td>{{ report.inspector_name or 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Inspection Date:</th>
+                                    <td>{{ report.inspection_date.strftime('%d %b %Y') if report.inspection_date else 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th style="width: 40%">Analysis Date:</th>
+                                    <td>{{ report.analysis_date.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>File:</th>
+                                    <td>
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#viewDocumentModal">
+                                            <i class="fas fa-file-pdf me-2"></i> {{ report.evidence_path }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td><span class="badge bg-success">Analyzed</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Tags:</th>
+                                    <td class="tags-container">
+                                        <span class="badge bg-primary">{{ report.document_type }}</span>
+                                        <span class="badge bg-secondary">{{ report.regulatory_body }}</span>
+                                        {% if report.overall_score >= 90 %}
+                                        <span class="badge bg-success">High Compliance</span>
+                                        {% elif report.overall_score >= 70 %}
+                                        <span class="badge bg-warning text-dark">Medium Compliance</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Low Compliance</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Findings & Recommendations -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Key Findings & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Recommendations</h5>
+                        <div class="p-3 bg-light rounded">
+                            {{ report.recommendations }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h5>Risk Areas</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-left-danger h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><span class="risk-indicator bg-danger"></span> High Risk</h6>
+                                        <p class="card-text">
+                                            {% if report.overall_score < 70 %}
+                                            Immediate attention required for evacuation procedures and safety documentation.
+                                            {% else %}
+                                            No high risk areas identified.
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-left-warning h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><span class="risk-indicator bg-warning"></span> Medium Risk</h6>
+                                        <p class="card-text">
+                                            {% if report.overall_score < 90 and report.overall_score >= 70 %}
+                                            Staff training records need improvement and better organization.
+                                            {% else %}
+                                            No medium risk areas identified.
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-left-info h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><span class="risk-indicator bg-info"></span> Low Risk</h6>
+                                        <p class="card-text">
+                                            Documentation formatting could be improved for better readability.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Plan -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Action Plan</h5>
+                    <a href="{{ url_for('regulatory_analysis.action_plan') }}" class="btn btn-sm btn-dark">View Full Action Plan</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50%">Action Item</th>
+                                    <th style="width: 15%">Priority</th>
+                                    <th style="width: 20%">Due Date</th>
+                                    <th style="width: 15%">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for action in action_items %}
+                                <tr class="action-item {{ action.priority.lower() }}">
+                                    <td>{{ action.description }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                            {{ action.priority }}
+                                        </span>
+                                    </td>
+                                    <td>{{ action.due_date_obj.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-success' if action.status == 'Completed' else 'bg-warning text-dark' if action.status == 'In Progress' else 'bg-secondary' }}">
+                                            {{ action.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if action_items|length == 0 %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3">No action items defined for this report.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActionItemModal">
+                        <i class="fas fa-plus me-2"></i> Add Action Item
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Detailed Analysis -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="analysisTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active text-dark" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">
+                                Summary
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="cqc-tab" data-bs-toggle="tab" data-bs-target="#cqc" type="button" role="tab" aria-controls="cqc" aria-selected="false">
+                                CQC ({{ report.cqc_score }}%)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="riddor-tab" data-bs-toggle="tab" data-bs-target="#riddor" type="button" role="tab" aria-controls="riddor" aria-selected="false">
+                                RIDDOR ({{ report.riddor_score }}%)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="fire-tab" data-bs-toggle="tab" data-bs-target="#fire" type="button" role="tab" aria-controls="fire" aria-selected="false">
+                                Fire Safety ({{ report.fire_safety_score }}%)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab" aria-controls="financial" aria-selected="false">
+                                Financial ({{ report.financial_score }}%)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="governance-tab" data-bs-toggle="tab" data-bs-target="#governance" type="button" role="tab" aria-controls="governance" aria-selected="false">
+                                Governance ({{ report.governance_score }}%)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="analysisTabContent">
+                        <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                            <h5>Analysis Summary</h5>
+                            <p>This document has been analyzed against multiple regulatory frameworks to assess compliance levels and identify areas for improvement.</p>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> 
+                                The overall compliance score is calculated as a weighted average across all applicable frameworks, with additional consideration for critical safety elements.
+                            </div>
+                            
+                            <h6 class="mt-4">Strengths</h6>
+                            <ul>
+                                {% if report.cqc_score >= 90 %}
+                                <li>Excellent CQC compliance ({{ report.cqc_score }}%)</li>
+                                {% endif %}
+                                {% if report.riddor_score >= 90 %}
+                                <li>Excellent RIDDOR compliance ({{ report.riddor_score }}%)</li>
+                                {% endif %}
+                                {% if report.fire_safety_score >= 90 %}
+                                <li>Excellent Fire Safety compliance ({{ report.fire_safety_score }}%)</li>
+                                {% endif %}
+                                {% if report.financial_score >= 90 %}
+                                <li>Excellent Financial compliance ({{ report.financial_score }}%)</li>
+                                {% endif %}
+                                {% if report.governance_score >= 90 %}
+                                <li>Excellent Governance compliance ({{ report.governance_score }}%)</li>
+                                {% endif %}
+                                {% if report.cqc_score < 90 and report.riddor_score < 90 and report.fire_safety_score < 90 and report.financial_score < 90 and report.governance_score < 90 %}
+                                <li>Document provides a good foundation for improving compliance.</li>
+                                {% endif %}
+                            </ul>
+                            
+                            <h6 class="mt-3">Areas for Improvement</h6>
+                            <ul>
+                                {% if report.cqc_score < 80 %}
+                                <li>CQC compliance needs significant improvement ({{ report.cqc_score }}%)</li>
+                                {% endif %}
+                                {% if report.riddor_score < 80 %}
+                                <li>RIDDOR compliance needs significant improvement ({{ report.riddor_score }}%)</li>
+                                {% endif %}
+                                {% if report.fire_safety_score < 80 %}
+                                <li>Fire Safety compliance needs significant improvement ({{ report.fire_safety_score }}%)</li>
+                                {% endif %}
+                                {% if report.financial_score < 80 %}
+                                <li>Financial compliance needs significant improvement ({{ report.financial_score }}%)</li>
+                                {% endif %}
+                                {% if report.governance_score < 80 %}
+                                <li>Governance compliance needs significant improvement ({{ report.governance_score }}%)</li>
+                                {% endif %}
+                                {% if report.cqc_score >= 80 and report.riddor_score >= 80 and report.fire_safety_score >= 80 and report.financial_score >= 80 and report.governance_score >= 80 %}
+                                <li>Minor documentation improvements would help achieve higher compliance scores.</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="cqc" role="tabpanel" aria-labelledby="cqc-tab">
+                            <h5>CQC Compliance Analysis</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if report.cqc_score >= 90 %}bg-success
+                                    {% elif report.cqc_score >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ report.cqc_score }}%;" 
+                                    aria-valuenow="{{ report.cqc_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ report.cqc_score }}%
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">CQC Standards Assessment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Standard</th>
+                                                <th>Status</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Safe</td>
+                                                <td>
+                                                    {% if report.cqc_score >= 80 %}
+                                                    <span class="badge bg-success">Met</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Not Met</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if report.cqc_score >= 80 %}
+                                                    Safety procedures are well-documented.
+                                                    {% else %}
+                                                    Safety procedures require more detailed documentation.
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Effective</td>
+                                                <td>
+                                                    {% if report.cqc_score >= 75 %}
+                                                    <span class="badge bg-success">Met</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Not Met</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if report.cqc_score >= 75 %}
+                                                    Procedures are effective and well-implemented.
+                                                    {% else %}
+                                                    Effectiveness of procedures needs improvement.
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Caring</td>
+                                                <td>
+                                                    {% if report.cqc_score >= 70 %}
+                                                    <span class="badge bg-success">Met</span>
+                                                    {% else %}
+                                                    <span class="badge bg-warning text-dark">Partially Met</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if report.cqc_score >= 70 %}
+                                                    Person-centered care principles evident.
+                                                    {% else %}
+                                                    Person-centered approach should be strengthened.
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Responsive</td>
+                                                <td>
+                                                    {% if report.cqc_score >= 85 %}
+                                                    <span class="badge bg-success">Met</span>
+                                                    {% elif report.cqc_score >= 70 %}
+                                                    <span class="badge bg-warning text-dark">Partially Met</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Not Met</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if report.cqc_score >= 85 %}
+                                                    Responsive to individual needs and preferences.
+                                                    {% elif report.cqc_score >= 70 %}
+                                                    Some responsiveness demonstrated but could improve.
+                                                    {% else %}
+                                                    Responsiveness to individual needs needs significant improvement.
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Well-led</td>
+                                                <td>
+                                                    {% if report.cqc_score >= 90 %}
+                                                    <span class="badge bg-success">Met</span>
+                                                    {% elif report.cqc_score >= 75 %}
+                                                    <span class="badge bg-warning text-dark">Partially Met</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Not Met</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if report.cqc_score >= 90 %}
+                                                    Strong leadership and governance demonstrated.
+                                                    {% elif report.cqc_score >= 75 %}
+                                                    Leadership structures present but could be strengthened.
+                                                    {% else %}
+                                                    Leadership and governance structures need significant improvement.
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">Additional Notes</h6>
+                            <p>
+                                {% if report.cqc_score >= 90 %}
+                                This document demonstrates excellent alignment with CQC standards and requirements. Minor enhancements could be made to documentation but overall compliance is very strong.
+                                {% elif report.cqc_score >= 80 %}
+                                This document demonstrates good alignment with CQC standards. Some improvements to documentation and processes would help achieve higher compliance.
+                                {% elif report.cqc_score >= 70 %}
+                                This document shows adequate alignment with CQC standards but several areas need improvement to meet full compliance requirements.
+                                {% else %}
+                                This document has significant gaps in CQC compliance. Major improvements are needed across multiple areas to meet required standards.
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="riddor" role="tabpanel" aria-labelledby="riddor-tab">
+                            <h5>RIDDOR Compliance Analysis</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if report.riddor_score >= 90 %}bg-success
+                                    {% elif report.riddor_score >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ report.riddor_score }}%;" 
+                                    aria-valuenow="{{ report.riddor_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ report.riddor_score }}%
+                                </div>
+                            </div>
+                            
+                            <div class="alert 
+                                {% if report.riddor_score >= 90 %}alert-success
+                                {% elif report.riddor_score >= 70 %}alert-warning
+                                {% else %}alert-danger{% endif %}">
+                                <i class="fas {% if report.riddor_score >= 90 %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                                {% if report.riddor_score >= 90 %}
+                                RIDDOR compliance is excellent, with robust incident reporting procedures in place.
+                                {% elif report.riddor_score >= 70 %}
+                                RIDDOR compliance is adequate but there are areas that should be improved for better incident reporting.
+                                {% else %}
+                                RIDDOR compliance requires significant improvement to meet regulatory requirements for incident reporting.
+                                {% endif %}
+                            </div>
+                            
+                            <h6 class="mt-4">Assessment Details</h6>
+                            <p>The document has been assessed against key RIDDOR requirements including:</p>
+                            <ul>
+                                <li>Reporting procedures for workplace incidents</li>
+                                <li>Documentation of dangerous occurrences</li>
+                                <li>Record-keeping for reportable injuries</li>
+                                <li>Occupational disease reporting</li>
+                                <li>Timeline compliance for incident reporting</li>
+                            </ul>
+                            
+                            <h6 class="mt-4">Recommendations</h6>
+                            <ul>
+                                {% if report.riddor_score < 85 %}
+                                <li>Enhance incident reporting procedures with clearer timelines</li>
+                                {% endif %}
+                                {% if report.riddor_score < 80 %}
+                                <li>Improve documentation of reportable incidents</li>
+                                {% endif %}
+                                {% if report.riddor_score < 75 %}
+                                <li>Establish clear escalation paths for serious incidents</li>
+                                {% endif %}
+                                {% if report.riddor_score < 70 %}
+                                <li>Develop comprehensive staff training on RIDDOR requirements</li>
+                                {% endif %}
+                                {% if report.riddor_score >= 85 %}
+                                <li>Maintain current high standards with regular reviews</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="fire" role="tabpanel" aria-labelledby="fire-tab">
+                            <h5>Fire Safety Compliance Analysis</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if report.fire_safety_score >= 90 %}bg-success
+                                    {% elif report.fire_safety_score >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ report.fire_safety_score }}%;" 
+                                    aria-valuenow="{{ report.fire_safety_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ report.fire_safety_score }}%
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Fire Safety Assessment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>The document has been analyzed for fire safety compliance across key areas:</p>
+                                    
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Area</th>
+                                                <th>Status</th>
+                                                <th>Score</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Fire Risk Assessment</td>
+                                                <td>
+                                                    {% if report.fire_safety_score >= 75 %}
+                                                    <span class="badge bg-success">Compliant</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Non-compliant</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ report.fire_safety_score - 5 if report.fire_safety_score >= 5 else 0 }}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Evacuation Procedures</td>
+                                                <td>
+                                                    {% if report.fire_safety_score >= 80 %}
+                                                    <span class="badge bg-success">Compliant</span>
+                                                    {% elif report.fire_safety_score >= 60 %}
+                                                    <span class="badge bg-warning text-dark">Partially Compliant</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Non-compliant</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ report.fire_safety_score - 10 if report.fire_safety_score >= 10 else 0 }}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Fire Equipment</td>
+                                                <td>
+                                                    {% if report.fire_safety_score >= 65 %}
+                                                    <span class="badge bg-success">Compliant</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Non-compliant</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ report.fire_safety_score - 15 if report.fire_safety_score >= 15 else 0 }}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Staff Training</td>
+                                                <td>
+                                                    {% if report.fire_safety_score >= 85 %}
+                                                    <span class="badge bg-success">Compliant</span>
+                                                    {% elif report.fire_safety_score >= 70 %}
+                                                    <span class="badge bg-warning text-dark">Partially Compliant</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Non-compliant</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ report.fire_safety_score - 20 if report.fire_safety_score >= 20 else 0 }}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Emergency Lighting</td>
+                                                <td>
+                                                    {% if report.fire_safety_score >= 55 %}
+                                                    <span class="badge bg-success">Compliant</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Non-compliant</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ report.fire_safety_score - 25 if report.fire_safety_score >= 25 else 0 }}%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">Key Issues</h6>
+                            <ul>
+                                {% if report.fire_safety_score < 80 %}
+                                <li>Fire risk assessment documentation needs improvement</li>
+                                {% endif %}
+                                {% if report.fire_safety_score < 75 %}
+                                <li>Evacuation procedures are not clearly defined</li>
+                                {% endif %}
+                                {% if report.fire_safety_score < 70 %}
+                                <li>Staff training records for fire safety are incomplete</li>
+                                {% endif %}
+                                {% if report.fire_safety_score < 65 %}
+                                <li>Fire equipment maintenance schedule is not documented</li>
+                                {% endif %}
+                                {% if report.fire_safety_score >= 80 %}
+                                <li>No significant issues identified</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="financial" role="tabpanel" aria-labelledby="financial-tab">
+                            <h5>Financial Compliance Analysis</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if report.financial_score >= 90 %}bg-success
+                                    {% elif report.financial_score >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ report.financial_score }}%;" 
+                                    aria-valuenow="{{ report.financial_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ report.financial_score }}%
+                                </div>
+                            </div>
+                            
+                            <p>Financial compliance assessment analyzes alignment with accounting standards, financial reporting requirements, and financial controls.</p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Strengths</h6>
+                                    <ul>
+                                        {% if report.financial_score >= 85 %}
+                                        <li>Strong financial controls documented</li>
+                                        {% endif %}
+                                        {% if report.financial_score >= 80 %}
+                                        <li>Clear financial reporting procedures</li>
+                                        {% endif %}
+                                        {% if report.financial_score >= 75 %}
+                                        <li>Appropriate authorization levels established</li>
+                                        {% endif %}
+                                        {% if report.financial_score < 75 %}
+                                        <li>Basic financial structure in place</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Areas for Improvement</h6>
+                                    <ul>
+                                        {% if report.financial_score < 90 %}
+                                        <li>Financial control documentation could be enhanced</li>
+                                        {% endif %}
+                                        {% if report.financial_score < 85 %}
+                                        <li>Risk management processes need strengthening</li>
+                                        {% endif %}
+                                        {% if report.financial_score < 80 %}
+                                        <li>Audit trail documentation needs improvement</li>
+                                        {% endif %}
+                                        {% if report.financial_score < 75 %}
+                                        <li>Financial oversight procedures are inadequate</li>
+                                        {% endif %}
+                                        {% if report.financial_score >= 90 %}
+                                        <li>No significant areas for improvement identified</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="governance" role="tabpanel" aria-labelledby="governance-tab">
+                            <h5>Governance Compliance Analysis</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div class="progress-bar 
+                                    {% if report.governance_score >= 90 %}bg-success
+                                    {% elif report.governance_score >= 70 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ report.governance_score }}%;" 
+                                    aria-valuenow="{{ report.governance_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ report.governance_score }}%
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Governance Framework Assessment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>This analysis evaluates the governance structures, policies, and processes as documented.</p>
+                                    
+                                    <h6 class="mt-3">Key Governance Areas</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Board Structure & Oversight
+                                                    <span class="badge {% if report.governance_score >= 85 %}bg-success{% elif report.governance_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 85 %}Strong{% elif report.governance_score >= 70 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Risk Management
+                                                    <span class="badge {% if report.governance_score >= 80 %}bg-success{% elif report.governance_score >= 65 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 80 %}Strong{% elif report.governance_score >= 65 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Policy Framework
+                                                    <span class="badge {% if report.governance_score >= 75 %}bg-success{% elif report.governance_score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 75 %}Strong{% elif report.governance_score >= 60 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Compliance Management
+                                                    <span class="badge {% if report.governance_score >= 90 %}bg-success{% elif report.governance_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 90 %}Strong{% elif report.governance_score >= 70 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Performance Monitoring
+                                                    <span class="badge {% if report.governance_score >= 82 %}bg-success{% elif report.governance_score >= 68 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 82 %}Strong{% elif report.governance_score >= 68 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Stakeholder Engagement
+                                                    <span class="badge {% if report.governance_score >= 78 %}bg-success{% elif report.governance_score >= 65 %}bg-warning text-dark{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if report.governance_score >= 78 %}Strong{% elif report.governance_score >= 65 %}Adequate{% else %}Weak{% endif %}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">Summary</h6>
+                            <p>
+                                {% if report.governance_score >= 90 %}
+                                This document demonstrates excellent governance structures and processes, with comprehensive policies and clear lines of accountability.
+                                {% elif report.governance_score >= 80 %}
+                                This document shows good governance frameworks with well-defined roles and responsibilities, though some areas could be strengthened.
+                                {% elif report.governance_score >= 70 %}
+                                The governance framework is adequate but has several areas that need enhancement to improve oversight and accountability.
+                                {% else %}
+                                Significant improvements are needed in governance documentation, with clearer structures, responsibilities, and oversight mechanisms required.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="col-md-4">
+            <div class="sticky-sidebar">
+                <!-- Evidence & Supporting Documents -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Evidence & Supporting Documents</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if evidence|length > 0 %}
+                        <div class="list-group">
+                            {% for item in evidence %}
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        {% if item.file_type == 'pdf' %}
+                                        <i class="fas fa-file-pdf me-2 text-danger"></i>
+                                        {% elif item.file_type == 'docx' or item.file_type == 'doc' %}
+                                        <i class="fas fa-file-word me-2 text-primary"></i>
+                                        {% elif item.file_type == 'xlsx' or item.file_type == 'xls' %}
+                                        <i class="fas fa-file-excel me-2 text-success"></i>
+                                        {% elif item.file_type == 'jpg' or item.file_type == 'png' %}
+                                        <i class="fas fa-file-image me-2 text-info"></i>
+                                        {% elif item.file_type == 'zip' %}
+                                        <i class="fas fa-file-archive me-2 text-warning"></i>
+                                        {% else %}
+                                        <i class="fas fa-file me-2 text-secondary"></i>
+                                        {% endif %}
+                                        {{ item.title }}
+                                    </div>
+                                    <span class="badge bg-secondary">{{ item.file_type }}</span>
+                                </div>
+                                <small class="text-muted d-block mt-1">{{ item.description }}</small>
+                                <small class="text-muted d-block mt-1">Uploaded: {{ item.upload_date.strftime('%d %b %Y') }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center mb-0">No evidence documents have been attached to this report.</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addEvidenceModal">
+                            <i class="fas fa-plus me-2"></i> Add Evidence
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Comments & Notes -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Comments & Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong>Sarah Thompson</strong>
+                                        <small class="text-muted">16 May 2025</small>
+                                    </div>
+                                    <p class="mb-0">Reviewed this report and agree with the findings. The action plan looks comprehensive and should address the issues identified.</p>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong>System</strong>
+                                        <small class="text-muted">16 May 2025</small>
+                                    </div>
+                                    <p class="mb-0">Automatic analysis completed. {{ action_items|length }} action items generated.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-top pt-3">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Add Comment</label>
+                                    <textarea class="form-control" id="comment" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-comment me-2"></i> Post Comment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Log -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Activity Log</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-file-upload me-2 text-primary"></i> Document uploaded</span>
+                                    <small class="text-muted">16 May 2025</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-robot me-2 text-info"></i> Analysis started</span>
+                                    <small class="text-muted">16 May 2025</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-chart-pie me-2 text-success"></i> Analysis completed</span>
+                                    <small class="text-muted">16 May 2025</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-tasks me-2 text-warning"></i> Action plan generated</span>
+                                    <small class="text-muted">16 May 2025</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-eye me-2 text-primary"></i> Report viewed</span>
+                                    <small class="text-muted">16 May 2025</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Document Modal -->
+<div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDocumentModalLabel">{{ report.evidence_path }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-file-pdf text-danger" style="font-size: 5rem;"></i>
+                    </div>
+                    <h5>Document Preview</h5>
+                    <p class="text-muted">This is a simulated document preview. In a production environment, the actual document would be displayed here.</p>
+                    
+                    <div class="text-content mx-auto" style="max-width: 800px;">
+                        <p>*** SAMPLE DOCUMENT CONTENT ***</p>
+                        <p>Title: {{ report.title }}</p>
+                        <p>Type: {{ report.document_type }}</p>
+                        <p>Date: {{ report.analysis_date.strftime('%d %b %Y') }}</p>
+                        <p>Regulatory Body: {{ report.regulatory_body }}</p>
+                        
+                        <p>This document outlines compliance measures for the organization in relation to applicable regulatory frameworks. It addresses key areas including safety protocols, risk management, and governance structures.</p>
+                        
+                        <p>Key sections include:</p>
+                        <ul>
+                            <li>Safety Procedures</li>
+                            <li>Staff Training Records</li>
+                            <li>Risk Assessments</li>
+                            <li>Governance Framework</li>
+                            <li>Policy Documentation</li>
+                        </ul>
+                        
+                        <p>The contents of this document have been analyzed for compliance with multiple regulatory frameworks, and an action plan has been generated to address any identified gaps.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-download me-2"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Evidence Modal -->
+<div class="modal fade" id="addEvidenceModal" tabindex="-1" aria-labelledby="addEvidenceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEvidenceModalLabel">Add Supporting Evidence</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="evidenceTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="evidenceTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="evidenceFile" class="form-label">File</label>
+                        <input type="file" class="form-control" id="evidenceFile" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="evidenceDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="evidenceDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="evidenceType" class="form-label">Evidence Type</label>
+                        <select class="form-select" id="evidenceType">
+                            <option value="supporting_document">Supporting Document</option>
+                            <option value="policy">Policy</option>
+                            <option value="procedure">Procedure</option>
+                            <option value="training_record">Training Record</option>
+                            <option value="photograph">Photograph</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Upload Evidence</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Action Item Modal -->
+<div class="modal fade" id="addActionItemModal" tabindex="-1" aria-labelledby="addActionItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addActionItemModalLabel">Add Action Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="actionDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="actionDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionPriority" class="form-label">Priority</label>
+                        <select class="form-select" id="actionPriority" required>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionDueDate" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="actionDueDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionAssignedTo" class="form-label">Assigned To</label>
+                        <input type="text" class="form-control" id="actionAssignedTo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionFramework" class="form-label">Framework</label>
+                        <select class="form-select" id="actionFramework">
+                            <option value="CQC">CQC</option>
+                            <option value="RIDDOR">RIDDOR</option>
+                            <option value="Fire Safety">Fire Safety</option>
+                            <option value="Financial/Accounting">Financial/Accounting</option>
+                            <option value="Business Governance">Business Governance</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="actionNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="actionNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Add Action Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Report Modal -->
+<div class="modal fade" id="shareReportModal" tabindex="-1" aria-labelledby="shareReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareReportModalLabel">Share Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="shareEmail" class="form-label">Email Recipients</label>
+                    <input type="text" class="form-control" id="shareEmail" placeholder="email@example.com, email2@example.com">
+                    <div class="form-text">Separate multiple email addresses with commas.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="shareMessage" class="form-label">Message</label>
+                    <textarea class="form-control" id="shareMessage" rows="3" placeholder="Optional message to include with the report"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Share Options</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeEvidence" checked>
+                        <label class="form-check-label" for="includeEvidence">
+                            Include Evidence Files
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeActionPlan" checked>
+                        <label class="form-check-label" for="includeActionPlan">
+                            Include Action Plan
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="allowEditing">
+                        <label class="form-check-label" for="allowEditing">
+                            Allow Editing
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="shareFormat" class="form-label">Format</label>
+                    <select class="form-select" id="shareFormat">
+                        <option value="pdf">PDF Report</option>
+                        <option value="html">HTML Report</option>
+                        <option value="excel">Excel Spreadsheet</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Share Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Overall Score Chart
+        const overallScoreCtx = document.getElementById('overallScoreChart').getContext('2d');
+        new Chart(overallScoreCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Compliant', 'Non-compliant'],
+                datasets: [{
+                    data: [{{ report.overall_score }}, 100 - {{ report.overall_score }}],
+                    backgroundColor: [
+                        {% if report.overall_score >= 90 %}
+                            '#28a745',  // Green (Success)
+                        {% elif report.overall_score >= 70 %}
+                            '#ffc107',  // Yellow (Warning)
+                        {% else %}
+                            '#dc3545',  // Red (Danger)
+                        {% endif %}
+                        '#e9ecef'  // Light gray
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_analysis.index') }}">Policy Analysis</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_analysis.batch_analysis') }}">Batch Analysis</a></li>
+                    <li class="breadcrumb-item active">Upload Results</li>
+                </ol>
+            </nav>
+            <h1>Batch Analysis Results</h1>
+            <p class="lead">Results from analyzing {{ file_count }} uploaded files</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Analysis Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h5>Files Analyzed: {{ file_count }}</h5>
+                                <p>Analysis Type: 
+                                    {% if analysis_type == 'structure' %}Structure Analysis
+                                    {% elif analysis_type == 'content' %}Content Analysis
+                                    {% elif analysis_type == 'compliance' %}Compliance Analysis
+                                    {% else %}All Analysis Types{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert {% if results|selectattr('status', 'equalto', 'error')|list|length > 0 %}alert-warning{% else %}alert-success{% endif %}">
+                                <h5>Success Rate: {{ (results|selectattr('status', 'equalto', 'success')|list|length / results|length * 100)|round|int }}%</h5>
+                                <p>
+                                    <span class="text-success">{{ results|selectattr('status', 'equalto', 'success')|list|length }} succeeded</span> | 
+                                    <span class="text-danger">{{ results|selectattr('status', 'equalto', 'error')|list|length }} failed</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% for result in results %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header {% if result.status == 'success' %}bg-success text-white{% else %}bg-danger text-white{% endif %}">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ result.file_name }}</h5>
+                <span class="badge bg-light text-dark">
+                    {% if result.status == 'success' %}
+                        Success
+                    {% else %}
+                        Failed
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if result.status == 'error' %}
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> {{ result.message }}
+                </div>
+            {% else %}
+                {% if analysis_type in ['structure', 'all'] and result.analyses.structure %}
+                <div class="analysis-section mb-4">
+                    <h5>Structure Analysis</h5>
+                    {% if result.analyses.structure.error is defined %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> {{ result.analyses.structure.error }}
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">Sections Detected</div>
+                                    <div class="card-body">
+                                        {% if result.analyses.structure.sections %}
+                                            <ul class="list-group">
+                                                {% for section in result.analyses.structure.sections %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    {{ section.title }}
+                                                    <span class="badge rounded-pill {% if section.status == 'correct' %}bg-success{% elif section.status == 'missing' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                        {{ section.status }}
+                                                    </span>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-muted">No sections detected.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">Format Analysis</div>
+                                    <div class="card-body">
+                                        <ul class="list-group">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                Structure Score
+                                                <span class="badge bg-primary rounded-pill">{{ result.analyses.structure.score|default(0)|round|int }}%</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                Header/Footer Format
+                                                <span class="badge {% if result.analyses.structure.header_footer_score|default(0) > 70 %}bg-success{% elif result.analyses.structure.header_footer_score|default(0) > 40 %}bg-warning{% else %}bg-danger{% endif %} rounded-pill">
+                                                    {{ result.analyses.structure.header_footer_score|default(0)|round|int }}%
+                                                </span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                Section Organization
+                                                <span class="badge {% if result.analyses.structure.section_score|default(0) > 70 %}bg-success{% elif result.analyses.structure.section_score|default(0) > 40 %}bg-warning{% else %}bg-danger{% endif %} rounded-pill">
+                                                    {{ result.analyses.structure.section_score|default(0)|round|int }}%
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if analysis_type in ['content', 'all'] and result.analyses.content %}
+                <div class="analysis-section mb-4">
+                    <h5>Content Analysis</h5>
+                    {% if result.analyses.content.error is defined %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> {{ result.analyses.content.error }}
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">Metadata Extracted</div>
+                                    <div class="card-body">
+                                        <table class="table table-striped">
+                                            <tbody>
+                                                {% for key, value in result.analyses.content.items() %}
+                                                <tr>
+                                                    <th>{{ key|replace('_', ' ')|title }}</th>
+                                                    <td>
+                                                        {% if value is string %}
+                                                            {{ value }}
+                                                        {% elif value is mapping %}
+                                                            <pre class="mb-0">{{ value|tojson(indent=2) }}</pre>
+                                                        {% elif value is iterable and value is not string %}
+                                                            <ul class="mb-0">
+                                                                {% for item in value %}
+                                                                <li>{{ item }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% else %}
+                                                            {{ value }}
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if analysis_type in ['compliance', 'all'] and result.analyses.compliance %}
+                <div class="analysis-section">
+                    <h5>Compliance Analysis</h5>
+                    {% if result.analyses.compliance.error is defined %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> {{ result.analyses.compliance.error }}
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header">Legislation Referenced in Policy</div>
+                                    <div class="card-body">
+                                        {% if result.analyses.compliance.legislation_references %}
+                                            <ul class="list-group">
+                                                {% for ref in result.analyses.compliance.legislation_references %}
+                                                <li class="list-group-item">{{ ref }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-muted">No legislation references found.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header">Category Required Legislation</div>
+                                    <div class="card-body">
+                                        {% if result.analyses.compliance.category_legislation %}
+                                            <ul class="list-group">
+                                                {% for act in result.analyses.compliance.category_legislation %}
+                                                <li class="list-group-item">{{ act.name }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-muted">No category legislation found.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header">Gaps Analysis</div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h6 class="text-success">Found in Both</h6>
+                                            {% if result.analyses.compliance.comparison.found_in_both %}
+                                                <ul class="list-group">
+                                                    {% for ref in result.analyses.compliance.comparison.found_in_both %}
+                                                    <li class="list-group-item">{{ ref }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-muted">No matches found.</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6 class="text-danger">Missing from Policy</h6>
+                                            {% if result.analyses.compliance.comparison.missing_from_policy %}
+                                                <ul class="list-group">
+                                                    {% for ref in result.analyses.compliance.comparison.missing_from_policy %}
+                                                    <li class="list-group-item">{{ ref }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-success">No missing legislation!</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="mb-4 text-center">
+        <a href="{{ url_for('policy_analysis.batch_analysis') }}" class="btn btn-outline-secondary">Back to Batch Analysis</a>
+    </div>
+</div>
+{% endblock %}

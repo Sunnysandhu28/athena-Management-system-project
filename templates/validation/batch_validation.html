@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Validation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('validation.index') }}">Validation System</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Batch Validation</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-3">Batch Validation</h1>
+            
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Batch Processing</h4>
+                <p>Validate multiple policies at once to identify compliance issues and generate validation reports.</p>
+                <p>You can validate by category, status, or custom selection of policies.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2"></i> Batch Validation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('validation.run_batch_validation') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="validation_name" class="form-label">Validation Name</label>
+                            <input type="text" class="form-control" id="validation_name" name="validation_name" placeholder="e.g., Care Management Validation - May 2025">
+                            <div class="form-text">A descriptive name for this validation run.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Validation Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="validation_type" id="type_category" value="category" checked>
+                                <label class="form-check-label" for="type_category">
+                                    Validate by Category
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="validation_type" id="type_status" value="status">
+                                <label class="form-check-label" for="type_status">
+                                    Validate by Status
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="validation_type" id="type_custom" value="custom">
+                                <label class="form-check-label" for="type_custom">
+                                    Custom Selection
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="category_options" class="validation-option mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">
+                                    {{ category.name }} ({{ category.policy_count }} policies)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="status_options" class="validation-option mb-3" style="display: none;">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="all">All Policies</option>
+                                <option value="valid">Valid Policies</option>
+                                <option value="invalid">Invalid Policies</option>
+                                <option value="not_validated">Not Validated Policies</option>
+                            </select>
+                        </div>
+                        
+                        <div id="custom_options" class="validation-option mb-3" style="display: none;">
+                            <label class="form-label">Select Policies</label>
+                            <div class="policy-selection">
+                                {% for policy in policies %}
+                                <div class="form-check">
+                                    <input class="form-check-input policy-checkbox" type="checkbox" name="policy_ids[]" value="{{ policy.id }}" id="policy_{{ policy.id }}">
+                                    <label class="form-check-label policy-item" for="policy_{{ policy.id }}">
+                                        {{ policy.title }}
+                                        {% if policy.code %}
+                                        <span class="badge bg-secondary">{{ policy.code }}</span>
+                                        {% endif %}
+                                        {% if policy.id in validation_results %}
+                                        {% if validation_results[policy.id].is_valid %}
+                                        <span class="badge bg-success">Valid</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Invalid</span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-secondary">Not Validated</span>
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="select-all">Select All</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all">Deselect All</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="select-invalid">Select Invalid</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="strict_mode" name="strict_mode">
+                                <label class="form-check-label" for="strict_mode">Strict Mode</label>
+                                <div class="form-text">Apply stricter validation rules.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="save_report" name="save_report" checked>
+                                <label class="form-check-label" for="save_report">Save Report</label>
+                                <div class="form-text">Save validation results as a report for future reference.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="report_notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="report_notes" name="report_notes" rows="2" placeholder="Optional notes about this validation run"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play me-1"></i> Run Batch Validation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i> Recent Reports
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% if reports %}
+                        {% for report in reports %}
+                        <a href="{{ url_for('validation.view_report', report_id=report.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 text-truncate" style="max-width: 200px">{{ report.name }}</h6>
+                                <small>{{ report.format_created_at() }}</small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <span class="badge bg-secondary">{{ report.type|capitalize }}</span>
+                                    {% if report.creator %}
+                                    by {{ report.creator.username }}
+                                    {% endif %}
+                                </small>
+                                <span class="badge bg-primary rounded-pill">View</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                        {% else %}
+                        <div class="list-group-item">
+                            <p class="mb-0 text-muted">No recent reports found</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i> Tips
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h5>Validation By Category</h5>
+                        <p>Validates all policies in a specific category and identifies compliance issues.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Validation By Status</h5>
+                        <p>Validates policies based on their current validation status (valid, invalid, or not yet validated).</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Custom Selection</h5>
+                        <p>Allows you to select specific policies to validate, regardless of category or status.</p>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-0">
+                        <h5 class="alert-heading">Processing Time</h5>
+                        <p class="mb-0">Batch validation may take several minutes depending on the number of policies selected. Please be patient while the system processes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 text-center mb-4">
+            <a href="{{ url_for('validation.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Validation Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .policy-selection {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .policy-item {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 400px;
+        display: inline-block;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle validation type selection
+        const typeCategory = document.getElementById('type_category');
+        const typeStatus = document.getElementById('type_status');
+        const typeCustom = document.getElementById('type_custom');
+        
+        const categoryOptions = document.getElementById('category_options');
+        const statusOptions = document.getElementById('status_options');
+        const customOptions = document.getElementById('custom_options');
+        
+        function updateOptions() {
+            if (typeCategory.checked) {
+                categoryOptions.style.display = 'block';
+                statusOptions.style.display = 'none';
+                customOptions.style.display = 'none';
+            } else if (typeStatus.checked) {
+                categoryOptions.style.display = 'none';
+                statusOptions.style.display = 'block';
+                customOptions.style.display = 'none';
+            } else if (typeCustom.checked) {
+                categoryOptions.style.display = 'none';
+                statusOptions.style.display = 'none';
+                customOptions.style.display = 'block';
+            }
+        }
+        
+        typeCategory.addEventListener('change', updateOptions);
+        typeStatus.addEventListener('change', updateOptions);
+        typeCustom.addEventListener('change', updateOptions);
+        
+        // Handle select/deselect all buttons
+        const selectAllBtn = document.getElementById('select-all');
+        const deselectAllBtn = document.getElementById('deselect-all');
+        const selectInvalidBtn = document.getElementById('select-invalid');
+        const policyCheckboxes = document.querySelectorAll('.policy-checkbox');
+        
+        selectAllBtn.addEventListener('click', function() {
+            policyCheckboxes.forEach(checkbox => checkbox.checked = true);
+        });
+        
+        deselectAllBtn.addEventListener('click', function() {
+            policyCheckboxes.forEach(checkbox => checkbox.checked = false);
+        });
+        
+        selectInvalidBtn.addEventListener('click', function() {
+            policyCheckboxes.forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                checkbox.checked = label.innerHTML.includes('Invalid');
+            });
+        });
+    });
+</script>
+{% endblock %}

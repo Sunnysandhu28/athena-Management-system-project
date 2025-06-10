@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Export Regulatory Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Regulatory Analysis Report</h1>
+            <p class="lead">Document: {{ report.report_title }}</p>
+            <div class="text-end">
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Print Report
+                </button>
+                <a href="{{ url_for('regulatory_analysis.analyze', report_id=report.id) }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Printable Report Content -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 text-center mb-4">
+                    <h1 class="fw-bold">Regulatory Compliance Analysis</h1>
+                    <h2 class="fw-light">{{ report.report_title }}</h2>
+                    <p class="text-muted">Generated on {{ analysis.analysis_date }}</p>
+                    <hr>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3>Document Information</h3>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">Title</th>
+                            <td>{{ report.report_title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Reference</th>
+                            <td>{{ report.reference or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td>
+                                {% if report.type_code.startswith('M') %}
+                                    Management Document
+                                {% elif report.type_code.startswith('C') %}
+                                    CQC Document
+                                {% elif report.type_code.startswith('F') %}
+                                    Financial Document
+                                {% elif report.type_code.startswith('A') %}
+                                    Audit Document
+                                {% else %}
+                                    Other Document Type
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ report.description or 'No description available.' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3>Compliance Summary</h3>
+                    <p>Below is a summary of compliance levels across different regulatory frameworks:</p>
+                    
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Regulatory Framework</th>
+                                <th>Compliance Level</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for framework_name, framework_data in analysis.frameworks.items() %}
+                            <tr>
+                                <td>{{ framework_name }}</td>
+                                <td>
+                                    <span class="badge {% if framework_data.compliance_level == 'Very High' %}bg-success{% elif framework_data.compliance_level == 'High' %}bg-info{% elif framework_data.compliance_level == 'Medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ framework_data.compliance_level }}
+                                    </span>
+                                </td>
+                                <td>{{ framework_data.score }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Detailed Framework Analysis -->
+            {% for framework_name, framework_data in analysis.frameworks.items() %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3>{{ framework_name }} Analysis</h3>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h4>Key Findings</h4>
+                            <ul class="list-group">
+                                {% for finding in framework_data.key_findings %}
+                                <li class="list-group-item">{{ finding }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Recommendations</h4>
+                            <ul class="list-group">
+                                {% for recommendation in framework_data.recommendations %}
+                                <li class="list-group-item">{{ recommendation }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="row">
+                <div class="col-12">
+                    <h3>Conclusion</h3>
+                    <p>This document has been analyzed against multiple regulatory frameworks to assess compliance and identify areas for improvement. The analysis provides insights into strengths and weaknesses in relation to each framework, with specific recommendations for enhancing compliance.</p>
+                    
+                    <p>For any questions or to discuss implementation of the recommendations, please contact the compliance team.</p>
+                    
+                    <div class="text-center mt-4">
+                        <p><strong>Cathena Policy Management System</strong></p>
+                        <p class="text-muted small">Report generated on {{ analysis.analysis_date }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+    body {
+        font-size: 12pt;
+    }
+    .btn, nav, footer, .no-print {
+        display: none !important;
+    }
+    .container {
+        width: 100%;
+        max-width: 100%;
+    }
+    h1 {
+        font-size: 18pt;
+    }
+    h2 {
+        font-size: 16pt;
+    }
+    h3 {
+        font-size: 14pt;
+    }
+    table {
+        page-break-inside: avoid;
+    }
+    .badge {
+        border: 1px solid #000;
+        color: #000 !important;
+        background-color: transparent !important;
+    }
+</style>
+{% endblock %}

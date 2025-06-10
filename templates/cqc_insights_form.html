@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Regulatory Insights{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('cqc.dashboard') }}">CQC Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Regulatory Insights</li>
+                </ol>
+            </nav>
+
+            <h1 class="mb-4">CQC Regulatory Insights</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> ML-Powered Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Access authentic CQC language patterns for specific regulatory areas and ratings.
+                        These insights are based on ML analysis of real CQC reports, focusing on governance, staffing, and training regulations.
+                    </p>
+
+                    <form id="insights-form" action="{{ url_for('cqc.regulatory_insights') }}" method="post">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="area">Regulatory Area:</label>
+                                <select class="form-control" id="area" name="area" required>
+                                    <option value="governance">Governance</option>
+                                    <option value="staffing">Staffing</option>
+                                    <option value="training">Training</option>
+                                    <option value="medication">Medication</option>
+                                    <option value="infection control">Infection Control</option>
+                                    <option value="leadership">Leadership</option>
+                                    <option value="care">Care</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="rating">Rating Level:</label>
+                                <select class="form-control" id="rating" name="rating" required>
+                                    <option value="outstanding">Outstanding</option>
+                                    <option value="good" selected>Good</option>
+                                    <option value="requires_improvement">Requires Improvement</option>
+                                    <option value="inadequate">Inadequate</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Context (Optional):</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control mb-2" name="context_provider" placeholder="Provider Name">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control mb-2" name="context_service" placeholder="Service Type">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <input type="text" class="form-control" name="context_specific" placeholder="Specific Example">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-lightbulb"></i> Generate Insight
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="insight-result" class="card d-none">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <span id="insight-area"></span> - <span id="insight-rating"></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="insight-content" class="border p-3 bg-light"></div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-secondary" onclick="copyToClipboard()">
+                        <i class="fas fa-clipboard"></i> Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle form submission
+    $('#insights-form').submit(function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    // Show the result
+                    $('#insight-area').text(
+                        $('#area option:selected').text()
+                    );
+                    $('#insight-rating').text(
+                        $('#rating option:selected').text()
+                    );
+                    $('#insight-content').html(response.insight.replace(/\n/g, '<br>'));
+                    $('#insight-result').removeClass('d-none');
+                    
+                    // Scroll to result
+                    $('html, body').animate({
+                        scrollTop: $("#insight-result").offset().top - 100
+                    }, 500);
+                } else {
+                    alert('Error generating insight.');
+                }
+            },
+            error: function() {
+                alert('An error occurred while generating the insight.');
+            }
+        });
+    });
+    
+    // Copy to clipboard function
+    function copyToClipboard() {
+        const insight = document.getElementById('insight-content').innerText;
+        navigator.clipboard.writeText(insight).then(() => {
+            alert('Copied to clipboard!');
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All {{ total_count }} Authentic Policies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .policy-row {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 0;
+            transition: background-color 0.2s;
+        }
+        .policy-row:hover {
+            background-color: #f8f9fa;
+        }
+        .policy-code {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 60px;
+            text-align: center;
+        }
+        .category-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+        }
+        .search-box {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-file-medical"></i> Cathena Policy System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+                <a class="nav-link active" href="/all_my_policies">All Policies</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <!-- Search Header -->
+        <div class="search-box p-3 mb-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">
+                        <i class="fas fa-list text-primary"></i> 
+                        All {{ total_count }} Authentic Policies
+                    </h1>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" 
+                               placeholder="Search by code, title, or category...">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-2">
+                <div class="col-md-4">
+                    <select class="form-select form-select-sm" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Clinical Care">Clinical Care</option>
+                        <option value="Health & Safety">Health & Safety</option>
+                        <option value="Medication">Medication</option>
+                        <option value="Care Planning">Care Planning</option>
+                        <option value="Information Governance">Information Governance</option>
+                        <option value="Human Resources">Human Resources</option>
+                    </select>
+                </div>
+                <div class="col-md-8 text-end">
+                    <span class="badge bg-success">{{ total_count }} Total Policies</span>
+                    <span class="badge bg-info" id="visibleCount">{{ total_count }} Visible</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policies Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th style="width: 80px;">Code</th>
+                                <th>Policy Title</th>
+                                <th style="width: 150px;">Category</th>
+                                <th style="width: 100px;">Status</th>
+                                <th style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="policiesTable">
+                            {% for policy in policies %}
+                            <tr class="policy-row" data-category="{{ policy.category }}" data-searchable="{{ policy.code }} {{ policy.title }} {{ policy.category }}">
+                                <td>
+                                    <span class="policy-code">{{ policy.code }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ policy.title }}</strong>
+                                    {% if policy.content %}
+                                    <br><small class="text-muted">{{ (policy.content|length / 5)|round|int }} words</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="category-badge">{{ policy.category }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">Active</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/policy/{{ policy.code }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="/me02_viewer" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 mb-4">
+            <a href="/dashboard" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterPolicies();
+        });
+
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            filterPolicies();
+        });
+
+        function filterPolicies() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const rows = document.querySelectorAll('.policy-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchableText = row.dataset.searchable.toLowerCase();
+                const rowCategory = row.dataset.category;
+                
+                const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
+                const matchesCategory = !selectedCategory || rowCategory === selectedCategory;
+                
+                if (matchesSearch && matchesCategory) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('visibleCount').textContent = visibleCount + ' Visible';
+        }
+    </script>
+</body>
+</html>

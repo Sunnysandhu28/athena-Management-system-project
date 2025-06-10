@@ -1,0 +1,705 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ framework.name }} Framework Details{% endblock %}
+
+{% block head %}
+<style>
+    .compliance-chart {
+        position: relative;
+        width: 150px;
+        height: 150px;
+    }
+    
+    .chart-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    .issue-badge {
+        min-width: 30px;
+    }
+    
+    .related-report {
+        transition: all 0.2s ease;
+    }
+    
+    .related-report:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background-color: #dee2e6;
+    }
+    
+    .timeline-item:last-child::before {
+        height: 1.5rem;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -38px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    
+    .timeline-dot.past {
+        background-color: #28a745;
+    }
+    
+    .timeline-dot.future {
+        background-color: #ffc107;
+    }
+    
+    .timeline-content {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>{{ framework.name }} Framework</h1>
+            <p class="lead">{{ framework.description }}</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('regulatory_demo.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Framework Overview -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Framework Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="compliance-chart mx-auto mb-2">
+                                <canvas id="complianceChart"></canvas>
+                                <div class="chart-percentage">{{ framework.compliance }}%</div>
+                            </div>
+                            <h6>Overall Compliance</h6>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <table class="table">
+                                <tr>
+                                    <th style="width: 40%">Regulatory Body:</th>
+                                    <td>{{ framework.regulatory_body }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Framework Version:</th>
+                                    <td>{{ framework.version }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated:</th>
+                                    <td>{{ framework.last_updated.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Issues by Priority:</th>
+                                    <td>
+                                        <span class="badge bg-danger issue-badge me-1">{{ framework.high_issues }}</span> High 
+                                        <span class="badge bg-warning text-dark issue-badge me-1">{{ framework.medium_issues }}</span> Medium 
+                                        <span class="badge bg-info issue-badge">{{ framework.low_issues }}</span> Low
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5>Key Requirements</h5>
+                    <div class="row">
+                        {% if framework.name == 'CQC' %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Safe</h6>
+                                    <p class="card-text">People are protected from abuse and avoidable harm.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Effective</h6>
+                                    <p class="card-text">Care and treatment achieves good outcomes and promotes quality of life.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100">92%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Caring</h6>
+                                    <p class="card-text">Staff involve and treat people with compassion, kindness, dignity and respect.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 88%" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Responsive</h6>
+                                    <p class="card-text">Services are organized to meet people's needs.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Well-led</h6>
+                                    <p class="card-text">Leadership, management and governance assure quality and safety.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">78%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif framework.name == 'RIDDOR' %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Incident Reporting</h6>
+                                    <p class="card-text">Procedures for reporting workplace incidents and accidents.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 88%" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Record Keeping</h6>
+                                    <p class="card-text">Maintenance of accurate incident and accident records.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100">72%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Notification Timelines</h6>
+                                    <p class="card-text">Adherence to timelines for reporting incidents to authorities.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">70%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Staff Training</h6>
+                                    <p class="card-text">Training of staff on RIDDOR requirements and procedures.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Follow-up Actions</h6>
+                                    <p class="card-text">Implementation of corrective actions following incidents.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif framework.name == 'Fire Safety' %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Risk Assessment</h6>
+                                    <p class="card-text">Comprehensive fire risk assessments of premises.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Evacuation Procedures</h6>
+                                    <p class="card-text">Clear, documented evacuation procedures and routes.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">70%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Fire Equipment</h6>
+                                    <p class="card-text">Provision and maintenance of fire safety equipment.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 68%" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100">68%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Staff Training</h6>
+                                    <p class="card-text">Training of staff on fire safety and emergency procedures.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100">72%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Documentation</h6>
+                                    <p class="card-text">Comprehensive fire safety documentation and records.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif framework.name == 'Financial/Accounting' %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Financial Controls</h6>
+                                    <p class="card-text">Internal controls for financial transactions and reporting.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">95%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Reporting Standards</h6>
+                                    <p class="card-text">Adherence to financial reporting standards and regulations.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">90%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Audit Trails</h6>
+                                    <p class="card-text">Documentation and audit trails for financial transactions.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 88%" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Risk Management</h6>
+                                    <p class="card-text">Financial risk assessment and management processes.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Fraud Prevention</h6>
+                                    <p class="card-text">Measures to prevent and detect financial fraud.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">78%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif framework.name == 'Business Governance' %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Board Oversight</h6>
+                                    <p class="card-text">Board structure, responsibilities, and oversight processes.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">90%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Policy Framework</h6>
+                                    <p class="card-text">Comprehensive governance policies and procedures.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 88%" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Risk Management</h6>
+                                    <p class="card-text">Identification, assessment, and management of business risks.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Compliance Management</h6>
+                                    <p class="card-text">Processes to ensure compliance with laws and regulations.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100">92%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Performance Monitoring</h6>
+                                    <p class="card-text">Processes for monitoring and evaluating business performance.</p>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Detailed requirements for this framework are not available.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Related Reports -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Related Reports</h5>
+                    <span class="badge bg-light text-dark">{{ related_reports|length }} Reports</span>
+                </div>
+                <div class="card-body">
+                    {% if related_reports %}
+                    <div class="row">
+                        {% for report in related_reports %}
+                        <div class="col-md-6">
+                            <div class="card related-report mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="card-title mb-0">{{ report.title }}</h6>
+                                        <span class="badge {% if report.overall_score >= 90 %}bg-success{% elif report.overall_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            {{ report.overall_score }}%
+                                        </span>
+                                    </div>
+                                    <p class="card-subtitle text-muted mb-3">{{ report.document_type }} | {{ report.analysis_date.strftime('%d %b %Y') }}</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        {% if framework.name == 'CQC' %}
+                                        <span class="badge {% if report.cqc_score >= 90 %}bg-success{% elif report.cqc_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            CQC: {{ report.cqc_score }}%
+                                        </span>
+                                        {% elif framework.name == 'RIDDOR' %}
+                                        <span class="badge {% if report.riddor_score >= 90 %}bg-success{% elif report.riddor_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            RIDDOR: {{ report.riddor_score }}%
+                                        </span>
+                                        {% elif framework.name == 'Fire Safety' %}
+                                        <span class="badge {% if report.fire_safety_score >= 90 %}bg-success{% elif report.fire_safety_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            Fire Safety: {{ report.fire_safety_score }}%
+                                        </span>
+                                        {% elif framework.name == 'Financial/Accounting' %}
+                                        <span class="badge {% if report.financial_score >= 90 %}bg-success{% elif report.financial_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            Financial: {{ report.financial_score }}%
+                                        </span>
+                                        {% elif framework.name == 'Business Governance' %}
+                                        <span class="badge {% if report.governance_score >= 90 %}bg-success{% elif report.governance_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            Governance: {{ report.governance_score }}%
+                                        </span>
+                                        {% endif %}
+                                        
+                                        <a href="{{ url_for('regulatory_demo.view_report', report_id=report.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-file-alt text-muted" style="font-size: 3rem;"></i>
+                        <p class="mt-3">No reports are currently associated with this framework.</p>
+                        <a href="{{ url_for('regulatory_demo.upload_document') }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i> Upload Document
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Framework Changes -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Framework Updates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot past"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">Version {{ framework.version }}</h6>
+                                    <small class="text-muted">{{ framework.last_updated.strftime('%d %b %Y') }}</small>
+                                </div>
+                                <p class="mb-0">Latest version of the {{ framework.name }} framework with updated requirements and guidance.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot past"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">Version 2024.1</h6>
+                                    <small class="text-muted">15 Jan 2025</small>
+                                </div>
+                                <p class="mb-0">Updated requirements for staff training and documentation standards.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot past"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">Version 2023.3</h6>
+                                    <small class="text-muted">10 Oct 2024</small>
+                                </div>
+                                <p class="mb-0">Revisions to compliance metrics and reporting requirements.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Inspections -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Upcoming Inspections</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_inspections %}
+                    <div class="list-group">
+                        {% for inspection in upcoming_inspections %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">{{ inspection.regulatory_body }}</h6>
+                                <span class="badge bg-primary">{{ inspection.inspection_date.strftime('%d %b %Y') }}</span>
+                            </div>
+                            <p class="mb-1">Inspector: {{ inspection.inspector_name }}</p>
+                            {% if inspection.notes %}
+                            <small class="text-muted">{{ inspection.notes }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-center py-3 mb-0">No upcoming inspections scheduled for this framework.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#scheduleInspectionModal">
+                        <i class="fas fa-calendar-plus me-2"></i> Schedule Inspection
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Framework Resources -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Framework Resources</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-pdf me-2 text-danger"></i> Framework Guide</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-word me-2 text-primary"></i> Compliance Checklist</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-powerpoint me-2 text-warning"></i> Training Materials</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-external-link-alt me-2 text-success"></i> Regulatory Website</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-alt me-2 text-info"></i> Compliance Calendar</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Inspection Modal -->
+<div class="modal fade" id="scheduleInspectionModal" tabindex="-1" aria-labelledby="scheduleInspectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleInspectionModalLabel">Schedule {{ framework.name }} Inspection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="inspectionDate" class="form-label">Inspection Date</label>
+                        <input type="date" class="form-control" id="inspectionDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regulatoryBody" class="form-label">Regulatory Body</label>
+                        <input type="text" class="form-control" id="regulatoryBody" value="{{ framework.regulatory_body }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inspectorName" class="form-label">Inspector Name</label>
+                        <input type="text" class="form-control" id="inspectorName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="inspectionNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="inspectionNotes" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notifyTeam" class="form-label">Notify Team</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyEmail" checked>
+                            <label class="form-check-label" for="notifyEmail">
+                                Send Email Notifications
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="addCalendar" checked>
+                            <label class="form-check-label" for="addCalendar">
+                                Add to Compliance Calendar
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Schedule Inspection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Compliance Chart
+        const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+        new Chart(complianceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Compliant', 'Non-compliant'],
+                datasets: [{
+                    data: [{{ framework.compliance }}, 100 - {{ framework.compliance }}],
+                    backgroundColor: [
+                        {% if framework.compliance >= 90 %}
+                            '#28a745',  // Green (Success)
+                        {% elif framework.compliance >= 70 %}
+                            '#ffc107',  // Yellow (Warning)
+                        {% else %}
+                            '#dc3545',  // Red (Danger)
+                        {% endif %}
+                        '#e9ecef'  // Light gray
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Regulatory Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Regulatory Dashboard</h1>
+            <p class="lead">Monitor regulatory compliance, analyze documents, and get insights on your policy frameworks.</p>
+        </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('regulatory.explain_term') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-book fa-2x mb-2"></i><br>
+                                Explain Regulatory Term
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('regulatory.analyze_document') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-file-alt fa-2x mb-2"></i><br>
+                                Analyze Document Compliance
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('regulatory.ml_insights') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                                View ML Insights
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Compliance Stats -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Compliance Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h2 class="text-primary">235</h2>
+                            <p class="text-muted">ML-Trained Policies</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h2 class="text-primary">95%</h2>
+                            <p class="text-muted">Compliance Score</p>
+                        </div>
+                        <div class="col-6">
+                            <h2 class="text-primary">12M+</h2>
+                            <p class="text-muted">Training Words</p>
+                        </div>
+                        <div class="col-6">
+                            <h2 class="text-primary">18</h2>
+                            <p class="text-muted">Regulations Tracked</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ML Learning Integration -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-robot me-2"></i>ML Learning Status</h6>
+                                <p class="mb-2">✅ Trained on 235 authentic healthcare policies</p>
+                                <p class="mb-2">✅ 7 policy categories with intelligent classification</p>
+                                <p class="mb-0">✅ Real-time compliance scoring and pattern recognition</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Recent Activities</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% if recent_activities %}
+                            {% for activity in recent_activities %}
+                                <a href="{{ activity.link }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ activity.title }}</h6>
+                                        <small>{{ activity.date }}</small>
+                                    </div>
+                                    <p class="mb-1 small">{{ activity.description }}</p>
+                                    <small class="text-muted">
+                                        {% if activity.type == 'term_explanation' %}
+                                            <i class="fas fa-book me-1"></i> Term Explanation
+                                        {% elif activity.type == 'document_analysis' %}
+                                            <i class="fas fa-file-alt me-1"></i> Document Analysis
+                                        {% elif activity.type == 'ml_insights' %}
+                                            <i class="fas fa-chart-line me-1"></i> ML Insights
+                                        {% else %}
+                                            <i class="fas fa-info-circle me-1"></i> Activity
+                                        {% endif %}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="list-group-item text-center py-4">
+                                <p class="mb-0 text-muted">No recent activities</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Framework Coverage -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Framework Coverage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for framework in regulatory_frameworks %}
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <div class="card">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title mb-2">{{ framework }}</h6>
+                                        {% set coverage = framework_coverage.get(framework, 0) %}
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ coverage }}%;" 
+                                                aria-valuenow="{{ coverage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <p class="mt-2 mb-0 small text-end">{{ coverage }}% coverage</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

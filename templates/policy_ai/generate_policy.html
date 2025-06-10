@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Policy with AI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_ai.policy_learning') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Generate Policy</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Generate Policy with AI</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Generate a new policy document using AI powered by learned patterns from QCS and CQC.
+                        The system will create a comprehensive policy that follows best practices and regulatory requirements.
+                    </p>
+                    
+                    {% if not learning_summary or learning_summary.total_patterns.sections < 10 %}
+                        <div class="alert alert-warning">
+                            <strong>Limited Learning Data:</strong> 
+                            The AI has limited learning data available. For best results, 
+                            complete the site crawling and corpus building steps before generating policies.
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" class="mt-4">
+                        <div class="form-group">
+                            <label for="title"><strong>Policy Title</strong></label>
+                            <input type="text" class="form-control" id="title" name="title" required
+                                   placeholder="e.g., Infection Control Policy and Procedure">
+                            <small class="form-text text-muted">Enter a descriptive title for the policy</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category_id"><strong>Policy Category</strong></label>
+                            <select class="form-control" id="category_id" name="category_id" required>
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the most appropriate category for this policy</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reference_code"><strong>Reference Code</strong> (Optional)</label>
+                            <input type="text" class="form-control" id="reference_code" name="reference_code"
+                                   placeholder="e.g., IC01">
+                            <small class="form-text text-muted">Enter a reference code for the policy (optional)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="organization_name"><strong>Organization Name</strong> (Optional)</label>
+                            <input type="text" class="form-control" id="organization_name" name="organization_name"
+                                   placeholder="e.g., Oakwood Care Home">
+                            <small class="form-text text-muted">Enter your organization name for a customized policy</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="site_preference"><strong>Learning Preference</strong></label>
+                            <select class="form-control" id="site_preference" name="site_preference">
+                                <option value="">Use all available data</option>
+                                <option value="qcs">Prefer QCS patterns</option>
+                                <option value="cqc">Prefer CQC patterns</option>
+                            </select>
+                            <small class="form-text text-muted">Choose which site's patterns to prioritize in generation</small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>Generation Process:</strong> 
+                            Creating a comprehensive policy may take up to a minute. You will be redirected to view the
+                            generated policy when complete.
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-robot mr-1"></i> Generate Policy
+                        </button>
+                        <a href="{{ url_for('policy_ai.policy_learning') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-info-circle mr-1"></i> 
+                            Policies are generated using state-of-the-art AI and learned patterns 
+                            from professional health and social care policy resources.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Task Status Card -->
+            {% if generation_task %}
+                <div class="card mt-4">
+                    <div class="card-header {% if generation_task.status == 'completed' %}bg-success{% elif generation_task.status == 'error' %}bg-danger{% else %}bg-warning{% endif %} text-white">
+                        <h5>Policy Generation Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Status:</strong> {{ generation_task.status }}</p>
+                        <p><strong>Policy:</strong> {{ generation_task.title }}</p>
+                        <p><strong>Category:</strong> {{ generation_task.category }}</p>
+                        <p><strong>Started:</strong> {{ generation_task.started_at }}</p>
+                        
+                        {% if generation_task.completed_at %}
+                            <p><strong>Completed:</strong> {{ generation_task.completed_at }}</p>
+                        {% endif %}
+                        
+                        {% if generation_task.policy_id %}
+                            <p><strong>Policy ID:</strong> {{ generation_task.policy_id }}</p>
+                            <a href="{{ url_for('policy_ai.view_generated_policy') }}" class="btn btn-success">
+                                <i class="fas fa-file-alt mr-1"></i> View Generated Policy
+                            </a>
+                        {% endif %}
+                        
+                        {% if generation_task.error %}
+                            <div class="alert alert-danger">
+                                Error: {{ generation_task.error }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Refresh the page every 10 seconds while the generation task is running
+    $(document).ready(function() {
+        {% if generation_task and generation_task.status == 'running' %}
+            setTimeout(function() {
+                location.reload();
+            }, 10000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

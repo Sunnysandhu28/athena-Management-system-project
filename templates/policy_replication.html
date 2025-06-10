@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication{% endblock %}
+
+{% block styles %}
+<style>
+    .category-list {
+        margin-top: 20px;
+    }
+    .category-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+    }
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .category-name {
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    .category-code {
+        color: #666;
+        font-size: 0.9em;
+    }
+    .action-buttons {
+        margin-top: 20px;
+    }
+    .policy-list {
+        margin-top: 15px;
+    }
+    .policy-item {
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .policy-info {
+        flex-grow: 1;
+    }
+    .policy-title {
+        font-weight: bold;
+    }
+    .policy-actions {
+        flex-shrink: 0;
+    }
+    .tab-content {
+        padding: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>QCS Policy Replication</h1>
+    <p class="lead">Replicate QCS policies to system categories</p>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{{ url_for('policy_replication_blueprint.replicate_qcs_policies') }}" class="btn btn-primary">
+                <i class="fas fa-cloud-download-alt"></i> Replicate Real QCS Policies
+            </a>
+            <small class="text-muted ms-3">Connect to QCS and download actual policies (requires QCS credentials)</small>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <ul class="nav nav-tabs" id="replicationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="single-policy-tab" data-bs-toggle="tab" data-bs-target="#single-policy" type="button" role="tab" aria-controls="single-policy" aria-selected="true">
+                Replicate Single Policy
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="category-policies-tab" data-bs-toggle="tab" data-bs-target="#category-policies" type="button" role="tab" aria-controls="category-policies" aria-selected="false">
+                Replicate Category Policies
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="replicationTabsContent">
+        <!-- Single Policy Replication -->
+        <div class="tab-pane fade show active" id="single-policy" role="tabpanel" aria-labelledby="single-policy-tab">
+            <h3>Replicate Individual Policy</h3>
+            <form action="{{ url_for('policy_replication_blueprint.replicate_policy') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="policy_search" class="form-label">Search for Policy</label>
+                            <input type="text" class="form-control" id="policy_search" placeholder="Type to search for policies by code or title" autocomplete="off">
+                            <div id="search-results" class="list-group mt-2" style="display: none; max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="policy_code" class="form-label">Policy Code</label>
+                            <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="e.g., HS01, CM87" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="policy_title" class="form-label">Policy Title</label>
+                            <input type="text" class="form-control" id="policy_title" name="policy_title" placeholder="e.g., Health and Safety Policy and Procedure" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="on" id="auto_categorize" name="auto_categorize" checked>
+                                <label class="form-check-label" for="auto_categorize">
+                                    Auto-categorize based on policy code
+                                </label>
+                                <small class="form-text text-muted d-block">When enabled, the system will detect the appropriate category based on the policy code prefix</small>
+                            </div>
+                            <label for="category_id" class="form-label">Target Category (if auto-categorization disabled)</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }} ({{ category.policy_count }} policies)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Sample QCS Policies</h5>
+                            </div>
+                            <div class="card-body" style="height: 200px; overflow-y: auto;">
+                                <ul class="list-group">
+                                    {% for policy in sample_policies[:10] %}
+                                    <li class="list-group-item">
+                                        <strong>{{ policy.code }}</strong>: {{ policy.title }}
+                                        <br><small class="text-muted">Category: {{ policy.category }}</small>
+                                        <button type="button" class="btn btn-sm btn-outline-primary float-end" 
+                                                onclick="fillPolicyForm('{{ policy.code }}', '{{ policy.title }}')">
+                                            Select
+                                        </button>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Replicate Policy</button>
+            </form>
+        </div>
+        
+        <!-- Category Policies Replication -->
+        <div class="tab-pane fade" id="category-policies" role="tabpanel" aria-labelledby="category-policies-tab">
+            <h3>Replicate Multiple Policies from a Category</h3>
+            <form action="{{ url_for('policy_replication_blueprint.replicate_category_policies') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="category_name" class="form-label">QCS Category</label>
+                            <select class="form-select" id="category_name" name="category_name" required>
+                                <option value="">Select a QCS category</option>
+                                {% for category_name, policies in QCS_POLICY_SAMPLES.items() %}
+                                <option value="{{ category_name }}">{{ category_name }} ({{ policies|length }} sample policies)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" value="on" id="category_auto_categorize" name="auto_categorize" checked>
+                                <label class="form-check-label" for="category_auto_categorize">
+                                    Auto-categorize policies based on policy codes
+                                </label>
+                                <small class="form-text text-muted d-block">When enabled, each policy will be placed in its appropriate category based on its code prefix</small>
+                            </div>
+                            <label for="target_category_id" class="form-label">Target System Category (if auto-categorization disabled)</label>
+                            <select class="form-select" id="target_category_id" name="target_category_id">
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }} ({{ category.policy_count }} policies)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Selected Category Policies</h5>
+                            </div>
+                            <div class="card-body" id="selected-category-policies" style="height: 200px; overflow-y: auto;">
+                                <p class="text-muted">Select a QCS category to see available policies</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Replicate Category Policies</button>
+            </form>
+        </div>
+    </div>
+    
+    <h2 class="mt-5">System Categories</h2>
+    <div class="category-list">
+        {% for category in categories %}
+        <div class="category-card">
+            <div class="category-header">
+                <div>
+                    <div class="category-name">{{ category.name }}</div>
+                    <div class="category-code">ID: {{ category.id }}</div>
+                </div>
+                <a href="{{ url_for('policy_replication_blueprint.view_policies', category_id=category.id) }}" class="btn btn-sm btn-outline-primary">
+                    View Policies ({{ category.policy_count }})
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle category selection to display available policies
+        const categorySelect = document.getElementById('category_name');
+        const policiesContainer = document.getElementById('selected-category-policies');
+        
+        // Sample policy data from the backend
+        const qcsPolicySamples = {{ QCS_POLICY_SAMPLES|tojson }};
+        
+        categorySelect.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            
+            if (selectedCategory && qcsPolicySamples[selectedCategory]) {
+                const policies = qcsPolicySamples[selectedCategory];
+                let html = '<ul class="list-group">';
+                
+                policies.forEach(policy => {
+                    html += `
+                        <li class="list-group-item">
+                            <strong>${policy.code}</strong>: ${policy.title}
+                        </li>
+                    `;
+                });
+                
+                html += '</ul>';
+                policiesContainer.innerHTML = html;
+            } else {
+                policiesContainer.innerHTML = '<p class="text-muted">Select a QCS category to see available policies</p>';
+            }
+        });
+    });
+    
+    // Function to fill the single policy form
+    function fillPolicyForm(code, title) {
+        document.getElementById('policy_code').value = code;
+        document.getElementById('policy_title').value = title;
+        document.getElementById('search-results').style.display = 'none';
+        
+        // If auto-categorize is enabled, highlight that the category will be auto-detected
+        const autoCategorizeCheckbox = document.getElementById('auto_categorize');
+        if (autoCategorizeCheckbox && autoCategorizeCheckbox.checked) {
+            const categoryPrefix = code.match(/^[A-Za-z]+/);
+            if (categoryPrefix) {
+                const categorySelect = document.getElementById('category_id');
+                categorySelect.parentElement.querySelector('small.auto-category-hint')?.remove();
+                const hint = document.createElement('small');
+                hint.className = 'text-success auto-category-hint mt-2 d-block';
+                hint.innerHTML = `<i class="fas fa-magic"></i> The system will automatically detect the appropriate category based on the "${categoryPrefix[0]}" prefix`;
+                categorySelect.parentElement.appendChild(hint);
+            }
+        }
+    }
+    
+    // Handle auto-categorize checkboxes for both forms
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to handle the checkbox logic
+        function setupAutoCategorizeCheckbox(checkboxId, selectId) {
+            const checkbox = document.getElementById(checkboxId);
+            const select = document.getElementById(selectId);
+            
+            if (checkbox && select) {
+                function updateSelectState() {
+                    if (checkbox.checked) {
+                        select.removeAttribute('required');
+                        select.parentElement.querySelector('label').classList.add('text-muted');
+                    } else {
+                        select.setAttribute('required', 'required');
+                        select.parentElement.querySelector('label').classList.remove('text-muted');
+                    }
+                }
+                
+                // Initial state
+                updateSelectState();
+                
+                // Handle checkbox change
+                checkbox.addEventListener('change', updateSelectState);
+            }
+        }
+        
+        // Setup for single policy form
+        setupAutoCategorizeCheckbox('auto_categorize', 'category_id');
+        
+        // Setup for category policies form
+        setupAutoCategorizeCheckbox('category_auto_categorize', 'target_category_id');
+    });
+    
+    // Policy search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('policy_search');
+        const searchResults = document.getElementById('search-results');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Hide results if query is too short
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            // Set a timeout to prevent too many requests
+            searchTimeout = setTimeout(function() {
+                // Make AJAX request to search endpoint
+                fetch(`/policy-replication/search-policies?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.policies && data.policies.length > 0) {
+                            // Display results
+                            let html = '';
+                            data.policies.forEach(policy => {
+                                let matchIndicator = '';
+                                if (policy.match_type === 'code') {
+                                    matchIndicator = `<span class="badge bg-primary">Code Match</span>`;
+                                } else {
+                                    matchIndicator = `<span class="badge bg-info">Title Match</span>`;
+                                }
+                                
+                                html += `
+                                    <a href="javascript:void(0)" class="list-group-item list-group-item-action" 
+                                       onclick="fillPolicyForm('${policy.code}', '${policy.title}')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>${policy.code}</strong>: ${policy.title}
+                                                <br><small class="text-muted">Category: ${policy.category}</small>
+                                            </div>
+                                            <div>
+                                                ${matchIndicator}
+                                                <span class="badge bg-secondary">${policy.score}%</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                            searchResults.innerHTML = html;
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.innerHTML = '<p class="list-group-item">No policies found matching your search</p>';
+                            searchResults.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<p class="list-group-item text-danger">Error searching for policies</p>';
+                        searchResults.style.display = 'block';
+                    });
+            }, 300); // 300ms delay to avoid excessive requests
+        });
+        
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

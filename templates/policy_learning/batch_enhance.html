@@ -1,0 +1,87 @@
+{% extends "policy_learning/base.html" %}
+
+{% block learning_content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Batch Enhance Policies</h2>
+    </div>
+    <div class="card-body">
+        <p class="lead">
+            This tool allows you to process multiple policies at once to extract and enhance their metadata.
+            The system will analyze each policy's content and structure to identify key sections and metadata.
+        </p>
+        
+        <form method="POST" action="{{ url_for('ai_policy_learning.batch_enhance') }}">
+            <div class="form-group mb-3">
+                <label for="enhancement_type">Enhancement Method</label>
+                <select class="form-control" id="enhancement_type" name="enhancement_type">
+                    <option value="existing_policies">Process Existing Policies</option>
+                    <option value="learn_from_qcs">Learn from QCS Policies</option>
+                </select>
+                <small class="form-text text-muted">Select whether to enhance existing policies or learn from QCS uploaded policies</small>
+            </div>
+            
+            <div id="existing_policies_options">
+                <div class="form-group mb-3">
+                    <label for="limit">Maximum Policies to Process</label>
+                    <input type="number" class="form-control" id="limit" name="limit" value="10" min="1" max="100">
+                    <small class="form-text text-muted">Enter the maximum number of policies to process (1-100)</small>
+                </div>
+            </div>
+            
+            <div id="qcs_policies_options" style="display: none;">
+                <div class="form-group mb-3">
+                    <label for="policy_selection">Select QCS Policies to Learn From</label>
+                    <select class="form-control" id="policy_selection" name="policy_selection" multiple size="8">
+                        {% for policy in qcs_policies %}
+                        <option value="{{ policy.id }}">{{ policy.title }} ({{ policy.reference_code or 'No Code' }})</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Hold Ctrl (or Command on Mac) to select multiple policies (5-6 recommended)</small>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="learning_focus">Learning Focus</label>
+                    <select class="form-control" id="learning_focus" name="learning_focus">
+                        <option value="structure">Document Structure</option>
+                        <option value="metadata">Metadata Extraction</option>
+                        <option value="both" selected>Both Structure and Metadata</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <h5>What does this do?</h5>
+                <p>The batch enhancement process:</p>
+                <ul>
+                    <li>Extracts metadata such as objectives, scope, and relevant legislation from policy content</li>
+                    <li>Triangulates missing metadata based on policy context and category</li>
+                    <li>Updates the policy JSON metadata with the extracted information</li>
+                    <li>Adds missing sections to the policy content if they don't already exist</li>
+                </ul>
+                <p><strong>Learning from QCS Policies:</strong> When selecting this option, the system will analyze the original QCS policies to learn their structure and metadata patterns. This helps improve the accuracy of future policy analysis.</p>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Start Process</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const enhancementType = document.getElementById('enhancement_type');
+    const existingPoliciesOptions = document.getElementById('existing_policies_options');
+    const qcsPoliciesOptions = document.getElementById('qcs_policies_options');
+    
+    enhancementType.addEventListener('change', function() {
+        if (this.value === 'existing_policies') {
+            existingPoliciesOptions.style.display = 'block';
+            qcsPoliciesOptions.style.display = 'none';
+        } else {
+            existingPoliciesOptions.style.display = 'none';
+            qcsPoliciesOptions.style.display = 'block';
+        }
+    });
+});
+</script>
+{% endblock %}

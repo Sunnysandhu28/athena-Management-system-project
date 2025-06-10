@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Analytics</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                <span data-feather="calendar" class="align-text-bottom"></span>
+                This month
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Policy Processing Overview</h5>
+                    <div class="chart-container" style="position: relative; height:40vh; width:100%">
+                        <canvas id="policyProgressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Categories Completion</h5>
+                    <div class="chart-container" style="position: relative; height:30vh; width:100%">
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Processing Time</h5>
+                    <div class="chart-container" style="position: relative; height:30vh; width:100%">
+                        <canvas id="processingTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Policy Format Types</h5>
+                    <div class="chart-container" style="position: relative; height:25vh; width:100%">
+                        <canvas id="formatTypesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Processing Errors</h5>
+                    <div class="chart-container" style="position: relative; height:25vh; width:100%">
+                        <canvas id="errorsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">User Activity</h5>
+                    <div class="chart-container" style="position: relative; height:25vh; width:100%">
+                        <canvas id="userActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample data - this would be replaced with real data from the backend
+        
+        // Policy Progress Chart
+        const policyProgressCtx = document.getElementById('policyProgressChart').getContext('2d');
+        const policyProgressChart = new Chart(policyProgressCtx, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May'],
+                datasets: [{
+                    label: 'Policies Processed',
+                    data: [65, 102, 148, 186, 204],
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Categories Chart
+        const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+        const categoriesChart = new Chart(categoriesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Health & Safety', 'Administration', 'Care Management', 'Support Services', 'Quality Assurance'],
+                datasets: [{
+                    label: 'Completion Percentage',
+                    data: [100, 100, 41.3, 0, 0],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 159, 64)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Processing Time Chart
+        const processingTimeCtx = document.getElementById('processingTimeChart').getContext('2d');
+        const processingTimeChart = new Chart(processingTimeCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                datasets: [{
+                    label: 'Avg. Processing Time (seconds)',
+                    data: [45, 42, 38, 35, 32],
+                    fill: false,
+                    borderColor: 'rgb(153, 102, 255)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Format Types Chart
+        const formatTypesCtx = document.getElementById('formatTypesChart').getContext('2d');
+        const formatTypesChart = new Chart(formatTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['PDF', 'DOCX', 'HTML', 'TXT'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 206, 86)',
+                        'rgb(75, 192, 192)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Errors Chart
+        const errorsCtx = document.getElementById('errorsChart').getContext('2d');
+        const errorsChart = new Chart(errorsCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Format Errors', 'Content Extraction', 'Network Issues', 'Other'],
+                datasets: [{
+                    data: [3, 5, 2, 1],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 206, 86)',
+                        'rgb(75, 192, 192)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // User Activity Chart
+        const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+        const userActivityChart = new Chart(userActivityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Admin', 'Manager', 'Staff'],
+                datasets: [{
+                    label: 'Logins',
+                    data: [25, 42, 68],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

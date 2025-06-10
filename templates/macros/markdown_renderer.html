@@ -1,0 +1,286 @@
+{% macro render_markdown(content) %}
+    {% if not content %}
+        <p class="text-muted">No content available</p>
+    {% else %}
+        {# Fix reference code inconsistencies in policy content #}
+        {% if 'QCS policy Care Management Policy 23 with code CM23' in content %}
+            {% set content = content.replace('QCS policy Care Management Policy 23 with code CM23', '') %}
+        {% endif %}
+        {% if content.startswith('CM23') %}
+            {% set content = content.replace('CM23', 'PE05', 1) %}
+        {% endif %}
+        {% set lines = content.split('\n') %}
+        {% set output = [] %}
+        {% set in_list = false %}
+        {% set list_type = '' %}
+        {% set list_items = [] %}
+        {% set in_table = false %}
+        {% set table_header = [] %}
+        {% set table_rows = [] %}
+        {% set current_row = [] %}
+        {% set in_section = false %}
+        {% set section_title = '' %}
+        {% set section_content = [] %}
+        
+        {% for line in lines %}
+            {% set line = line.rstrip() %}
+            
+            {# QCS policy format detection - section titles are often in the format "1. Purpose" or "5.2 Control Measures" #}
+            {% set section_match = line|trim|match('^(\d+(\.\d+)*)\.?\s+([A-Z][A-Za-z\s]+)$') %}
+            
+            {# Handle PDF headers which have consecutive spaces #}
+            {% if '   ' in line or line|trim|endswith(':') %}
+                {% set is_header = true %}
+            {% else %}
+                {% set is_header = false %}
+            {% endif %}
+            
+            {# Handle QCS-specific sections with numbering (e.g., "1. Purpose") #}
+            {% if section_match %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                    {% else %}
+                        {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ output.append('<div class="policy-section"><h3 class="policy-section-title">' + section_title + '</h3>' + section_content|join('') + '</div>') or '' }}
+                    {% set in_section = false %}
+                    {% set section_content = [] %}
+                {% endif %}
+                
+                {% set section_number = section_match.group(1) %}
+                {% set section_name = section_match.group(3) %}
+                {% set in_section = true %}
+                {% set section_title = section_number + '. ' + section_name %}
+                {{ output.append('<div class="policy-section">') or '' }}
+                {{ output.append('<h3 class="policy-section-title">' + section_title + '</h3>') or '' }}
+                
+            {# Handle headers #}
+            {% elif line.startswith('# ') %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                    {% else %}
+                        {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<h1 class="qcs-h1">' + line[2:] + '</h1>') or '' }}
+                {% else %}
+                    {{ output.append('<h1 class="qcs-h1">' + line[2:] + '</h1>') or '' }}
+                {% endif %}
+                
+            {% elif line.startswith('## ') %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                    {% else %}
+                        {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<h2 class="qcs-h2">' + line[3:] + '</h2>') or '' }}
+                {% else %}
+                    {{ output.append('<h2 class="qcs-h2">' + line[3:] + '</h2>') or '' }}
+                {% endif %}
+                
+            {% elif line.startswith('### ') %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                    {% else %}
+                        {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<h3 class="qcs-h3">' + line[4:] + '</h3>') or '' }}
+                {% else %}
+                    {{ output.append('<h3 class="qcs-h3">' + line[4:] + '</h3>') or '' }}
+                {% endif %}
+                
+            {% elif line.startswith('#### ') %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                    {% else %}
+                        {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<h4 class="qcs-h4">' + line[5:] + '</h4>') or '' }}
+                {% else %}
+                    {{ output.append('<h4 class="qcs-h4">' + line[5:] + '</h4>') or '' }}
+                {% endif %}
+                
+            {# Handle unordered lists #}
+            {% elif line.startswith('- ') or line.startswith('* ') or line.startswith('• ') %}
+                {% if not in_list or list_type != 'ul' %}
+                    {% if in_list %}
+                        {% if list_type == 'ol' %}
+                            {% if in_section %}
+                                {{ section_content.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                            {% else %}
+                                {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                            {% endif %}
+                        {% endif %}
+                        {% set list_items = [] %}
+                    {% endif %}
+                    {% set in_list = true %}
+                    {% set list_type = 'ul' %}
+                {% endif %}
+                
+                {% if line.startswith('- ') %}
+                    {{ list_items.append('<li>' + line[2:] + '</li>') or '' }}
+                {% elif line.startswith('* ') %}
+                    {{ list_items.append('<li>' + line[2:] + '</li>') or '' }}
+                {% elif line.startswith('• ') %}
+                    {{ list_items.append('<li>' + line[2:] + '</li>') or '' }}
+                {% endif %}
+            
+            {# Handle ordered lists - either using digits for QCS formats or match list patterns in PDF conversion #}
+            {% elif (line|trim|first|string|isdigit() and '. ' in line) or line|trim|match('^\(\w+\)') or line|trim|match('^[a-z]\)') %}
+                {% if not in_list or list_type != 'ol' %}
+                    {% if in_list %}
+                        {% if list_type == 'ul' %}
+                            {% if in_section %}
+                                {{ section_content.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                            {% else %}
+                                {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                            {% endif %}
+                        {% endif %}
+                        {% set list_items = [] %}
+                    {% endif %}
+                    {% set in_list = true %}
+                    {% set list_type = 'ol' %}
+                {% endif %}
+                
+                {% if '. ' in line and line|trim|first|string|isdigit() %}
+                    {% set item_content = line.split('. ', 1)[1] if '. ' in line else line %}
+                    {{ list_items.append('<li>' + item_content + '</li>') or '' }}
+                {% elif line|trim|match('^\(\w+\)') %}
+                    {{ list_items.append('<li>' + line + '</li>') or '' }}
+                {% elif line|trim|match('^[a-z]\)') %}
+                    {{ list_items.append('<li>' + line + '</li>') or '' }}
+                {% endif %}
+            
+            {# Handle QCS subsections with header formatting #}
+            {% elif is_header %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {% if in_section %}
+                            {{ section_content.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% else %}
+                            {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% endif %}
+                    {% else %}
+                        {% if in_section %}
+                            {{ section_content.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% else %}
+                            {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% endif %}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<h4 class="policy-subsection-title">' + line|trim + '</h4>') or '' }}
+                {% else %}
+                    {{ output.append('<h4 class="policy-subsection-title">' + line|trim + '</h4>') or '' }}
+                {% endif %}
+            
+            {# Handle empty lines #}
+            {% elif line|trim == '' %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {% if in_section %}
+                            {{ section_content.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% else %}
+                            {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% endif %}
+                    {% else %}
+                        {% if in_section %}
+                            {{ section_content.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% else %}
+                            {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% endif %}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<br>') or '' }}
+                {% else %}
+                    {{ output.append('<br>') or '' }}
+                {% endif %}
+            
+            {# Handle normal paragraphs #}
+            {% else %}
+                {% if in_list %}
+                    {% if list_type == 'ul' %}
+                        {% if in_section %}
+                            {{ section_content.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% else %}
+                            {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                        {% endif %}
+                    {% else %}
+                        {% if in_section %}
+                            {{ section_content.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% else %}
+                            {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                        {% endif %}
+                    {% endif %}
+                    {% set in_list = false %}
+                    {% set list_items = [] %}
+                {% endif %}
+                
+                {% if in_section %}
+                    {{ section_content.append('<p class="qcs-paragraph">' + line + '</p>') or '' }}
+                {% else %}
+                    {{ output.append('<p class="qcs-paragraph">' + line + '</p>') or '' }}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {# Close any open elements #}
+        {% if in_list %}
+            {% if list_type == 'ul' %}
+                {% if in_section %}
+                    {{ section_content.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                {% else %}
+                    {{ output.append('<ul class="qcs-list">' + list_items|join('') + '</ul>') or '' }}
+                {% endif %}
+            {% else %}
+                {% if in_section %}
+                    {{ section_content.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                {% else %}
+                    {{ output.append('<ol class="qcs-list">' + list_items|join('') + '</ol>') or '' }}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        
+        {% if in_section %}
+            {{ output.append(section_content|join('') + '</div>') or '' }}
+        {% endif %}
+        
+        {{ output|join('\n')|safe }}
+    {% endif %}
+{% endmacro %}

@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block title %}CQC Regulations - Cathena Policy Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+    .regulation-card {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    .regulation-card:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .regulation-title {
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 10px;
+    }
+    .regulation-number {
+        font-weight: bold;
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+    .regulation-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .regulation-content {
+        margin-left: 45px;
+    }
+    .doc-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 15px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .doc-link:hover {
+        background-color: #e9ecef;
+        color: #0d6efd;
+    }
+    .doc-link i {
+        margin-right: 8px;
+    }
+    #regulationSearch {
+        padding-left: 40px;
+    }
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 10px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">CQC Regulations</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">CQC Regulations Overview</h5>
+                    <p class="card-text">The Care Quality Commission (CQC) regulates health and social care services in England through a set of regulations that providers must follow. These regulations cover a wide range of requirements including safety, quality, governance, and person-centered care.</p>
+                    
+                    <div class="mt-3">
+                        <p class="card-text">You can view all the CQC regulations below, organized by category and regulation number. Use the search box to find specific regulations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Search Regulations</h5>
+                    <div class="position-relative">
+                        <i data-feather="search" class="search-icon"></i>
+                        <input type="text" id="regulationSearch" class="form-control" placeholder="Search regulations...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="regulationsContainer">
+        <!-- Section: Person-centered care -->
+        <h3 class="mt-4 mb-3">Person-centered care</h3>
+        
+        <!-- Regulation 9 -->
+        <div class="regulation-card" data-regulation="9">
+            <div class="regulation-header">
+                <div class="regulation-number">9</div>
+                <h4 class="regulation-title">Person-centered care</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to ensure care and treatment is designed to meet the needs of each person, and that each person receives appropriate person-centered care and treatment based on an assessment of their needs and preferences.</p>
+                <p>It specifies that the care planning process must be designed to ensure that the person's needs, wishes and preferences are identified and met, and the delivery of care should continuously reflect their needs.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 10 -->
+        <div class="regulation-card" data-regulation="10">
+            <div class="regulation-header">
+                <div class="regulation-number">10</div>
+                <h4 class="regulation-title">Dignity and respect</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires that service users must be treated with dignity and respect. This includes ensuring privacy during care and treatment, supporting autonomy and independence, and respecting the equality and diversity of service users.</p>
+                <p>Providers must have suitable arrangements to ensure that service users are treated with dignity and respect at all times while receiving care and treatment.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 11 -->
+        <div class="regulation-card" data-regulation="11">
+            <div class="regulation-header">
+                <div class="regulation-number">11</div>
+                <h4 class="regulation-title">Need for consent</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to obtain consent before providing care and treatment to people. Providers must ensure that people, or individuals lawfully acting on their behalf, give valid consent to care and treatment in line with legislation and case law.</p>
+                <p>Providers must have systems and processes in place to support this requirement, including supporting people to make decisions and documenting consent appropriately.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Section: Safety -->
+        <h3 class="mt-4 mb-3">Safety</h3>
+        
+        <!-- Regulation 12 -->
+        <div class="regulation-card" data-regulation="12">
+            <div class="regulation-header">
+                <div class="regulation-number">12</div>
+                <h4 class="regulation-title">Safe care and treatment</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires that care and treatment must be provided in a safe way for service users. This includes assessing risks to health and safety, ensuring that premises and equipment are safe, preventing and controlling the spread of infection, and managing medicines safely.</p>
+                <p>Providers must do all that is reasonably practicable to mitigate risks to the health and safety of service users receiving care and treatment.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 13 -->
+        <div class="regulation-card" data-regulation="13">
+            <div class="regulation-header">
+                <div class="regulation-number">13</div>
+                <h4 class="regulation-title">Safeguarding service users from abuse and improper treatment</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to protect people from abuse and improper treatment. Providers must have systems and processes that prevent abuse, and respond appropriately to any allegation of abuse.</p>
+                <p>This includes preventing unnecessary restraint, ensuring staff understand how to recognize and report potential abuse, and investigating any allegation of abuse promptly.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 14 -->
+        <div class="regulation-card" data-regulation="14">
+            <div class="regulation-header">
+                <div class="regulation-number">14</div>
+                <h4 class="regulation-title">Meeting nutritional and hydration needs</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to ensure that people have adequate nutrition and hydration to sustain life and good health, and reduce the risks of malnutrition and dehydration while receiving care and treatment.</p>
+                <p>Providers must assess the nutritional and hydration needs of service users and provide choice, variety, and adequate quantities of food and drink.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 15 -->
+        <div class="regulation-card" data-regulation="15">
+            <div class="regulation-header">
+                <div class="regulation-number">15</div>
+                <h4 class="regulation-title">Premises and equipment</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires that all premises and equipment used by service providers must be clean, secure, suitable, properly used, properly maintained, and appropriately located for the purpose for which they are being used.</p>
+                <p>Providers must assess the risks to the health and safety of service users from the premises and equipment and take appropriate measures to minimize these risks.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Section: Governance -->
+        <h3 class="mt-4 mb-3">Governance and Transparency</h3>
+        
+        <!-- Regulation 8 -->
+        <div class="regulation-card" data-regulation="8">
+            <div class="regulation-header">
+                <div class="regulation-number">8</div>
+                <h4 class="regulation-title">General - Duty of Candour</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to be open and transparent with relevant persons in relation to care and treatment provided to people who use services in carrying on a regulated activity.</p>
+                <p>It sets out the specific requirements that providers must follow when things go wrong with care and treatment, including informing people about the incident, providing reasonable support, truthful information and an apology when things go wrong.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 16 -->
+        <div class="regulation-card" data-regulation="16">
+            <div class="regulation-header">
+                <div class="regulation-number">16</div>
+                <h4 class="regulation-title">Receiving and acting on complaints</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to have an effective system to identify, receive, record, handle and respond to complaints by service users and other persons in relation to the regulated activities they provide.</p>
+                <p>Providers must investigate complaints, take appropriate action, and learn from feedback to improve the quality of their services.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 17 -->
+        <div class="regulation-card" data-regulation="17">
+            <div class="regulation-header">
+                <div class="regulation-number">17</div>
+                <h4 class="regulation-title">Good governance</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to have effective governance, including systems and processes to ensure compliance with regulations. This includes assessing, monitoring and improving the quality and safety of services provided.</p>
+                <p>Providers must maintain accurate, complete and contemporaneous records, and seek and act on feedback from service users, staff and others to continually evaluate and improve their services.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Section: Staffing -->
+        <h3 class="mt-4 mb-3">Staffing</h3>
+        
+        <!-- Regulation 18 -->
+        <div class="regulation-card" data-regulation="18">
+            <div class="regulation-header">
+                <div class="regulation-number">18</div>
+                <h4 class="regulation-title">Staffing</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to ensure they have sufficient numbers of suitably qualified, competent, skilled and experienced staff to meet the needs of the people using the service at all times.</p>
+                <p>Staff must receive appropriate support, training, professional development, supervision and appraisal to carry out their duties effectively. They must also be enabled to raise concerns about care or other matters without fear of reprisals.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 19 -->
+        <div class="regulation-card" data-regulation="19">
+            <div class="regulation-header">
+                <div class="regulation-number">19</div>
+                <h4 class="regulation-title">Fit and proper persons employed</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to ensure that all staff employed, including temporary and agency staff, are of good character, have the qualifications, competence, skills and experience necessary for the work to be performed.</p>
+                <p>Providers must have effective recruitment procedures, and appropriate checks must be undertaken before appointments are made.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+        
+        <!-- Regulation 20 -->
+        <div class="regulation-card" data-regulation="20">
+            <div class="regulation-header">
+                <div class="regulation-number">20</div>
+                <h4 class="regulation-title">Duty of candour</h4>
+            </div>
+            <div class="regulation-content">
+                <p>This regulation requires providers to act in an open and transparent way in relation to care and treatment provided to service users.</p>
+                <p>When something goes wrong with care or treatment provided, the person must be informed, given reasonable support, provided with truthful information about the incident, and an apology.</p>
+                <p><strong>Relevant for:</strong> All service providers</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const regulationSearch = document.getElementById('regulationSearch');
+        const regulationCards = document.querySelectorAll('.regulation-card');
+        
+        regulationSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            regulationCards.forEach(card => {
+                const cardContent = card.textContent.toLowerCase();
+                const regulationNumber = card.getAttribute('data-regulation');
+                
+                // Check if the card content or regulation number contains the search term
+                if (cardContent.includes(searchTerm) || regulationNumber.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

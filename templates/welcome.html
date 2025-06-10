@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Cathena Policy Management{% endblock %}
+
+{% block auth_content %}
+<div class="container-fluid p-0">
+    <!-- Hero section -->
+    <div class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Cathena Policy Management System</h1>
+                    <p class="lead mb-4">The advanced policy management platform for healthcare organizations. Streamline your policy management, ensure compliance, and improve staff engagement.</p>
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a href="{{ url_for('auth_bp.login') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                            <i data-feather="log-in" class="feather-sm me-1"></i> Log In
+                        </a>
+                        <a href="{{ url_for('auth_bp.register') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i data-feather="user-plus" class="feather-sm me-1"></i> Register
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="https://via.placeholder.com/600x400?text=Cathena+Policy+Management" class="img-fluid rounded shadow" alt="Cathena Policy Management">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats section -->
+    <div class="bg-light py-5">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-5">
+                            <i data-feather="file-text" class="feather-lg text-primary mb-3"></i>
+                            <h3 class="h2 fw-bold">{{ stats.policy_count }}</h3>
+                            <p class="text-muted">Total Policies</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-5">
+                            <i data-feather="folder" class="feather-lg text-primary mb-3"></i>
+                            <h3 class="h2 fw-bold">{{ stats.category_count }}</h3>
+                            <p class="text-muted">Policy Categories</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-5">
+                            <i data-feather="users" class="feather-lg text-primary mb-3"></i>
+                            <h3 class="h2 fw-bold">{{ stats.user_count }}</h3>
+                            <p class="text-muted">Active Users</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features section -->
+    <div class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Key Features</h2>
+                <p class="text-muted">Discover how Cathena simplifies policy management</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle p-3 me-3">
+                                    <i data-feather="search" class="feather-sm text-white"></i>
+                                </div>
+                                <h4 class="mb-0">Easy Access</h4>
+                            </div>
+                            <p class="card-text text-muted">Quickly find and access the policies you need with advanced search and categorization.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle p-3 me-3">
+                                    <i data-feather="shield" class="feather-sm text-white"></i>
+                                </div>
+                                <h4 class="mb-0">Compliance</h4>
+                            </div>
+                            <p class="card-text text-muted">Stay compliant with the latest regulations. Policies are regularly updated to meet CQC requirements.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle p-3 me-3">
+                                    <i data-feather="award" class="feather-sm text-white"></i>
+                                </div>
+                                <h4 class="mb-0">Engagement</h4>
+                            </div>
+                            <p class="card-text text-muted">Gamified learning system to increase staff engagement and knowledge retention.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories section -->
+    <div class="bg-light py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Policy Categories</h2>
+                <p class="text-muted">Organized for quick access and compliance</p>
+            </div>
+            <div class="row g-4">
+                {% for category in categories %}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text text-muted">{{ category.description or 'Policies related to ' + category.name }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4">
+                            <a href="{{ url_for('auth_bp.login') }}" class="btn btn-sm btn-outline-primary">
+                                <i data-feather="eye" class="feather-sm me-1"></i> View Policies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-md-0">&copy; {{ current_year }} Cathena Policy Management System. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white me-3">Privacy Policy</a>
+                    <a href="#" class="text-white me-3">Terms of Service</a>
+                    <a href="#" class="text-white">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #fff;
+    }
+</style>
+{% endblock %}

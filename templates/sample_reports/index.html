@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block title %}Sample Reports - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Sample Reports</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('sample_reports.upload') }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-upload"></i> Upload New Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Type Filter -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Filter by Report Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('sample_reports.index') }}" class="btn btn-outline-primary">All</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='M-yearly') }}" class="btn btn-outline-info">Management - Yearly</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='M-quarterly') }}" class="btn btn-outline-info">Management - Quarterly</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='CQC-response') }}" class="btn btn-outline-warning">CQC Response</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='F-yearly') }}" class="btn btn-outline-success">Financial - Yearly</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='I-monthly') }}" class="btn btn-outline-secondary">Internal - Monthly</a>
+                        <a href="{{ url_for('sample_reports.by_type', type_code='A-quarterly') }}" class="btn btn-outline-danger">Audit - Quarterly</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Available Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if reports %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Version</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td><strong>{{ report.reference }}</strong></td>
+                                    <td>{{ report.report_title }}</td>
+                                    <td><span class="badge bg-primary">{{ report.type_display }}</span></td>
+                                    <td>{{ report.uploaded_by }}</td>
+                                    <td>{{ report.upload_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ report.version }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('sample_reports.view', report_id=report.id) }}" class="btn btn-sm btn-outline-primary" title="View details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('sample_reports.download', report_id=report.id) }}" class="btn btn-sm btn-outline-success" title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <a href="{{ url_for('sample_reports.analyze', report_id=report.id) }}" class="btn btn-sm btn-outline-info" title="Analyze">
+                                                <i class="bi bi-graph-up"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ report.id }}" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade" id="deleteModal{{ report.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ report.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel{{ report.id }}">Confirm Delete</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete the report "{{ report.report_title }}"?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('sample_reports.delete', report_id=report.id) }}" method="post">
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> No reports available. Upload a sample report to get started.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any JavaScript specific to this page here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example: Tooltip initialization
+        var tooltips = document.querySelectorAll('[title]');
+        tooltips.forEach(function(tooltip) {
+            new bootstrap.Tooltip(tooltip);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Iterative Policy Learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Iterative Policy Learning</h1>
+            
+            <div class="alert alert-info">
+                <p><strong>How it works:</strong> This system repeatedly extracts, replicates, and validates the same policy from QCS multiple times. Each iteration learns from the previous attempt to perfect the process.</p>
+                <p>The system will:</p>
+                <ol>
+                    <li>Log into QCS and extract a policy (either random or specified)</li>
+                    <li>Analyze the original policy's structure, formatting, and content</li>
+                    <li>Create a reproduction and validate it</li>
+                    <li>Identify improvement areas for the next iteration</li>
+                    <li>Repeat the process with increasingly better results</li>
+                </ol>
+                <p>This methodology ensures systematic improvement of the extraction and validation processes.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Start New Learning Process</h4>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('start_learning') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Policy Category</label>
+                                    <select class="form-select" id="category" name="category">
+                                        {% for category in categories %}
+                                        <option value="{{ category }}" {% if category == 'Care Management' %}selected{% endif %}>{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="policy_code" class="form-label">Policy Code (optional)</label>
+                                    <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="Leave blank for random policy">
+                                    <div class="form-text">Specific policy code to learn from. If left blank, a random policy will be selected.</div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary" {% if status.running %}disabled{% endif %}>
+                                        Start Learning Process
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Current Status</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if status.running %}
+                                <div class="alert alert-success">
+                                    <strong>Learning in progress</strong>
+                                </div>
+                                
+                                <p><strong>Current Iteration:</strong> {{ status.current_iteration }}/{{ status.max_iterations }}</p>
+                                
+                                {% if status.policy %}
+                                <p><strong>Policy:</strong> {{ status.policy.title }} ({{ status.policy.code }})</p>
+                                <p><strong>Category:</strong> {{ status.policy.category }}</p>
+                                {% endif %}
+                                
+                                {% if status.latest_results %}
+                                <p><strong>Latest Similarity:</strong> {{ status.latest_results.similarity }}%</p>
+                                <p><strong>Valid:</strong> {% if status.latest_results.is_valid %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-warning">No</span>{% endif %}</p>
+                                
+                                {% if status.latest_results.improvement_areas %}
+                                <p><strong>Current Improvement Areas:</strong></p>
+                                <ul class="small">
+                                    {% for area in status.latest_results.improvement_areas[:3] %}
+                                    <li>{{ area }}</li>
+                                    {% endfor %}
+                                    {% if status.latest_results.improvement_areas|length > 3 %}
+                                    <li>... and {{ status.latest_results.improvement_areas|length - 3 }} more</li>
+                                    {% endif %}
+                                </ul>
+                                {% endif %}
+                                {% endif %}
+                                
+                                <div class="progress mt-3">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                                         style="width: {{ (status.current_iteration / status.max_iterations) * 100 }}%">
+                                         {{ status.current_iteration }}/{{ status.max_iterations }}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid mt-3">
+                                    <button class="btn btn-primary" onclick="location.reload();">Refresh Status</button>
+                                </div>
+                                
+                                <script>
+                                    // Auto-refresh every 30 seconds
+                                    setTimeout(function() {
+                                        window.location.reload();
+                                    }, 30000);
+                                </script>
+                            {% else %}
+                                {% if status.final_report %}
+                                    <div class="alert alert-success">
+                                        <strong>Learning complete!</strong>
+                                    </div>
+                                    
+                                    <p><strong>Policy:</strong> {{ status.final_report.policy.title }} ({{ status.final_report.policy.code }})</p>
+                                    <p><strong>Category:</strong> {{ status.final_report.policy.category }}</p>
+                                    <p><strong>Iterations Completed:</strong> {{ status.final_report.learning_summary.iterations_completed }}/{{ status.final_report.learning_summary.max_iterations }}</p>
+                                    <p><strong>Best Similarity:</strong> {{ status.final_report.learning_summary.best_similarity }}%</p>
+                                    <p><strong>Converged:</strong> {% if status.final_report.learning_summary.converged %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-warning">No</span>{% endif %}</p>
+                                    
+                                    <h5 class="mt-3">Learning Progress:</h5>
+                                    <div id="learningChart" style="height: 200px;"></div>
+                                    
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            var ctx = document.getElementById('learningChart').getContext('2d');
+                                            var learningChart = new Chart(ctx, {
+                                                type: 'line',
+                                                data: {
+                                                    labels: [{% for item in status.final_report.learning_history %}'Iteration {{ item.iteration }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                                                    datasets: [{
+                                                        label: 'Similarity %',
+                                                        data: [{% for item in status.final_report.learning_history %}{{ item.similarity }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                                        borderColor: 'rgba(54, 162, 235, 1)',
+                                                        borderWidth: 2,
+                                                        tension: 0.2
+                                                    }]
+                                                },
+                                                options: {
+                                                    scales: {
+                                                        y: {
+                                                            beginAtZero: false,
+                                                            min: 50,
+                                                            max: 100
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    </script>
+                                {% else %}
+                                    <div class="alert alert-secondary">
+                                        <strong>No learning process running</strong>
+                                    </div>
+                                    <p>Start a new learning process to begin iterative policy extraction.</p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if status.learning_history %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Learning History</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Iteration</th>
+                                <th>Similarity</th>
+                                <th>Valid</th>
+                                <th>Date/Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in status.learning_history %}
+                            <tr>
+                                <td>{{ item.iteration }}</td>
+                                <td>{{ item.similarity }}%</td>
+                                <td>{% if item.is_valid %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-warning">No</span>{% endif %}</td>
+                                <td>{{ item.timestamp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="row mt-4">
+                <div class="col-md-12 text-center">
+                    <a href="{{ url_for('neural_system') }}" class="btn btn-secondary">Back to Neural System</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

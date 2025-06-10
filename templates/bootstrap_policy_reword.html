@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Rewording Tool</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        .comparison-panel {
+            height: calc(100vh - 300px);
+            min-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #fff;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .comparison-panel {
+                height: 400px;
+                min-height: 350px;
+            }
+        }
+        .highlighted {
+            background-color: #ffffd0;
+        }
+        .slider-container {
+            margin: 1.2rem 0;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+        }
+        .policy-id-input {
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            border: none;
+        }
+        .card-body {
+            padding: 1.25rem;
+        }
+        .page-break {
+            position: relative;
+        }
+        .page-break::after {
+            content: '--- Page Break ---';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f8f9fa;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            color: #6c757d;
+            pointer-events: none;
+        }
+        .sticky-controls {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        .toc-list {
+            padding-left: 1.5rem;
+        }
+        .toc-list li {
+            margin-bottom: 0.3rem;
+        }
+        /* Fluid typography for better responsiveness */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header text-center">
+        <h1>Cathena Policy Management System</h1>
+        <p class="lead">Policy Rewording & Reference Tool</p>
+    </div>
+
+    <div class="container-fluid px-4">
+        <div class="row mb-3">
+            <div class="col-12">
+                <h2>Policy Rewording & Reference Tool</h2>
+                <p>Reword policy content and customize policy references</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Panel: Controls -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card mb-4 sticky-controls">
+                    <div class="card-body">
+                        <h3 class="card-title">Rewording Options</h3>
+                        <p>Adjust how much the content is reworded while maintaining essential meaning.</p>
+                        
+                        <div class="slider-container">
+                            <label for="variation-slider" class="form-label">Variation Level</label>
+                            <input type="range" class="form-range" min="1" max="5" step="1" id="variation-slider" value="2">
+                            <div class="slider-labels">
+                                <span>Minimal changes</span>
+                                <span>Moderate</span>
+                                <span>Complete rewrite</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="simplified-language">
+                            <label class="form-check-label" for="simplified-language">Use simplified language</label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="maintain-formatting">
+                            <label class="form-check-label" for="maintain-formatting">Maintain original formatting</label>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h3 class="card-title">Policy Reference</h3>
+                        <p>Customize how the policy is referenced throughout your documents.</p>
+                        
+                        <div class="mb-3">
+                            <label for="policy-id" class="form-label">Policy ID Format</label>
+                            <input type="text" class="form-control policy-id-input" id="policy-id" value="ME02" placeholder="Enter policy ID format">
+                            <div class="form-text">Current QCS format: ME02 (Mechanical, 2nd policy)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reference-style" class="form-label">Reference Style</label>
+                            <select class="form-select" id="reference-style">
+                                <option value="qcs">QCS Style (ME02, CC87, etc.)</option>
+                                <option value="category-sequential">Category-Sequential (HS-002)</option>
+                                <option value="descriptive">Descriptive (HEALTH-SAFETY-02)</option>
+                                <option value="custom">Custom Format</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="custom-format-container" style="display: none;">
+                            <label for="custom-format" class="form-label">Custom Format Pattern</label>
+                            <input type="text" class="form-control" id="custom-format" placeholder="e.g., [CAT]-[NUM]">
+                            <div class="form-text">Use [CAT] for category and [NUM] for number</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="policy-category" class="form-label">Policy Category</label>
+                            <select class="form-select" id="policy-category">
+                                <option value="ME">Mechanical & Engineering (ME)</option>
+                                <option value="HS">Health & Safety (HS)</option>
+                                <option value="HR">Human Resources (HR)</option>
+                                <option value="CM">Care Management (CM)</option>
+                                <option value="AD">Administration (AD)</option>
+                                <option value="CR">Care Records (CR)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" id="apply-rewording">Apply Rewording</button>
+                            <button class="btn btn-success" id="update-reference">Update Policy Reference</button>
+                            <a href="/interface/wizard" class="btn btn-outline-secondary">Back to Wizard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Comparison -->
+            <div class="col-md-8 col-lg-9">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Original Content</h3>
+                        <div id="original-content" class="comparison-panel">
+                            <h2>ME02 - Legionella Policy and Procedure</h2>
+                            <h3>Purpose</h3>
+                            <p>This policy outlines the procedures and responsibilities related to the control of Legionella bacteria within the organization's water systems. It ensures compliance with relevant regulations and provides guidance for all staff members.</p>
+                            
+                            <h3>Scope</h3>
+                            <p>This policy applies to all employees, contractors, visitors, and any individuals who may be affected by the organization's water systems and associated equipment.</p>
+                            
+                            <h3>Policy Statement</h3>
+                            <p>The organization is committed to ensuring that the risk from Legionella bacteria is minimized through proper assessment, monitoring, and maintenance of water systems. It will take all reasonable steps to comply with the Health and Safety at Work Act 1974 and the Control of Substances Hazardous to Health Regulations 2002 (COSHH) concerning Legionella risk management.</p>
+                            
+                            <h3>Definition</h3>
+                            <p>Legionella is a type of bacterium found naturally in freshwater environments, like lakes and streams. It can become a health concern when it grows and spreads in human-made water systems such as showers, hot tubs, cooling towers, hot water tanks, large plumbing systems, and decorative fountains.</p>
+                        </div>
+                        
+                        <h3 class="card-title mt-4">Reworded Content</h3>
+                        <div id="reworded-content" class="comparison-panel">
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                <h2><span id="reference-display">ME02</span> - Legionella Policy and Procedure</h2>
+                                <hr>
+                                <div class="policy-metadata" style="font-size: 0.9em;">
+                                    <p><strong>Version:</strong> <span id="version-number">1.0</span></p>
+                                    <p><strong>Last Updated:</strong> <span id="last-updated">19 May 2025</span></p>
+                                    <p><strong>Review Date:</strong> <span id="review-date">19 May 2026</span></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Table of Contents -->
+                            <div class="toc-section mb-4">
+                                <h3>Table of Contents</h3>
+                                <ol class="toc-list">
+                                    <li>Purpose</li>
+                                    <li>Scope</li>
+                                    <li>Policy Statement</li>
+                                    <li>Definition</li>
+                                    <li>Legislation and Guidance</li>
+                                    <li>Procedure</li>
+                                    <li>Related Policies</li>
+                                    <li>Training Requirements</li>
+                                </ol>
+                            </div>
+                            
+                            <h3>Purpose</h3>
+                            <p>This policy <span class="highlighted">describes</span> the procedures and responsibilities <span class="highlighted">for managing</span> Legionella bacteria within the organisation's water systems. It <span class="highlighted">helps ensure</span> compliance with <span class="highlighted">relevant laws</span> and provides guidance for all staff members.</p>
+                            
+                            <h3>Scope</h3>
+                            <p>This policy <span class="highlighted">covers</span> all employees, contractors, visitors, and <span class="highlighted">anyone who might be</span> affected by the organisation's water systems and associated equipment.</p>
+                            
+                            <h3>Policy Statement</h3>
+                            <p>The organisation <span class="highlighted">is dedicated to</span> ensuring that the risk from Legionella bacteria is <span class="highlighted">reduced</span> through proper assessment, monitoring, and maintenance of water systems. <span class="highlighted">We will</span> take all reasonable steps to comply with the Health and Safety at Work Act 1974 and the Control of Substances Hazardous to Health Regulations 2002 (COSHH) concerning Legionella risk management.</p>
+                            
+                            <h3>Definition</h3>
+                            <p>Legionella is a <span class="highlighted">bacteria</span> found naturally in freshwater environments, like lakes and streams. It can become a health concern when it grows and spreads in <span class="highlighted">building</span> water systems such as showers, hot tubs, cooling towers, hot water tanks, large plumbing systems, and decorative fountains.</p>
+                            
+                            <h3>Legislation and Guidance</h3>
+                            <div class="legislation-section">
+                                <p>This policy is guided by the following legislation and official guidance:</p>
+                                <ul>
+                                    <li>The Health and Safety at Work Act 1974</li>
+                                    <li>The Control of Substances Hazardous to Health Regulations 2002 (COSHH)</li>
+                                    <li>The Management of Health and Safety at Work Regulations 1999</li>
+                                    <li>The Health and Safety Executive (HSE) Approved Code of Practice (ACOP) L8 - "Legionnaires' disease: The control of legionella bacteria in water systems"</li>
+                                    <li>HSE guidance document HSG274</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Footer with page number and care home name -->
+                            <div class="page-footer" style="position: relative; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 0.8em;">
+                                <div style="float: left;">
+                                    <span id="care-home-name">Quenby Care Home</span>
+                                </div>
+                                <div style="float: right;">
+                                    Page <span class="page-number">1</span> of <span class="total-pages">5</span>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            
+                            <!-- Page break for new section -->
+                            <div class="page-break" style="page-break-after: always; margin-top: 40px; margin-bottom: 40px; border-bottom: 1px dashed #ccc;"></div>
+                            
+                            <h3>Procedure</h3>
+                            <div class="procedure-section">
+                                <h4>6.1 Risk Assessment</h4>
+                                <p><span class="highlighted">The organisation will</span> undertake a risk assessment to identify and assess the risk of exposure to Legionella bacteria from work activities and water systems on the premises.</p>
+                                <p>The risk assessment will be reviewed regularly (at least every two years) and whenever there is reason to believe that the original assessment may no longer be valid.</p>
+                                
+                                <h4>6.2 Appointed Person</h4>
+                                <p>The <span class="highlighted">Care Home Manager</span> will appoint a suitably trained and competent person to take managerial responsibility for controlling Legionella risks.</p>
+                                <p>This appointed person will ensure that:</p>
+                                <ul>
+                                    <li>All staff involved in the control of Legionella are properly trained and competent</li>
+                                    <li>A water system schematic is maintained and kept up to date</li>
+                                    <li>A written control scheme is maintained and implemented</li>
+                                    <li>Records of assessments, monitoring, and maintenance are kept</li>
+                                </ul>
+                                
+                                <h4>6.3 Control Measures</h4>
+                                <p>The following control measures <span class="highlighted">must be implemented</span>:</p>
+                                <ol>
+                                    <li>Water temperature control: Cold water should be maintained below 20°C and hot water stored at 60°C and distributed at 50°C (thermostatic mixing valves should be installed at outlets to prevent scalding)</li>
+                                    <li>Regular flushing of outlets that are infrequently used (at least weekly)</li>
+                                    <li>Regular cleaning and disinfection of shower heads and hoses (at least quarterly)</li>
+                                    <li>Regular inspection and cleaning of water tanks</li>
+                                    <li>Maintenance of water system components to prevent scale, corrosion, and microbial growth</li>
+                                </ol>
+                            </div>
+                            
+                            <!-- Footer with page number and care home name -->
+                            <div class="page-footer" style="position: relative; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 0.8em;">
+                                <div style="float: left;">
+                                    <span id="care-home-name">Quenby Care Home</span>
+                                </div>
+                                <div style="float: right;">
+                                    Page <span class="page-number">2</span> of <span class="total-pages">5</span>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            
+                            <!-- Page break for new section -->
+                            <div class="page-break" style="page-break-after: always; margin-top: 40px; margin-bottom: 40px; border-bottom: 1px dashed #ccc;"></div>
+                            
+                            <h3>Related Policies</h3>
+                            <div class="related-policies">
+                                <ul>
+                                    <li>Health and Safety Policy</li>
+                                    <li>Risk Assessment Policy</li>
+                                    <li>Staff Training Policy</li>
+                                    <li>Maintenance Policy</li>
+                                </ul>
+                            </div>
+                            
+                            <h3>Training Requirements</h3>
+                            <div class="training-requirements">
+                                <p>All staff will receive basic awareness training on Legionella risks as part of their induction.</p>
+                                <p>The appointed responsible person and any staff involved in water system management will receive specialized training on Legionella control measures and monitoring.</p>
+                                <p>Training records will be maintained and refresher training provided at appropriate intervals.</p>
+                            </div>
+                            
+                            <!-- Footer with page number and care home name -->
+                            <div class="page-footer" style="position: relative; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 0.8em;">
+                                <div style="float: left;">
+                                    <span id="care-home-name">Quenby Care Home</span>
+                                </div>
+                                <div style="float: right;">
+                                    Page <span class="page-number">3</span> of <span class="total-pages">5</span>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <button class="btn btn-success" id="accept-changes">Accept Changes</button>
+                            <button class="btn btn-warning" id="review-changes">Review Changes</button>
+                            <button class="btn btn-danger" id="discard-changes">Discard Changes</button>
+                        </div>
+                        
+                        <!-- Review Sheet - Initially hidden -->
+                        <div id="review-sheet" class="mt-4" style="display: none; border: 1px solid #ddd; padding: 15px; background-color: #f9f9f9;">
+                            <h4>Policy Review Sheet</h4>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Version</th>
+                                        <th>Date</th>
+                                        <th>Reviewed By</th>
+                                        <th>Position</th>
+                                        <th>Changes Made</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1.0</td>
+                                        <td>15 May 2025</td>
+                                        <td>A. Smith</td>
+                                        <td>Care Quality Manager</td>
+                                        <td>Initial policy creation</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1.1</td>
+                                        <td>19 May 2025</td>
+                                        <td>J. Brown</td>
+                                        <td>Health & Safety Officer</td>
+                                        <td>Updated references to align with new format</td>
+                                    </tr>
+                                    <tr id="new-review-row">
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" id="new-version" placeholder="1.2" value="1.2">
+                                        </td>
+                                        <td>
+                                            <input type="date" class="form-control form-control-sm" id="new-date">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" id="new-reviewer" placeholder="Your name">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" id="new-position" placeholder="Your position">
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control form-control-sm" id="new-changes" placeholder="Describe changes made"></textarea>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+                                <button class="btn btn-sm btn-primary" id="add-review-entry">Add Review Entry</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get form elements
+            const variationSlider = document.getElementById('variation-slider');
+            const simplifiedLanguage = document.getElementById('simplified-language');
+            const maintainFormatting = document.getElementById('maintain-formatting');
+            const policyIdInput = document.getElementById('policy-id');
+            const referenceStyle = document.getElementById('reference-style');
+            const customFormat = document.getElementById('custom-format');
+            const customFormatContainer = document.getElementById('custom-format-container');
+            const policyCategory = document.getElementById('policy-category');
+            const referenceDisplay = document.getElementById('reference-display');
+            const careHomeName = document.getElementById('care-home-name');
+            const versionNumber = document.getElementById('version-number');
+            const lastUpdated = document.getElementById('last-updated');
+            const reviewDate = document.getElementById('review-date');
+            const reviewSheet = document.getElementById('review-sheet');
+            
+            // Button elements
+            const applyRewordingBtn = document.getElementById('apply-rewording');
+            const updateReferenceBtn = document.getElementById('update-reference');
+            const acceptBtn = document.getElementById('accept-changes');
+            const reviewBtn = document.getElementById('review-changes');
+            const discardBtn = document.getElementById('discard-changes');
+            const addReviewEntryBtn = document.getElementById('add-review-entry');
+            
+            // Reference history tracking
+            let referenceHistory = [
+                { old: 'ME02', new: 'ME02', style: 'qcs', date: '15 May 2025' }
+            ];
+            
+            // Set today's date in the date input
+            document.getElementById('new-date').valueAsDate = new Date();
+            
+            // Show/hide custom format input based on reference style selection
+            referenceStyle.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customFormatContainer.style.display = 'block';
+                } else {
+                    customFormatContainer.style.display = 'none';
+                    
+                    // Update policy ID based on selected style
+                    updatePolicyReference();
+                }
+            });
+            
+            // Update policy reference when category changes
+            policyCategory.addEventListener('change', updatePolicyReference);
+            
+            // Function to update the policy reference based on selected style
+            function updatePolicyReference() {
+                const category = policyCategory.value;
+                let newReference = '';
+                
+                switch(referenceStyle.value) {
+                    case 'qcs':
+                        newReference = `${category}02`;
+                        break;
+                    case 'category-sequential':
+                        newReference = `${category}-002`;
+                        break;
+                    case 'descriptive':
+                        const fullName = policyCategory.options[policyCategory.selectedIndex].text;
+                        const shortName = fullName.split(' (')[0];
+                        newReference = `${shortName.toUpperCase().replace(/\\s+/g, '-')}-02`;
+                        break;
+                    case 'custom':
+                        // Will be handled by custom format update
+                        return;
+                    default:
+                        newReference = 'ME02';
+                }
+                
+                policyIdInput.value = newReference;
+            }
+            
+            // Update reference display when policy ID changes
+            policyIdInput.addEventListener('input', function() {
+                referenceDisplay.textContent = this.value;
+            });
+            
+            // Custom format input handling
+            customFormat.addEventListener('input', function() {
+                if (referenceStyle.value === 'custom') {
+                    const category = policyCategory.value;
+                    let format = this.value;
+                    
+                    // Replace placeholders with actual values
+                    format = format.replace('[CAT]', category);
+                    format = format.replace('[NUM]', '02');
+                    
+                    policyIdInput.value = format;
+                    referenceDisplay.textContent = format;
+                }
+            });
+            
+            // Update reference button click
+            updateReferenceBtn.addEventListener('click', function() {
+                const oldReference = referenceDisplay.textContent;
+                const newReference = policyIdInput.value;
+                
+                // Only track if reference actually changed
+                if (oldReference !== newReference) {
+                    // Add to history
+                    referenceHistory.push({
+                        old: oldReference,
+                        new: newReference,
+                        style: referenceStyle.value,
+                        date: new Date().toLocaleDateString('en-GB')
+                    });
+                    
+                    // Update the reference display
+                    referenceDisplay.textContent = newReference;
+                    
+                    // Update version number (increment minor version)
+                    const currentVersion = versionNumber.textContent.split('.');
+                    const majorVersion = parseInt(currentVersion[0]);
+                    const minorVersion = parseInt(currentVersion[1]) + 1;
+                    versionNumber.textContent = `${majorVersion}.${minorVersion}`;
+                    
+                    // Update the last updated date
+                    const today = new Date();
+                    const formattedDate = today.toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    lastUpdated.textContent = formattedDate;
+                    
+                    // Add entry to review sheet
+                    document.getElementById('new-changes').value = `Changed policy reference from ${oldReference} to ${newReference}`;
+                    
+                    // Store the reference change in database (this would call an API endpoint)
+                    console.log('Reference change recorded:', {
+                        policy_id: '123', // This would be the actual policy ID
+                        old_reference: oldReference,
+                        new_reference: newReference,
+                        reference_style: referenceStyle.value,
+                        user: 'Current User', // This would be the logged-in user
+                        notes: `Changed from ${oldReference} to ${newReference} using ${referenceStyle.value} style`
+                    });
+                    
+                    alert(`Policy reference updated from ${oldReference} to ${newReference}. The change has been recorded in the reference history.`);
+                } else {
+                    alert('No change to policy reference detected.');
+                }
+            });
+            
+            // Apply rewording button click
+            applyRewordingBtn.addEventListener('click', function() {
+                const variationLevel = variationSlider.value;
+                const useSimpleLanguage = simplifiedLanguage.checked;
+                const keepFormatting = maintainFormatting.checked;
+                
+                console.log('Applying rewording with settings:');
+                console.log(`- Variation Level: ${variationLevel}`);
+                console.log(`- Simplified Language: ${useSimpleLanguage}`);
+                console.log(`- Maintain Formatting: ${keepFormatting}`);
+                
+                // Simulate rewording with different levels of highlighting
+                const rewordedContent = document.getElementById('reworded-content');
+                const highlightedElements = rewordedContent.querySelectorAll('.highlighted');
+                
+                // Adjust the number of highlights based on variation level
+                highlightedElements.forEach((element, index) => {
+                    // Show more highlights for higher variation levels
+                    const show = index < (variationLevel * 3);
+                    element.style.backgroundColor = show ? '#ffffd0' : 'transparent';
+                    element.style.fontWeight = show ? 'bold' : 'normal';
+                });
+                
+                // If using simplified language, change some words to be simpler
+                if (useSimpleLanguage) {
+                    document.querySelectorAll('#reworded-content p').forEach(paragraph => {
+                        paragraph.innerHTML = paragraph.innerHTML
+                            .replace('minimized', 'reduced')
+                            .replace('bacterium', 'bacteria')
+                            .replace('human-made', 'building')
+                            .replace('associated with', 'from');
+                    });
+                }
+                
+                // Update version number (increment minor version)
+                const currentVersion = versionNumber.textContent.split('.');
+                const majorVersion = parseInt(currentVersion[0]);
+                const minorVersion = parseInt(currentVersion[1]) + 1;
+                versionNumber.textContent = `${majorVersion}.${minorVersion}`;
+                
+                // Update the last updated date
+                const today = new Date();
+                const formattedDate = today.toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                lastUpdated.textContent = formattedDate;
+                
+                // Add entry to review sheet
+                document.getElementById('new-changes').value = `Reworded policy with variation level ${variationLevel}`;
+                
+                alert(`Policy content reworded with variation level ${variationLevel}. Review the changes in the comparison panel.`);
+            });
+            
+            // Handle the action buttons
+            acceptBtn.addEventListener('click', function() {
+                // Show review sheet when accepting changes
+                reviewSheet.style.display = 'block';
+                alert('Changes accepted. Please complete the review sheet to document these changes.');
+            });
+            
+            reviewBtn.addEventListener('click', function() {
+                // Toggle review sheet visibility
+                reviewSheet.style.display = reviewSheet.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            discardBtn.addEventListener('click', function() {
+                alert('Changes discarded. The original policy remains unchanged.');
+                // Reset any changes
+                referenceDisplay.textContent = 'ME02';
+                policyIdInput.value = 'ME02';
+                referenceStyle.value = 'qcs';
+                customFormatContainer.style.display = 'none';
+            });
+            
+            // Add review entry button
+            addReviewEntryBtn.addEventListener('click', function() {
+                const newVersion = document.getElementById('new-version').value;
+                const newDate = new Date(document.getElementById('new-date').valueAsDate);
+                const formattedDate = newDate.toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                const newReviewer = document.getElementById('new-reviewer').value;
+                const newPosition = document.getElementById('new-position').value;
+                const newChanges = document.getElementById('new-changes').value;
+                
+                if (!newVersion || !newDate || !newReviewer || !newPosition || !newChanges) {
+                    alert('Please fill in all review fields.');
+                    return;
+                }
+                
+                // Create new table row
+                const tbody = document.querySelector('#review-sheet table tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${newVersion}</td>
+                    <td>${formattedDate}</td>
+                    <td>${newReviewer}</td>
+                    <td>${newPosition}</td>
+                    <td>${newChanges}</td>
+                `;
+                
+                // Insert before the input row
+                const inputRow = document.getElementById('new-review-row');
+                tbody.insertBefore(newRow, inputRow);
+                
+                // Clear the form
+                document.getElementById('new-version').value = '';
+                document.getElementById('new-reviewer').value = '';
+                document.getElementById('new-position').value = '';
+                document.getElementById('new-changes').value = '';
+                
+                // Update the version number in the policy
+                versionNumber.textContent = newVersion;
+                
+                // Update the last updated date
+                lastUpdated.textContent = formattedDate;
+                
+                alert('Review entry added successfully!');
+            });
+            
+            // Function to update care home name
+            document.getElementById('care-home-name').addEventListener('click', function() {
+                const newName = prompt('Enter care home name:', careHomeName.textContent);
+                if (newName && newName.trim() !== '') {
+                    careHomeName.textContent = newName.trim();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

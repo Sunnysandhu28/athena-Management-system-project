@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block title %}QCS Policy Download{% endblock %}
+
+{% block styles %}
+<style>
+    .mode-selector {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    .mode-card {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .mode-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .mode-card.selected {
+        border: 2px solid #007bff;
+        background-color: #f0f7ff;
+    }
+    .mode-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    .mode-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .form-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background-color: #fff;
+    }
+    .form-section-title {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .download-options {
+        display: none;
+    }
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-badge.real {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-badge.simulation {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .status-badge.auto {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">QCS Policy Download</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">QCS Policy Download</h1>
+            <p class="lead">Download policies from QCS for import into the policy management system.</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">About QCS Integration</h5>
+                <p>This interface allows you to download policies from QCS (Quality Compliance Systems) for use in the policy management system. You can download all policies, a specific category, or a single policy by its code.</p>
+                <p class="mb-0">The system supports both direct QCS access and simulation mode for testing and development.</p>
+            </div>
+        </div>
+    </div>
+    
+    <form method="post" action="{{ url_for('dashboard.index') }}">
+        <!-- QCS Mode Selection -->
+        <div class="form-section mode-selector mb-4">
+            <h3 class="form-section-title">QCS Access Mode</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mode-card h-100 text-center p-3 {% if mode == 'real' %}selected{% endif %}" id="real-mode-card">
+                        <div class="card-body">
+                            <div class="mode-icon text-success">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <h5 class="card-title">Real QCS</h5>
+                            <p class="mode-description">Connect directly to the live QCS system and download authentic policies.</p>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="radio" name="qcs_mode" id="mode_real" value="real" {% if mode == 'real' %}checked{% endif %}>
+                                <label class="form-check-label" for="mode_real">
+                                    Use Real QCS
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mode-card h-100 text-center p-3 {% if mode == 'simulation' %}selected{% endif %}" id="simulation-mode-card">
+                        <div class="card-body">
+                            <div class="mode-icon text-primary">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                            <h5 class="card-title">Simulation</h5>
+                            <p class="mode-description">Use a simulation mode that generates sample policy documents for testing.</p>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="radio" name="qcs_mode" id="mode_simulation" value="simulation" {% if mode == 'simulation' %}checked{% endif %}>
+                                <label class="form-check-label" for="mode_simulation">
+                                    Use Simulation
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mode-card h-100 text-center p-3 {% if mode == 'auto' or not mode %}selected{% endif %}" id="auto-mode-card">
+                        <div class="card-body">
+                            <div class="mode-icon text-warning">
+                                <i class="fas fa-magic"></i>
+                            </div>
+                            <h5 class="card-title">Auto (Smart Fallback)</h5>
+                            <p class="mode-description">Try real QCS first, automatically fall back to simulation if connection fails.</p>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="radio" name="qcs_mode" id="mode_auto" value="auto" {% if mode == 'auto' or not mode %}checked{% endif %}>
+                                <label class="form-check-label" for="mode_auto">
+                                    Auto (Recommended)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Credentials Section -->
+        <div class="form-section mb-4">
+            <h3 class="form-section-title">QCS Credentials</h3>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username" value="{{ username or '' }}" placeholder="QCS Username">
+                        <label for="username">QCS Username</label>
+                    </div>
+                    {% if username %}
+                    <small class="text-muted">Username pre-filled from environment variable.</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="QCS Password">
+                        <label for="password">QCS Password</label>
+                    </div>
+                    {% if username %}
+                    <small class="text-muted">Password may be set in environment variable.</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download Options Section -->
+        <div class="form-section mb-4">
+            <h3 class="form-section-title">Download Options</h3>
+            <div class="row mb-3">
+                <div class="col">
+                    <select class="form-select mb-3" id="download_type" name="download_type">
+                        <option value="all" selected>Download All Policies</option>
+                        <option value="category">Download Policies by Category</option>
+                        <option value="single">Download Single Policy</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Options for "All Policies" -->
+            <div class="download-options" id="all_options">
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="limit" name="limit" min="1" placeholder="Limit (optional)">
+                            <label for="limit">Limit (optional)</label>
+                            <small class="text-muted">Maximum number of policies to download. Leave blank for all available policies.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Options for "By Category" -->
+            <div class="download-options" id="category_options">
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="category" name="category" placeholder="Category Name">
+                            <label for="category">Category Name</label>
+                            <small class="text-muted">Enter the name or partial name of the category to download.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Options for "Single Policy" -->
+            <div class="download-options" id="single_options">
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="Policy Code or Name">
+                            <label for="policy_code">Policy Code or Name</label>
+                            <small class="text-muted">Enter the code or name of the specific policy to download.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-download me-2"></i> Start Download
+                </button>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+            </div>
+        </div>
+    </form>
+    
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Related Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('qcs.import_policies') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-file-import me-2"></i> Import Downloaded Policies
+                                <small class="d-block text-muted">Import previously downloaded policies to the database</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </a>
+                        <a href="{{ url_for('qcs.status') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-info-circle me-2"></i> QCS Connection Status
+                                <small class="d-block text-muted">Check the current status of QCS integration</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show appropriate options based on download type
+        const downloadTypeSelect = document.getElementById('download_type');
+        const allOptions = document.getElementById('all_options');
+        const categoryOptions = document.getElementById('category_options');
+        const singleOptions = document.getElementById('single_options');
+        
+        function updateOptions() {
+            const selectedType = downloadTypeSelect.value;
+            
+            // Hide all options first
+            allOptions.style.display = 'none';
+            categoryOptions.style.display = 'none';
+            singleOptions.style.display = 'none';
+            
+            // Show the selected option
+            if (selectedType === 'all') {
+                allOptions.style.display = 'block';
+            } else if (selectedType === 'category') {
+                categoryOptions.style.display = 'block';
+            } else if (selectedType === 'single') {
+                singleOptions.style.display = 'block';
+            }
+        }
+        
+        // Initial setup
+        updateOptions();
+        
+        // Update when selection changes
+        downloadTypeSelect.addEventListener('change', updateOptions);
+        
+        // Mode selection cards
+        const modeCards = document.querySelectorAll('.mode-card');
+        const modeRadios = document.querySelectorAll('input[name="qcs_mode"]');
+        
+        modeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Get the radio button inside this card
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    
+                    // Remove selected class from all cards
+                    modeCards.forEach(c => c.classList.remove('selected'));
+                    
+                    // Add selected class to this card
+                    this.classList.add('selected');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

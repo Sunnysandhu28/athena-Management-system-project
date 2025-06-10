@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+
+{% block title %}ML Analytics Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+    
+    .stats-card {
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .primary-card {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .success-card {
+        background-color: #1cc88a;
+        color: white;
+    }
+    
+    .info-card {
+        background-color: #36b9cc;
+        color: white;
+    }
+    
+    .warning-card {
+        background-color: #f6c23e;
+        color: #333;
+    }
+    
+    .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stats-description {
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        opacity: 0.9;
+    }
+    
+    .progress {
+        height: 1rem;
+        margin-top: 1rem;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+    }
+    
+    .progress-bar {
+        border-radius: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .section-heading {
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #eaecf4;
+        font-weight: 600;
+        color: #4e73df;
+    }
+    
+    .chart-container {
+        padding: 1.5rem;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        border: 10px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 10px solid #4e73df;
+        width: 80px;
+        height: 80px;
+        animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">ML Analytics Dashboard</h1>
+        <button id="refreshButton" class="btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-sync fa-sm text-white-50"></i> Refresh Data
+        </button>
+    </div>
+
+    <!-- Key Stats Cards -->
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card primary-card">
+                <div class="stats-value" id="knowledgeScore">0%</div>
+                <div class="stats-label">Knowledge Score</div>
+                <div class="progress">
+                    <div class="progress-bar" id="knowledgeBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="stats-description">Overall machine learning capability</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card success-card">
+                <div class="stats-value" id="reportsAnalyzed">0</div>
+                <div class="stats-label">Reports Analyzed</div>
+                <div class="progress">
+                    <div class="progress-bar" id="reportsBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="stats-description">Total documents processed</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card info-card">
+                <div class="stats-value" id="totalInsights">0</div>
+                <div class="stats-label">Insights Generated</div>
+                <div class="stats-description">Total insights extracted from reports</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card warning-card">
+                <div class="stats-value" id="conditionsAnalyzed">0</div>
+                <div class="stats-label">NHS Conditions</div>
+                <div class="progress">
+                    <div class="progress-bar" id="conditionsBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="stats-description">Healthcare conditions analyzed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="section-heading">Analysis Progress</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Training Progress</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">Reports Analysis <span class="float-right" id="reportsPercentage">0%</span></h4>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-info" id="reportsProgress" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">Conditions Analysis <span class="float-right" id="conditionsPercentage">0%</span></h4>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-success" id="conditionsProgress" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">Knowledge Score <span class="float-right" id="knowledgePercentage">0%</span></h4>
+                        <div class="progress mb-4">
+                            <div class="progress-bar bg-primary" id="knowledgeProgress" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">Target Completion <span class="float-right" id="targetPercentage">0%</span></h4>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" id="targetProgress" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Learning Progress Over Time</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="learningProgressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Focus Areas -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="section-heading">Focus Areas</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Area Scores</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="focusAreasTable">
+                            <thead>
+                                <tr>
+                                    <th>Area</th>
+                                    <th>Score</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Governance</td>
+                                    <td id="governanceScore">0%</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" id="governanceBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Staffing</td>
+                                    <td id="staffingScore">0%</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" id="staffingBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Training</td>
+                                    <td id="trainingScore">0%</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" id="trainingBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Safe Care</td>
+                                    <td id="safeCareScore">0%</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" id="safeCareBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Person-Centered Care</td>
+                                    <td id="personCenteredScore">0%</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" id="personCenteredBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Focus Areas Comparison</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="focusAreasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Processing Logs -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="section-heading">Processing Activity</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Processing Logs</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Log Entry</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentLogsTable">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+<script>
+    // Global chart variables
+    let learningProgressChart;
+    let focusAreasChart;
+    
+    // Initialize on document load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts
+        initializeCharts();
+        
+        // Load data on page load
+        loadDashboardData();
+        
+        // Set up refresh button
+        document.getElementById('refreshButton').addEventListener('click', function() {
+            loadDashboardData();
+        });
+        
+        // Set up auto-refresh (every 30 seconds)
+        setInterval(loadDashboardData, 30000);
+    });
+    
+    // Initialize charts with empty data
+    function initializeCharts() {
+        // Learning Progress Chart
+        const learningCtx = document.getElementById('learningProgressChart').getContext('2d');
+        learningProgressChart = new Chart(learningCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Learning Score',
+                    data: [40, 45, 48, 52, 55, 59, 62, 65, 68, 72, 75, 79],
+                    fill: true,
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Focus Areas Chart
+        const focusAreasCtx = document.getElementById('focusAreasChart').getContext('2d');
+        focusAreasChart = new Chart(focusAreasCtx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    'Governance',
+                    'Staffing',
+                    'Training',
+                    'Safe Care',
+                    'Person-Centered Care'
+                ],
+                datasets: [{
+                    label: 'Current Score',
+                    data: [0, 0, 0, 0, 0],
+                    fill: true,
+                    backgroundColor: 'rgba(54, 185, 204, 0.2)',
+                    borderColor: 'rgb(54, 185, 204)',
+                    pointBackgroundColor: 'rgb(54, 185, 204)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 185, 204)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Load dashboard data from API
+    function loadDashboardData() {
+        // Show loading overlay
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        // Fetch data from API
+        fetch('/api/ml-processing-status')
+            .then(response => response.json())
+            .then(data => {
+                // Update dashboard with data
+                updateDashboard(data);
+                
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error loading dashboard data:', error);
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+                // Show error message
+                alert('Error loading dashboard data. Please try again.');
+            });
+    }
+    
+    // Update dashboard with data from API
+    function updateDashboard(data) {
+        // Extract key metrics
+        const knowledgeScore = data.knowledge_score || 0;
+        const reportsAnalyzed = data.total_reports_processed || data.reports_analyzed || 0;
+        const targetReports = data.target_reports || 5000;
+        const totalInsights = data.total_insights || 0;
+        const conditionsAnalyzed = data.condition_knowledge?.conditions_analyzed || 0;
+        const totalConditions = data.condition_knowledge?.total_conditions || 400;
+        const focusAreas = data.focus_areas || {};
+        const recentLogs = data.recent_logs || [];
+        
+        // Calculate percentages
+        const reportsPercentage = (reportsAnalyzed / targetReports * 100).toFixed(1);
+        const conditionsPercentage = (conditionsAnalyzed / totalConditions * 100).toFixed(1);
+        
+        // Update key stats
+        document.getElementById('knowledgeScore').textContent = knowledgeScore.toFixed(1) + '%';
+        document.getElementById('knowledgeBar').style.width = knowledgeScore + '%';
+        
+        document.getElementById('reportsAnalyzed').textContent = reportsAnalyzed;
+        document.getElementById('reportsBar').style.width = reportsPercentage + '%';
+        
+        document.getElementById('totalInsights').textContent = totalInsights;
+        
+        document.getElementById('conditionsAnalyzed').textContent = conditionsAnalyzed + '/' + totalConditions;
+        document.getElementById('conditionsBar').style.width = conditionsPercentage + '%';
+        
+        // Update progress analysis
+        document.getElementById('reportsPercentage').textContent = reportsPercentage + '%';
+        document.getElementById('reportsProgress').style.width = reportsPercentage + '%';
+        
+        document.getElementById('conditionsPercentage').textContent = conditionsPercentage + '%';
+        document.getElementById('conditionsProgress').style.width = conditionsPercentage + '%';
+        
+        document.getElementById('knowledgePercentage').textContent = knowledgeScore.toFixed(1) + '%';
+        document.getElementById('knowledgeProgress').style.width = knowledgeScore + '%';
+        
+        document.getElementById('targetPercentage').textContent = reportsPercentage + '%';
+        document.getElementById('targetProgress').style.width = reportsPercentage + '%';
+        
+        // Update focus areas
+        if (focusAreas) {
+            // Update table
+            document.getElementById('governanceScore').textContent = focusAreas.governance_score?.toFixed(1) + '%' || '0%';
+            document.getElementById('governanceBar').style.width = focusAreas.governance_score + '%' || '0%';
+            
+            document.getElementById('staffingScore').textContent = focusAreas.staffing_score?.toFixed(1) + '%' || '0%';
+            document.getElementById('staffingBar').style.width = focusAreas.staffing_score + '%' || '0%';
+            
+            document.getElementById('trainingScore').textContent = focusAreas.training_score?.toFixed(1) + '%' || '0%';
+            document.getElementById('trainingBar').style.width = focusAreas.training_score + '%' || '0%';
+            
+            document.getElementById('safeCareScore').textContent = focusAreas.safe_care_score?.toFixed(1) + '%' || '0%';
+            document.getElementById('safeCareBar').style.width = focusAreas.safe_care_score + '%' || '0%';
+            
+            document.getElementById('personCenteredScore').textContent = focusAreas.person_centered_care_score?.toFixed(1) + '%' || '0%';
+            document.getElementById('personCenteredBar').style.width = focusAreas.person_centered_care_score + '%' || '0%';
+            
+            // Update chart
+            focusAreasChart.data.datasets[0].data = [
+                focusAreas.governance_score || 0,
+                focusAreas.staffing_score || 0,
+                focusAreas.training_score || 0,
+                focusAreas.safe_care_score || 0,
+                focusAreas.person_centered_care_score || 0
+            ];
+            focusAreasChart.update();
+        }
+        
+        // Update recent logs table
+        const logsTable = document.getElementById('recentLogsTable');
+        logsTable.innerHTML = '';  // Clear existing rows
+        
+        recentLogs.forEach((log, index) => {
+            const row = document.createElement('tr');
+            
+            // Create cells
+            const indexCell = document.createElement('td');
+            indexCell.textContent = index + 1;
+            
+            const logCell = document.createElement('td');
+            logCell.textContent = log;
+            
+            const statusCell = document.createElement('td');
+            if (log.includes('error') || log.includes('failed')) {
+                statusCell.innerHTML = '<span class="badge badge-danger">Error</span>';
+            } else if (log.includes('warn')) {
+                statusCell.innerHTML = '<span class="badge badge-warning">Warning</span>';
+            } else if (log.includes('processed') || log.includes('completed')) {
+                statusCell.innerHTML = '<span class="badge badge-success">Success</span>';
+            } else if (log.includes('analyzed') || log.includes('insights')) {
+                statusCell.innerHTML = '<span class="badge badge-info">Info</span>';
+            } else {
+                statusCell.innerHTML = '<span class="badge badge-secondary">Log</span>';
+            }
+            
+            // Add cells to row
+            row.appendChild(indexCell);
+            row.appendChild(logCell);
+            row.appendChild(statusCell);
+            
+            // Add row to table
+            logsTable.appendChild(row);
+        });
+
+        // If there are no logs, add a message
+        if (recentLogs.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 3;
+            cell.textContent = 'No recent logs available.';
+            cell.className = 'text-center';
+            row.appendChild(cell);
+            logsTable.appendChild(row);
+        }
+        
+        // Update learning progress chart with dummy data (for now)
+        // In a real application, you would fetch historical data points
+        learningProgressChart.update();
+        
+        // Set page title with current knowledge score
+        document.title = `ML Analytics (${knowledgeScore.toFixed(1)}%)`;
+    }
+</script>
+{% endblock %}

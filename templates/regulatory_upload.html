@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document for Regulatory Analysis{% endblock %}
+
+{% block head %}
+<style>
+    .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .upload-area:hover {
+        border-color: #6c757d;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+    
+    .feature-card {
+        height: 100%;
+        transition: all 0.2s;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Upload Document for Regulatory Analysis</h1>
+            <p class="text-muted">Upload a document to analyze its compliance with relevant regulatory frameworks.</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('regulatory_simple.index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Document Upload</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('regulatory_upload.upload_document') }}" method="POST" enctype="multipart/form-data">
+                        <!-- Upload Area -->
+                        <div class="upload-area mb-4" id="drop-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <h5>Drag & Drop your document here</h5>
+                            <p class="text-muted">or</p>
+                            <input type="file" name="document" id="file-input" class="d-none" required>
+                            <button type="button" class="btn btn-outline-primary" id="file-select-btn">
+                                Browse Files
+                            </button>
+                            <p class="text-muted mt-2 small">
+                                Supported formats: PDF, DOC, DOCX, TXT, RTF, ODT
+                            </p>
+                            <div id="file-name" class="mt-2 fw-bold"></div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Framework Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label for="framework" class="form-label">Regulatory Framework</label>
+                                <select class="form-select" id="framework" name="framework" required>
+                                    <option value="" selected disabled>Select Framework</option>
+                                    <option value="care_management">Care Management (CQC)</option>
+                                    <option value="health_safety">Health & Safety (HSE)</option>
+                                    <option value="administration">Administration</option>
+                                    <option value="governance">Governance</option>
+                                    <option value="all">All Frameworks</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Document Type -->
+                            <div class="col-md-6 mb-3">
+                                <label for="document_type" class="form-label">Document Type</label>
+                                <select class="form-select" id="document_type" name="document_type" required>
+                                    <option value="" selected disabled>Select Document Type</option>
+                                    <option value="policy">Policy Document</option>
+                                    <option value="procedure">Procedure</option>
+                                    <option value="form">Form</option>
+                                    <option value="report">Report</option>
+                                    <option value="assessment">Assessment</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Analysis Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Analysis Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="analyzer" id="full-analysis" value="full" checked>
+                                <label class="form-check-label" for="full-analysis">
+                                    Full Analysis (Compliance check, gap analysis, action recommendations)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="analyzer" id="quick-scan" value="quick">
+                                <label class="form-check-label" for="quick-scan">
+                                    Quick Scan (Basic compliance check only)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="fas fa-upload me-2"></i> Upload and Analyze
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Sidebar -->
+        <div class="col-md-4">
+            <div class="card mb-4 feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>Comprehensive Analysis</h5>
+                    <p class="text-muted">Documents are analyzed against multiple regulatory frameworks to identify compliance gaps.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4 feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-success">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h5>Automated Action Plan</h5>
+                    <p class="text-muted">Receive prioritized action items to address compliance gaps identified during analysis.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4 feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-info">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5>Visual Reporting</h5>
+                    <p class="text-muted">View compliance status with intuitive heat maps and visual indicators.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4 feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-warning">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5>Historical Tracking</h5>
+                    <p class="text-muted">Track compliance improvements over time with historical data analysis.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Batch Upload Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Batch Upload</h5>
+            <a href="#" class="btn btn-outline-light btn-sm">Learn More</a>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5>Need to analyze multiple documents?</h5>
+                    <p class="mb-0">Use our batch upload feature to analyze multiple documents at once against their relevant frameworks.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-upload me-2"></i> Batch Upload
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('file-input');
+        const fileSelectBtn = document.getElementById('file-select-btn');
+        const fileName = document.getElementById('file-name');
+        const dropArea = document.getElementById('drop-area');
+        
+        // Open file dialog when button is clicked
+        fileSelectBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Display file name when selected
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = 'Selected file: ' + fileInput.files[0].name;
+                dropArea.style.borderColor = '#28a745';
+            } else {
+                fileName.textContent = '';
+                dropArea.style.borderColor = '#ddd';
+            }
+        });
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefault, false);
+        });
+        
+        function preventDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.style.borderColor = '#28a745';
+            dropArea.style.backgroundColor = 'rgba(40, 167, 69, 0.1)';
+        }
+
+        function unhighlight() {
+            dropArea.style.borderColor = '#ddd';
+            dropArea.style.backgroundColor = '';
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileName.textContent = 'Selected file: ' + files[0].name;
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

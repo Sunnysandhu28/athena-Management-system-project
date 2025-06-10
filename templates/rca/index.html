@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Root Cause Analysis and Learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Root Cause Analysis and Learning Framework</h1>
+            <p class="lead">
+                A comprehensive approach to identifying systemic issues, implementing effective changes, and 
+                building a culture of continuous improvement based on lessons learned from incidents.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h5 mb-0">Templates & Guidelines</h3>
+                </div>
+                <div class="card-body">
+                    <p>Access structured templates and guidance for conducting effective root cause analysis.</p>
+                    <a href="{{ url_for('rca_learning.templates') }}" class="btn btn-outline-primary">View Templates</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="h5 mb-0">Case Studies</h3>
+                </div>
+                <div class="card-body">
+                    <p>Learn from real-world examples of effective root cause analysis and implementation.</p>
+                    <a href="{{ url_for('rca_learning.case_studies') }}" class="btn btn-outline-success">View Case Studies</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="h5 mb-0">Learning Resources</h3>
+                </div>
+                <div class="card-body">
+                    <p>Access academic papers, guides, and best practices for RCA implementation.</p>
+                    <a href="{{ url_for('rca_learning.resources') }}" class="btn btn-outline-info">View Resources</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="h5 mb-0">Key Principles of Effective RCA</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="h6">Systems-Based Approach</h4>
+                            <ul>
+                                <li>Focus on systems and processes rather than individual blame</li>
+                                <li>Identify latent conditions that create error-prone situations</li>
+                                <li>Examine organizational factors contributing to incidents</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="h6">Interdisciplinary Collaboration</h4>
+                            <ul>
+                                <li>Include representatives from all relevant areas</li>
+                                <li>Ensure leadership participation and support</li>
+                                <li>Create psychological safety for honest discussion</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h4 class="h6">Structured Methodology</h4>
+                            <ul>
+                                <li>Timeline development with sequence of events</li>
+                                <li>Identification of care delivery problems</li>
+                                <li>Application of analytical tools (5 Whys, Fishbone)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="h6">Implementation Focus</h4>
+                            <ul>
+                                <li>Development of specific, measurable recommendations</li>
+                                <li>Strong actions over weak ones (system changes vs. education)</li>
+                                <li>Clear accountability and follow-up mechanisms</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="h5 mb-0">Featured Resources</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for resource in resources[:3] %}
+                        <a href="{{ url_for('rca_learning.view_resource', id=resource.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ resource.title }}</h5>
+                                <small>{{ resource.resource_type }}</small>
+                            </div>
+                            <p class="mb-1">{{ resource.source }}</p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning">
+                    <h3 class="h5 mb-0">Actions and Tools</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('rca_learning.create_template') }}" class="btn btn-outline-dark btn-block mb-3">
+                                <i class="fas fa-plus-circle"></i> Create New Template
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('rca_learning.import_templates') }}" class="btn btn-outline-dark btn-block mb-3">
+                                <i class="fas fa-file-import"></i> Import Templates
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

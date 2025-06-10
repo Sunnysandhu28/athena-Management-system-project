@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}PDF Viewer{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>PDF Viewer</h1>
+    <p class="lead">
+        View PDF files from the attached_assets directory
+    </p>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- PDF Files List -->
+    {% if pdf_files %}
+        <div class="row">
+            {% for pdf in pdf_files %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ pdf.display_name }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">Filename: {{ pdf.filename }}</small>
+                            </p>
+                            <a href="{{ url_for('pdf_viewer.view_pdf', filename=pdf.filename) }}" class="btn btn-primary" target="_blank">
+                                View PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No PDF files found in the attached_assets directory.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

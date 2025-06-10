@@ -1,0 +1,44 @@
+{% extends "policy_learning/base.html" %}
+
+{% block learning_content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Learn from Template File</h2>
+    </div>
+    <div class="card-body">
+        <p class="lead">
+            This tool allows you to upload a policy template file for the system to learn from.
+            The system will analyze the structure and content of the template to identify patterns
+            that can be applied to other policies.
+        </p>
+        
+        <form method="POST" action="{{ url_for('ai_policy_learning.learn_template') }}" enctype="multipart/form-data">
+            <div class="form-group mb-3">
+                <label for="template_file">Template File (PDF)</label>
+                <input type="file" class="form-control" id="template_file" name="template_file" accept="application/pdf" required>
+                <small class="form-text text-muted">Upload a PDF file containing a well-structured policy</small>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="iterations">Learning Iterations</label>
+                <input type="number" class="form-control" id="iterations" name="iterations" value="1000" min="100" max="5000">
+                <small class="form-text text-muted">Higher values may provide better pattern recognition but take longer</small>
+            </div>
+            
+            <div class="alert alert-info">
+                <h5>What does this do?</h5>
+                <p>The template learning process:</p>
+                <ul>
+                    <li>Extracts text content from the uploaded template file</li>
+                    <li>Identifies section headers, subheadings, and structural patterns</li>
+                    <li>Analyzes relationships between different policy sections</li>
+                    <li>Stores the learned patterns to improve policy enhancement</li>
+                </ul>
+                <p>This helps the system to better understand policy structures when enhancing other policies.</p>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Start Learning</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

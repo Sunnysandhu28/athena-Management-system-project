@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}No Analysis Available{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('cqc.dashboard') }}">CQC Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">No Analysis</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> No Analysis Available
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead">There is no document analysis available in your current session.</p>
+                    <p>Please return to the CQC dashboard and analyze a document first.</p>
+                    <a href="{{ url_for('cqc.dashboard') }}" class="btn btn-primary mt-3">
+                        <i class="fas fa-arrow-left"></i> Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

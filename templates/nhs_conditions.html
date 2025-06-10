@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}NHS UK Health Conditions - Cathena Policy Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+    .letter-index {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .letter-index a {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 3px;
+        border-radius: 50%;
+        text-decoration: none;
+        color: #495057;
+        font-weight: bold;
+        background-color: #e9ecef;
+    }
+    .letter-index a:hover, .letter-index a.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+    .condition-card {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    .condition-card:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .condition-link {
+        color: #495057;
+        text-decoration: none;
+    }
+    .condition-link:hover {
+        color: #0d6efd;
+    }
+    .letter-heading {
+        margin-top: 30px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #0d6efd;
+    }
+    .search-results {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .search-item {
+        padding: 10px;
+        border-bottom: 1px solid #dee2e6;
+        transition: background-color 0.2s ease;
+    }
+    .search-item:hover {
+        background-color: #f8f9fa;
+    }
+    #searchSpinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">NHS Conditions</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Search NHS Conditions</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" id="conditionSearch" class="form-control" placeholder="Enter a condition name..." aria-label="Search for a condition" value="{{ search_query }}">
+                        <button class="btn btn-primary" type="button" id="searchButton">
+                            <span id="searchSpinner" class="spinner-border spinner-border-sm" role="status"></span>
+                            Search
+                        </button>
+                    </div>
+                    <div id="searchResults" class="search-results mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Browse by Letter</h5>
+                    <p class="card-text">Total conditions: {{ total_conditions }}</p>
+                    
+                    <div class="letter-index">
+                        {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
+                            {% if letter in conditions_by_letter %}
+                                <a href="#letter-{{ letter }}" class="letter-link">{{ letter }}</a>
+                            {% else %}
+                                <a href="#" class="disabled" style="opacity: 0.5; pointer-events: none;">{{ letter }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for letter, conditions in conditions_by_letter.items()|sort %}
+    <div class="row mb-4" id="letter-{{ letter }}">
+        <div class="col-md-12">
+            <h3 class="letter-heading">{{ letter }}</h3>
+            <div class="row">
+                {% for condition in conditions %}
+                <div class="col-md-4 mb-3">
+                    <div class="condition-card">
+                        <h5><a href="{{ condition.url }}" target="_blank" class="condition-link">{{ condition.name }}</a></h5>
+                        <p class="text-muted mb-0">
+                            <small>
+                                <a href="{{ condition.url }}" target="_blank" class="text-muted">
+                                    <i data-feather="external-link" class="feather-sm"></i> View on NHS Inform
+                                </a>
+                            </small>
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('conditionSearch');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+        const searchSpinner = document.getElementById('searchSpinner');
+        
+        // Function to perform search
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (query.length < 2) {
+                searchResults.innerHTML = '<div class="alert alert-info">Please enter at least 2 characters to search</div>';
+                return;
+            }
+            
+            // Show spinner
+            searchSpinner.style.display = 'inline-block';
+            
+            // Perform search via API
+            fetch(`/api/search-conditions?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Hide spinner
+                    searchSpinner.style.display = 'none';
+                    
+                    // Display results
+                    if (data.error) {
+                        searchResults.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    if (data.results.length === 0) {
+                        searchResults.innerHTML = '<div class="alert alert-warning">No conditions found matching your search.</div>';
+                        return;
+                    }
+                    
+                    // Build results HTML
+                    let resultsHtml = `<h5>Search Results (${data.results.length})</h5>`;
+                    resultsHtml += '<div class="list-group">';
+                    
+                    data.results.forEach(condition => {
+                        resultsHtml += `
+                            <a href="${condition.url}" target="_blank" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">${condition.name}</h5>
+                                </div>
+                                <small class="text-muted">
+                                    <i data-feather="external-link" class="feather-sm"></i> View on NHS Inform
+                                </small>
+                            </a>
+                        `;
+                    });
+                    
+                    resultsHtml += '</div>';
+                    searchResults.innerHTML = resultsHtml;
+                    
+                    // Re-initialize feather icons in the results
+                    feather.replace();
+                })
+                .catch(error => {
+                    // Hide spinner
+                    searchSpinner.style.display = 'none';
+                    searchResults.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                });
+        }
+        
+        // Attach search button click event
+        searchButton.addEventListener('click', performSearch);
+        
+        // Attach enter key press event to search input
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // If there's an initial search query, perform search
+        if (searchInput.value.trim().length > 0) {
+            performSearch();
+        }
+    });
+</script>
+{% endblock %}

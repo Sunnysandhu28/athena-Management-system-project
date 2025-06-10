@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Formatting Results - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Policy Formatting Results</h1>
+    
+    {% if stats %}
+        <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="h5 mb-0">Formatting Complete</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">Formatting Statistics</h3>
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Total Files</th>
+                                        <td>{{ stats.total_files }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Processed Files</th>
+                                        <td>{{ stats.processed_files }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">QCS Replacements</th>
+                                        <td>{{ stats.qcs_replacements }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">US to British English Replacements</th>
+                                        <td>{{ stats.us_to_british_replacements }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Cross-References Added</th>
+                                        <td>{{ stats.cross_references_added }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Errors</th>
+                                        <td class="{% if stats.errors > 0 %}text-danger{% endif %}">{{ stats.errors }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if stats.errors > 0 %}
+                            <div class="alert alert-warning">
+                                <h4 class="alert-heading">Warning</h4>
+                                <p>Some errors occurred during the formatting process. Please check the log file for details.</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">Download Formatted Policies</h3>
+                            <p>Your policies have been formatted according to your specifications. You can download them individually or as a complete package.</p>
+                            
+                            <div class="d-grid gap-2">
+                                {% if output_zip %}
+                                    <a href="{{ url_for('download_formatted_policies_zip') }}" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Download All Formatted Policies (ZIP)
+                                    </a>
+                                {% endif %}
+                                
+                                {% if output_dir %}
+                                    <a href="{{ url_for('view_formatted_policies') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-list"></i> View Individual Formatted Policies
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Error</h4>
+            <p>No formatting statistics available. There might have been an error during the formatting process.</p>
+        </div>
+    {% endif %}
+    
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('format_policies') }}" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Format More Policies
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

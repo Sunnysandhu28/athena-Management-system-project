@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Reference Policies - Cathena Policy Downloader</title>
+    <!-- Bootstrap CSS (Replit-themed) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h3 mb-0"><i class="fas fa-project-diagram me-2"></i>Cross-Reference Policies</h1>
+                            <div>
+                                <a href="{{ url_for('downloads') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-file-download me-1"></i>Downloads
+                                </a>
+                                <a href="{{ url_for('format_policies') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-file-export me-1"></i>Format Policies
+                                </a>
+                                <a href="{{ url_for('compare_policies') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-exchange-alt me-1"></i>Compare Policies
+                                </a>
+                                <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-home me-1"></i>Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-4">
+                            <h5><i class="fas fa-info-circle me-2"></i>About Cross-Referencing</h5>
+                            <p class="mb-0">
+                                This tool allows you to:
+                                <ul>
+                                    <li><strong>Add cross-references</strong> between related policies at the end of each document.</li>
+                                    <li><strong>Create an alphabetical index</strong> with page numbers for all policies.</li>
+                                </ul>
+                                The cross-referencing engine analyzes policy content similarity to determine related policies.
+                            </p>
+                        </div>
+                        
+                        {% if error_message %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if success_message %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>{{ success_message }}
+                            </div>
+                        {% endif %}
+                        
+                        <form method="post" action="{{ url_for('cross_reference_policies') }}">
+                            <!-- Directories Section -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-folder me-2"></i>Directories</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="input_dir" class="form-label">Input Directory (Location of Policy Documents)</label>
+                                        <input type="text" class="form-control" id="input_dir" name="input_dir" value="{{ input_dir }}" placeholder="e.g., C:\Policies\Input" required>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label for="output_dir" class="form-label">Output Directory (Where to Save Modified Documents)</label>
+                                        <input type="text" class="form-control" id="output_dir" name="output_dir" value="{{ output_dir }}" placeholder="e.g., C:\Policies\Referenced" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Options Section -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Options</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" role="switch" id="generate_cross_references" name="generate_cross_references" value="yes" {% if generate_cross_references %}checked{% endif %}>
+                                                    <label class="form-check-label" for="generate_cross_references">Add cross-references to documents</label>
+                                                </div>
+                                                <div class="form-text">Adds a section at the end of each policy that lists related policies.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" role="switch" id="generate_index" name="generate_index" value="yes" {% if generate_index %}checked{% endif %}>
+                                                    <label class="form-check-label" for="generate_index">Generate alphabetical index</label>
+                                                </div>
+                                                <div class="form-text">Creates a separate document with an alphabetical index of all policies.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label for="similarity" class="form-label">Similarity Threshold (0.0 - 1.0)</label>
+                                        <input type="range" class="form-range" min="0.1" max="0.9" step="0.1" id="similarity" name="similarity" value="{{ similarity_threshold }}">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small">0.1 (More Related Policies)</span>
+                                            <span class="small" id="similarity_value">{{ similarity_threshold }}</span>
+                                            <span class="small">0.9 (Fewer Related Policies)</span>
+                                        </div>
+                                        <div class="form-text">Adjusts how similar policies need to be to be considered related.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if stats %}
+                                <!-- Results Section -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Processing Results</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="card text-center mb-3">
+                                                    <div class="card-body">
+                                                        <h3 class="display-4">{{ stats.total_policies }}</h3>
+                                                        <p>Total Policies</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card text-center mb-3">
+                                                    <div class="card-body">
+                                                        <h3 class="display-4">{{ stats.with_cross_references }}</h3>
+                                                        <p>With Cross-References</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card text-center mb-3">
+                                                    <div class="card-body">
+                                                        <h3 class="display-4">{{ "Yes" if stats.index_created else "No" }}</h3>
+                                                        <p>Index Created</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <a href="{{ url_for('downloads') }}" class="btn btn-secondary w-100">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Downloads
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-project-diagram me-2"></i>Process Policies
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update similarity value display
+            const similaritySlider = document.getElementById('similarity');
+            const similarityValue = document.getElementById('similarity_value');
+            
+            if (similaritySlider && similarityValue) {
+                // Initial update
+                similarityValue.textContent = similaritySlider.value;
+                
+                // Update on change
+                similaritySlider.addEventListener('input', function() {
+                    similarityValue.textContent = this.value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

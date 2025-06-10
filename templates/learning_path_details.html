@@ -1,0 +1,43 @@
+
+{% extends "base.html" %}
+
+{% block title %}Learning Path Details{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>Learning Path Details</h2>
+        <p><strong>User:</strong> {{ learning_path.user_name }}</p>
+        <p><strong>Created:</strong> {{ learning_path.created_at }}</p>
+        <p><strong>Overall Completion:</strong> {{ learning_path.overall_completion }}%</p>
+        
+        <div class="alert alert-info">
+            <p>This learning path includes {{ learning_path.module_count }} modules prioritized based on your compliance gaps.</p>
+            <p>Estimated completion date: {{ learning_path.estimated_completion }}</p>
+        </div>
+        
+        <a href="/learning-path/{{ learning_path.id }}/dashboard" class="btn" target="_blank">Open Interactive Dashboard</a>
+        <a href="/learning-paths" class="btn">Back to All Learning Paths</a>
+    </div>
+    
+    <div class="card">
+        <h2>Module Progress Chart</h2>
+        <div class="visualization">
+            <img src="/static/{{ learning_path.module_chart }}" alt="Module Progress Chart">
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Learning Path Timeline</h2>
+        <div class="visualization">
+            <img src="/static/{{ learning_path.timeline_chart }}" alt="Learning Path Timeline">
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Progress Heatmap</h2>
+        <div class="visualization">
+            <img src="/static/{{ learning_path.progress_heatmap }}" alt="Progress Heatmap">
+        </div>
+    </div>
+{% endblock %}
+            

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="card-title h3">Cathena Policy Management System</h1>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h2>Welcome{% if session.username %}, {{ session.username }}{% endif %}</h2>
+                        <p class="lead">Comprehensive Policy Management & Formatting</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Care Management Policy Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Care Management Policies</h5>
+                                    <p class="card-text">Access and format Care Management policies to exactly match QCS PDF styling.</p>
+                                    <a href="{{ url_for('care_management_policies') }}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-folder-open"></i> View Policies
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Policies Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Batch Format Policies</h5>
+                                    <p class="card-text">Format all Care Management policies to match 100% of original QCS PDF styling.</p>
+                                    <a href="{{ url_for('care_management_batch_format') }}" class="btn btn-success mt-2">
+                                        <i class="fas fa-file-medical"></i> Format Policies
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if session.is_admin %}
+                        <!-- Format Learning Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">AI Format Learning</h5>
+                                    <p class="card-text">Access the AI format learning system that helps match 100% of QCS PDF policy formatting.</p>
+                                    <a href="{{ url_for('format_learning_dashboard') }}" class="btn btn-info mt-2">
+                                        <i class="fas fa-brain"></i> Format Learning
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if session.is_admin %}
+                        <!-- Validation Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Policy Validation</h5>
+                                    <p class="card-text">Validate policies against QCS standards and run batch validation processes.</p>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('validation_dashboard') }}" class="btn btn-warning mt-2">
+                                            <i class="fas fa-check-circle"></i> Validation Dashboard
+                                        </a>
+                                        <a href="/batch-validation/" class="btn btn-info mt-2">
+                                            <i class="fas fa-tasks"></i> Batch Validation
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Access Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Admin Dashboard</h5>
+                                    <p class="card-text">Administrative tools and system configuration.</p>
+                                    <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-2">
+                                        <i class="fas fa-cog"></i> Admin Panel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Authentication Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Account Management</h5>
+                                    <p class="card-text">
+                                        {% if not session.user_id %}
+                                        Sign in to access restricted features and tools.
+                                        {% else %}
+                                        You are currently logged in to the system.
+                                        {% endif %}
+                                    </p>
+                                    {% if not session.user_id %}
+                                    <a href="{{ url_for('login') }}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-sign-in-alt"></i> Login
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mt-2">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <div class="small text-center">
+                        <p class="mb-0">Cathena Policy Management System</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

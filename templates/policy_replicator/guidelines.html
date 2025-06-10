@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication Guidelines{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Policy Replicator</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Guidelines</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Policy Replication Guidelines</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Purpose:</strong> This feature allows you to manually view and replicate policy documents word-for-word into your own organization's format without directly downloading from QCS.
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Step-by-Step Process</h5>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-1 text-center mb-2">
+                            <div class="badge bg-primary rounded-circle p-2" style="width: 30px; height: 30px;">1</div>
+                        </div>
+                        <div class="col-md-11">
+                            <h6>View the Original Policy</h6>
+                            <p>Select a policy from the list and click "View" to see the original PDF document. The system will display the content in a readable format.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-1 text-center mb-2">
+                            <div class="badge bg-primary rounded-circle p-2" style="width: 30px; height: 30px;">2</div>
+                        </div>
+                        <div class="col-md-11">
+                            <h6>Create a Template</h6>
+                            <p>Click the "Create Template" button to generate a Word document template with sections ready for you to fill in with the policy content.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-1 text-center mb-2">
+                            <div class="badge bg-primary rounded-circle p-2" style="width: 30px; height: 30px;">3</div>
+                        </div>
+                        <div class="col-md-11">
+                            <h6>Manual Replication</h6>
+                            <p>Using the template and viewing the original document, manually copy the content word-for-word while maintaining the document structure.</p>
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Best Practices for Replication:</h6>
+                                    <ul class="mb-0">
+                                        <li>Copy the exact wording from the original policy</li>
+                                        <li>Maintain the same section structure and hierarchy</li>
+                                        <li>Recreate tables faithfully with the same rows and columns</li>
+                                        <li>Include all lists and bullet points in the same order</li>
+                                        <li>Preserve any references to other policies or regulations</li>
+                                        <li>Match formatting styles for headings, emphasis, etc.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-1 text-center mb-2">
+                            <div class="badge bg-primary rounded-circle p-2" style="width: 30px; height: 30px;">4</div>
+                        </div>
+                        <div class="col-md-11">
+                            <h6>Upload the Replicated Document</h6>
+                            <p>When you have completed the replication, click "Upload Replicated Document" from the original policy view page to save your work to the system.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-1 text-center mb-2">
+                            <div class="badge bg-primary rounded-circle p-2" style="width: 30px; height: 30px;">5</div>
+                        </div>
+                        <div class="col-md-11">
+                            <h6>Compare the Documents</h6>
+                            <p>After uploading, you can use the comparison tool to verify that your replicated document accurately matches the original policy.</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">Quality Assurance</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Accuracy Checklist</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>All sections are included</li>
+                                        <li>Text is copied verbatim</li>
+                                        <li>Tables are reproduced accurately</li>
+                                        <li>No content is omitted or altered</li>
+                                        <li>Document metadata (title, date) is correct</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Common Issues to Avoid</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>Paraphrasing or rewording content</li>
+                                        <li>Skipping sections or paragraphs</li>
+                                        <li>Changing document structure</li>
+                                        <li>Altering policy references</li>
+                                        <li>Missing tables or visual elements</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">Technical Requirements</h5>
+                    <ul>
+                        <li>File Format: Only Microsoft Word (.docx) files are accepted for uploads</li>
+                        <li>Maximum File Size: 10MB</li>
+                        <li>Document Structure: Should include clear headings and sections</li>
+                        <li>Styles: Use proper Word styles for headings (Heading 1, Heading 2, etc.)</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <strong>Important:</strong> The policy replication process is designed for internal use only. Replicated policies should only be used within your organization according to your license agreement with QCS. Do not distribute or share replicated policies outside your organization.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-4">
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Policy List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,551 @@
+{% extends "layout.html" %}
+
+{% block title %}CQC Compliance Reports | Quenby Rest Home{% endblock %}
+
+{% block head %}
+<style>
+    .dashboard-header {
+        background-color: #003366;
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 0;
+    }
+    
+    .client-logo {
+        height: 60px;
+        margin-bottom: 15px;
+    }
+    
+    .report-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    
+    .card-accent-top {
+        height: 6px;
+        width: 100%;
+    }
+    
+    .accent-zscore {
+        background: linear-gradient(90deg, #0062cc, #1e88e5);
+    }
+    
+    .accent-stddev {
+        background: linear-gradient(90deg, #0097a7, #00bcd4);
+    }
+    
+    .accent-regulatory {
+        background: linear-gradient(90deg, #e65100, #ff9800);
+    }
+    
+    .report-icon {
+        width: 48px;
+        height: 48px;
+        background-color: rgba(0, 102, 204, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .report-icon.zscore-icon {
+        background-color: rgba(30, 136, 229, 0.1);
+        color: #1e88e5;
+    }
+    
+    .report-icon.stddev-icon {
+        background-color: rgba(0, 151, 167, 0.1);
+        color: #0097a7;
+    }
+    
+    .report-icon.regulatory-icon {
+        background-color: rgba(230, 81, 0, 0.1);
+        color: #e65100;
+    }
+    
+    .report-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    
+    .report-subtitle {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin-bottom: 15px;
+    }
+    
+    .report-stat {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .stat-icon {
+        width: 30px;
+        height: 30px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+    
+    .stat-text {
+        font-size: 14px;
+        color: #2c3e50;
+    }
+    
+    .badge-pill-custom {
+        padding: 5px 10px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-right: 5px;
+    }
+    
+    .badge-statistical {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .badge-regulatory {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    
+    .activity-table th {
+        font-weight: 600;
+        color: #2c3e50;
+        border-top: none;
+        border-bottom: 2px solid #ebedf2;
+    }
+    
+    .activity-table td {
+        vertical-align: middle;
+        border-color: #ebedf2;
+    }
+    
+    .reference-code {
+        font-family: monospace;
+        font-size: 12px;
+        background-color: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .btn-quenby {
+        background-color: #003366;
+        color: white;
+    }
+    
+    .btn-quenby:hover {
+        background-color: #002855;
+        color: white;
+    }
+    
+    .btn-quenby-outline {
+        border: 2px solid #003366;
+        color: #003366;
+    }
+    
+    .btn-quenby-outline:hover {
+        background-color: #003366;
+        color: white;
+    }
+    
+    .organization-badge {
+        background-color: #f8f9fa;
+        color: #003366;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+    
+    .organization-badge i {
+        margin-right: 8px;
+        color: #003366;
+    }
+    
+    .progress-slim {
+        height: 4px;
+        border-radius: 2px;
+        margin: 15px 0;
+    }
+    
+    .comprehensive-report-card {
+        border-left: 4px solid #ff9800;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .comprehensive-report-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .report-meta {
+        color: #7f8c8d;
+        font-size: 12px;
+        margin-bottom: 0;
+    }
+    
+    .report-tags {
+        margin-top: 10px;
+    }
+    
+    .dropdown-menu-custom {
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: none;
+        padding: 10px 0;
+    }
+    
+    .dropdown-item-custom {
+        padding: 8px 20px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-item-custom:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .dropdown-item-custom i {
+        margin-right: 10px;
+        opacity: 0.7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="organization-badge">
+            <i class="fas fa-building"></i> Quenby Rest Home
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-2">CQC Compliance Reports</h1>
+                <p class="lead">Comprehensive analysis and statistical insights for regulatory compliance</p>
+            </div>
+            <div class="col-md-4 text-md-end d-flex justify-content-md-end mt-3 mt-md-0">
+                <div class="dropdown me-2">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="reportsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-plus me-2"></i> New Report
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="reportsDropdown">
+                        <li><a class="dropdown-item dropdown-item-custom" href="{{ url_for('cqc_report.create_report') }}"><i class="fas fa-file-medical"></i> Comprehensive Report</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{{ url_for('cqc_report.create_report') }}"><i class="fas fa-chart-line"></i> Statistical Analysis</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{{ url_for('cqc_report.create_report') }}"><i class="fas fa-tasks"></i> Action Plan</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{{ url_for('cqc_reports.root_cause_analysis') }}"><i class="fas fa-search-plus"></i> Root Cause Analysis</a></li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('cqc_report.guidelines') }}" class="btn btn-light">
+                    <i class="fas fa-info-circle me-2"></i> Guidelines
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Key Statistical Reports -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card report-card shadow">
+                <div class="card-accent-top accent-zscore"></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="report-icon zscore-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h3 class="report-title">Z-Score Analysis Report</h3>
+                            <p class="report-subtitle">Regional Rating Variations & Inspector Consistency</p>
+                        </div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="stat-text">9 Geographic Regions Analyzed</div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-text">Inspector Consistency Analysis</div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="stat-text">Statistical Significance Testing</div>
+                    </div>
+                    
+                    <p class="text-muted small mt-3">
+                        <i class="fas fa-info-circle me-1"></i> Analysis based on 5,000 CQC inspection reports
+                    </p>
+                    
+                    <div class="text-end mt-4">
+                        <span class="badge badge-pill-custom badge-statistical me-2">Statistical</span>
+                        <a href="{{ url_for('cqc_report.download_z_score_analysis') }}" class="btn btn-quenby">
+                            <i class="fas fa-file-download me-2"></i> View Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card report-card shadow">
+                <div class="card-accent-top accent-stddev"></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="report-icon stddev-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="report-title">Standard Deviation Analysis</h3>
+                            <p class="report-subtitle">Rating Consistency & Geographical Variations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <div class="stat-text">Domain-Specific Calculations</div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-text">Inspector Bias Detection</div>
+                    </div>
+                    
+                    <div class="report-stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-globe-europe"></i>
+                        </div>
+                        <div class="stat-text">42 Regional Areas Compared</div>
+                    </div>
+                    
+                    <p class="text-muted small mt-3">
+                        <i class="fas fa-info-circle me-1"></i> Includes 95% confidence interval calculations
+                    </p>
+                    
+                    <div class="text-end mt-4">
+                        <span class="badge badge-pill-custom badge-statistical me-2">Statistical</span>
+                        <a href="{{ url_for('cqc_report.download_appendix_data') }}" class="btn btn-quenby">
+                            <i class="fas fa-file-download me-2"></i> View Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Regulatory Compliance Report -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card report-card shadow">
+                <div class="card-accent-top accent-regulatory"></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="report-icon regulatory-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="report-title">Regulatory Compliance Dashboard</h3>
+                            <p class="report-subtitle">Comprehensive Assessment of CQC Requirements</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-6 mb-3 mb-md-0">
+                            <div class="text-center">
+                                <h2 class="mb-1" style="color:#003366">74.6%</h2>
+                                <p class="text-muted small mb-0">Overall Compliance</p>
+                                <div class="progress progress-slim">
+                                    <div class="progress-bar bg-success" style="width: 74.6%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3 mb-md-0">
+                            <div class="text-center">
+                                <h2 class="mb-1" style="color:#003366">+0.87</h2>
+                                <p class="text-muted small mb-0">Regional Z-Score</p>
+                                <div class="progress progress-slim">
+                                    <div class="progress-bar bg-info" style="width: 82%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-center">
+                                <h2 class="mb-1" style="color:#003366">78<sup>th</sup></h2>
+                                <p class="text-muted small mb-0">Percentile</p>
+                                <div class="progress progress-slim">
+                                    <div class="progress-bar bg-primary" style="width: 78%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-center">
+                                <h2 class="mb-1" style="color:#003366">+8.9%</h2>
+                                <p class="text-muted small mb-0">Improvement</p>
+                                <div class="progress progress-slim">
+                                    <div class="progress-bar bg-warning" style="width: 89%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comprehensive-report-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4 class="h5 mb-1">CQC Comprehensive Compliance Report</h4>
+                                <p class="report-meta">Generated on {{ today_date }}</p>
+                            </div>
+                            <span class="badge badge-pill-custom badge-regulatory">Latest</span>
+                        </div>
+                        <p class="mt-2">Complete analysis of policy compliance, inspection outcomes, and CQC rating progression with action plan.</p>
+                        <div class="report-tags">
+                            <span class="badge badge-pill-custom" style="background-color:#e3f2fd;color:#1976d2">Z-Score Analysis</span>
+                            <span class="badge badge-pill-custom" style="background-color:#e0f7fa;color:#0097a7">Standard Deviation</span>
+                            <span class="badge badge-pill-custom" style="background-color:#e8f5e9;color:#388e3c">Heat Map</span>
+                            <span class="badge badge-pill-custom" style="background-color:#eceff1;color:#607d8b">Action Plan</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-4">
+                        <a href="{{ url_for('cqc_report.comprehensive_report') }}" class="btn btn-quenby">
+                            <i class="fas fa-eye me-2"></i> View Compliance Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="mb-4">Recent Compliance Activity</h4>
+                    
+                    <div class="table-responsive">
+                        <table class="table activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>Reference</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ today_date }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width:36px;height:36px;background-color:#e3f2fd;color:#1976d2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <div>Generated Z-Score Analysis Report</div>
+                                        </div>
+                                    </td>
+                                    <td><span class="reference-code">Rep/CQC/M/system/0001/Cathena</span></td>
+                                    <td><span class="badge bg-success">Complete</span></td>
+                                    <td>
+                                        <a href="{{ url_for('cqc_report.download_z_score_analysis') }}" class="btn btn-sm btn-quenby-outline action-btn">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ today_date }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width:36px;height:36px;background-color:#e8f5e9;color:#388e3c;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;">
+                                                <i class="fas fa-database"></i>
+                                            </div>
+                                            <div>Processed 5,000 CQC Inspection Reports</div>
+                                        </div>
+                                    </td>
+                                    <td><span class="reference-code">Insp/CQC/M/system/0215/CQC</span></td>
+                                    <td><span class="badge bg-success">Complete</span></td>
+                                    <td>
+                                        <a href="{{ url_for('cqc_report.comprehensive_report') }}" class="btn btn-sm btn-quenby-outline action-btn">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ today_date }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width:36px;height:36px;background-color:#fff3e0;color:#e65100;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;">
+                                                <i class="fas fa-book"></i>
+                                            </div>
+                                            <div>Updated Statistical Analysis Methodology</div>
+                                        </div>
+                                    </td>
+                                    <td><span class="reference-code">Rep/CQC/Q/aj.sandhu/0122/Internal</span></td>
+                                    <td><span class="badge bg-info">Reviewed</span></td>
+                                    <td>
+                                        <a href="{{ url_for('cqc_report.guidelines') }}" class="btn btn-sm btn-quenby-outline action-btn">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

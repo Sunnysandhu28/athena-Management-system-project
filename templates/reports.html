@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Reports</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #003366;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #003366;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px 10px 0;
+        }
+        .btn:hover {
+            background-color: #004a8f;
+        }
+        .card {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .report-item {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            transition: transform 0.3s ease;
+            border-left: 4px solid #003366;
+        }
+        .report-item:hover {
+            transform: translateY(-5px);
+        }
+        .report-title {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 20px;
+            margin-right: 5px;
+        }
+        .badge-high {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        .badge-medium {
+            background-color: #fff8e1;
+            color: #ff8f00;
+        }
+        .badge-low {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        .badge-type {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #003366;
+            border-radius: 4px;
+        }
+        .actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            font-weight: bold;
+            color: #003366;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .meta {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Compliance Reports</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('all-reports')">All Reports</div>
+            <div class="tab" onclick="openTab('learning-paths')">Learning Paths</div>
+            <div class="tab" onclick="openTab('root-cause')">Root Cause Analysis</div>
+        </div>
+        
+        <div id="all-reports" class="tab-content active">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search reports...">
+            </div>
+            
+            <div class="report-grid">
+                <div class="report-item">
+                    <h3 class="report-title">CQC Compliance Report</h3>
+                    <div>
+                        <span class="badge badge-high">High Risk</span>
+                        <span class="badge badge-type">CQC</span>
+                    </div>
+                    <p>Comprehensive analysis of compliance with CQC regulations.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 42%"></div>
+                    </div>
+                    <div class="meta">
+                        Generated: May 18, 2025 • Reference: Cat/Qu/M/aj.sandhu/0001/CQC
+                    </div>
+                    <div class="actions">
+                        <a href="/static/direct-pdf-download.html" class="btn">Download PDF</a>
+                    </div>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">Health and Safety Audit</h3>
+                    <div>
+                        <span class="badge badge-medium">Medium Risk</span>
+                        <span class="badge badge-type">H&S</span>
+                    </div>
+                    <p>Analysis of health and safety compliance across all departments.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%"></div>
+                    </div>
+                    <div class="meta">
+                        Generated: May 10, 2025 • Reference: Cat/Qu/W/aj.sandhu/0008/H&S
+                    </div>
+                    <div class="actions">
+                        <a href="/direct-pdf-download" class="btn">Download PDF</a>
+                    </div>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">GDPR Compliance Analysis</h3>
+                    <div>
+                        <span class="badge badge-low">Low Risk</span>
+                        <span class="badge badge-type">GDPR</span>
+                    </div>
+                    <p>Assessment of data protection policies and procedures.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 91%"></div>
+                    </div>
+                    <div class="meta">
+                        Generated: May 05, 2025 • Reference: Cat/Qu/Q/aj.sandhu/0012/GDPR
+                    </div>
+                    <div class="actions">
+                        <a href="/direct-pdf-download" class="btn">Download PDF</a>
+                    </div>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">Medication Management</h3>
+                    <div>
+                        <span class="badge badge-high">High Risk</span>
+                        <span class="badge badge-type">CQC</span>
+                    </div>
+                    <p>Analysis of medication policies, procedures and incidents.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%"></div>
+                    </div>
+                    <div class="meta">
+                        Generated: May 15, 2025 • Reference: Cat/Qu/B/aj.sandhu/0005/MED
+                    </div>
+                    <div class="actions">
+                        <a href="/direct-pdf-download" class="btn">Download PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="learning-paths" class="tab-content">
+            <h2>Compliance Learning Paths</h2>
+            <p>Interactive learning paths designed to address compliance gaps and improve regulatory compliance.</p>
+            
+            <div class="report-grid">
+                <div class="report-item">
+                    <h3 class="report-title">CQC Compliance Learning</h3>
+                    <div>
+                        <span class="badge badge-high">Priority</span>
+                        <span class="badge badge-type">10 Modules</span>
+                    </div>
+                    <p>Comprehensive learning path addressing CQC compliance gaps.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 42%"></div>
+                    </div>
+                    <div class="meta">
+                        Started: May 18, 2025 • Completion: Jun 30, 2025
+                    </div>
+                    <div class="actions">
+                        <a href="/learning-path" class="btn">View Path</a>
+                        <a href="/generate-pdf" class="btn">Download PDF</a>
+                    </div>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">Health & Safety Training</h3>
+                    <div>
+                        <span class="badge badge-medium">Priority</span>
+                        <span class="badge badge-type">8 Modules</span>
+                    </div>
+                    <p>Learning modules covering all aspects of workplace safety.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%"></div>
+                    </div>
+                    <div class="meta">
+                        Started: May 05, 2025 • Completion: Jun 15, 2025
+                    </div>
+                    <div class="actions">
+                        <a href="/learning-path" class="btn">View Path</a>
+                        <a href="/generate-pdf" class="btn">Download PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="root-cause" class="tab-content">
+            <h2>Root Cause Analysis</h2>
+            <p>Deep analysis of underlying causes for compliance gaps with remediation planning.</p>
+            
+            <div class="card">
+                <h3>CQC Compliance Root Cause Analysis</h3>
+                <p>This analysis identifies critical factors contributing to compliance gaps in key CQC regulations.</p>
+                
+                <a href="/learning-path" class="btn">View Detailed Analysis</a>
+                <a href="/generate-pdf" class="btn">Download PDF Report</a>
+            </div>
+            
+            <div class="report-grid">
+                <div class="report-item">
+                    <h3 class="report-title">REG_14: Nutrition and Hydration</h3>
+                    <div>
+                        <span class="badge badge-high">High Risk</span>
+                        <span class="badge badge-type">CQC</span>
+                    </div>
+                    <p><strong>Root Causes:</strong></p>
+                    <ul>
+                        <li>Inadequate staff training on nutrition requirements</li>
+                        <li>Poor documentation of dietary preferences</li>
+                        <li>Inconsistent mealtime monitoring</li>
+                    </ul>
+                    <p><strong>Remediation:</strong> Implement standardized training and digital monitoring system</p>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">REG_16: Complaints Handling</h3>
+                    <div>
+                        <span class="badge badge-high">High Risk</span>
+                        <span class="badge badge-type">CQC</span>
+                    </div>
+                    <p><strong>Root Causes:</strong></p>
+                    <ul>
+                        <li>No formal complaint tracking system</li>
+                        <li>Staff lack training on complaint handling</li>
+                        <li>Poor response time to complaints</li>
+                    </ul>
+                    <p><strong>Remediation:</strong> Deploy complaint management software and staff training</p>
+                </div>
+                
+                <div class="report-item">
+                    <h3 class="report-title">REG_12: Safe Care</h3>
+                    <div>
+                        <span class="badge badge-medium">Medium Risk</span>
+                        <span class="badge badge-type">CQC</span>
+                    </div>
+                    <p><strong>Root Causes:</strong></p>
+                    <ul>
+                        <li>Incomplete risk assessments</li>
+                        <li>Outdated care protocols</li>
+                        <li>Inconsistent safety checks</li>
+                    </ul>
+                    <p><strong>Remediation:</strong> Implement automated risk assessment system and update protocols</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Generate New Report</h2>
+            <p>Create a new compliance report or learning path with root cause analysis.</p>
+            <a href="/learning-path" class="btn">Create Learning Path</a>
+            <a href="/" class="btn">Return to Dashboard</a>
+        </div>
+    </div>
+    
+    <script>
+        function openTab(tabName) {
+            // Hide all tab contents
+            var tabContents = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // Deactivate all tabs
+            var tabs = document.getElementsByClassName('tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            // Activate the selected tab and content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Find the clicked tab and activate it
+            var clickedTab = document.querySelector(`.tab[onclick="openTab('${tabName}')"]`);
+            clickedTab.classList.add('active');
+        }
+    </script>
+</body>
+</html>

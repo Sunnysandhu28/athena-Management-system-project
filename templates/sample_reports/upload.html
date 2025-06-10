@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}Upload Sample Report - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Upload Sample Report</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('sample_reports.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Report Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Your Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="form-text">This will be used to track who uploaded the report.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Report File</label>
+                            <input type="file" class="form-control" id="file" name="file" required>
+                            <div class="form-text">Accepted formats: PDF, DOCX, DOC, XLSX, XLS, TXT</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="report_title" class="form-label">Report Title</label>
+                            <input type="text" class="form-control" id="report_title" name="report_title">
+                            <div class="form-text">If left blank, the filename will be used.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="type_code" class="form-label">Report Type</label>
+                            <select class="form-select" id="type_code" name="type_code" required>
+                                {% for code, name in type_codes.items() %}
+                                <option value="{{ code }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload"></i> Upload Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Uploading Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="bi bi-info-circle text-primary me-2"></i> 
+                            Reports should be actual business documents, not randomly generated content.
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-info-circle text-primary me-2"></i> 
+                            Each report will be assigned a unique reference number in the format 
+                            <code>Cat/[username]/[number]/[type]</code>
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-info-circle text-primary me-2"></i> 
+                            Reports can be viewed, downloaded, or deleted after uploading.
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-info-circle text-primary me-2"></i> 
+                            The analysis feature will generate heat maps showing areas of interest.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

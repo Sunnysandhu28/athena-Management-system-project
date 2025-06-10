@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .policy-search-container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .policy-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .policy-table th {
+        background-color: #f1f1f1;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .policy-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+    
+    .policy-table tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .policy-code {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .policy-actions {
+        text-align: right;
+    }
+    
+    .btn-view {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-view:hover {
+        background-color: #0069d9;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .policy-count {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mt-4 mb-4">{{ title }}</h1>
+            <p class="lead">{{ description }}</p>
+            
+            <a href="{{ url_for('all_categories.all_categories_index') }}" class="btn btn-outline-secondary mb-4">
+                <i class="fas fa-arrow-left"></i> Back to All Categories
+            </a>
+            
+            {% if success_message %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ success_message }}
+            </div>
+            {% endif %}
+            
+            <div class="policy-search-container">
+                <p class="policy-count">
+                    Showing <strong>{{ count }}</strong> policies in the <strong>{{ category }}</strong> category
+                </p>
+                
+                <div class="input-group mb-3">
+                    <input type="text" id="policy-search" class="form-control" placeholder="Search by policy code or title..." onkeyup="filterPolicies()">
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if policies %}
+                <table id="policyTable" class="policy-table">
+                    <thead>
+                        <tr>
+                            <th>Policy Code</th>
+                            <th>Title/Type</th>
+                            <th>Category</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in policies %}
+                            <tr>
+                                <td class="policy-code">{{ policy.code }}</td>
+                                <td>
+                                    {% if policy.title %}{{ policy.title }}{% else %}{{ policy.file_path.split('/')[-1] }}{% endif %}
+                                    {% if formatting_applied and policy.word_count_before and policy.word_count_after %}
+                                    <span class="badge bg-info ms-2">{{ policy.word_count_before }} → {{ policy.word_count_after }} words</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ policy.category }}</td>
+                                <td class="policy-actions">
+                                    <a href="/policy/view/{{ policy.code }}" class="btn-view me-2">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    {% if formatting_applied and policy.formatted_content %}
+                                    <a href="#" class="btn-outline-success" onclick="showFormattedPolicy('{{ policy.code }}', '{{ policy.title or "Policy" }}'); return false;">
+                                        <i class="fas fa-file-alt"></i> CP02 Format
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-warning">
+                    No policies found for this category.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- Modal for displaying formatted policies -->
+<div class="modal fade" id="formattedPolicyModal" tabindex="-1" aria-labelledby="formattedPolicyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formattedPolicyModalLabel">CP02 Formatted Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <span class="badge bg-success me-2">CP02 Format Applied</span>
+                    <span id="wordCountBadge" class="badge bg-info"></span>
+                </div>
+                <div id="formattedPolicyContent" class="bg-light p-4" style="white-space: pre-wrap; font-family: 'Courier New', monospace; max-height: 70vh; overflow-y: auto;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<script>
+    // Store formatted policies in a JavaScript object
+    const formattedPolicies = {
+        {% for policy in policies %}
+            {% if policy.formatted_content %}
+                "{{ policy.code }}": {
+                    "content": `{{ policy.formatted_content|replace('`', '\`')|safe }}`,
+                    "before": {{ policy.word_count_before or 0 }},
+                    "after": {{ policy.word_count_after or 0 }}
+                },
+            {% endif %}
+        {% endfor %}
+    };
+    
+    function showFormattedPolicy(code, title) {
+        const policyData = formattedPolicies[code];
+        if (!policyData) {
+            alert("Formatted content not available for this policy");
+            return;
+        }
+        
+        // Set modal title
+        document.getElementById('formattedPolicyModalLabel').textContent = code + ' - ' + title + ' (CP02 Format)';
+        
+        // Set content
+        document.getElementById('formattedPolicyContent').textContent = policyData.content;
+        
+        // Set word count badge
+        document.getElementById('wordCountBadge').textContent = 
+            `Word count: ${policyData.before} → ${policyData.after} (added ${policyData.after - policyData.before})`;
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('formattedPolicyModal'));
+        modal.show();
+    }
+    
+    function filterPolicies() {
+        // Get input value
+        var input = document.getElementById("policy-search");
+        var filter = input.value.toUpperCase();
+        
+        // Get table and rows
+        var table = document.getElementById("policyTable");
+        var tr = table.getElementsByTagName("tr");
+        
+        // Loop through all rows and hide those that don't match the search
+        for (var i = 1; i < tr.length; i++) { // Start from 1 to skip the header row
+            var found = false;
+            var td = tr[i].getElementsByTagName("td");
+            
+            // Check all columns
+            for (var j = 0; j < td.length; j++) {
+                var cell = td[j];
+                if (cell) {
+                    var text = cell.textContent || cell.innerText;
+                    if (text.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Show or hide based on match
+            if (found) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+</script>
+{% endblock %}

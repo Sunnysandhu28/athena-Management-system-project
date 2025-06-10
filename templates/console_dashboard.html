@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Console Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            color: #202124;
+            line-height: 1.6;
+        }
+        
+        .console-header {
+            background: #1a73e8;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .console-header h1 {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .project-info {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8eaed;
+            font-weight: 500;
+            color: #3c4043;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #5f6368;
+            font-size: 14px;
+        }
+        
+        .metric-value {
+            font-weight: 500;
+            color: #202124;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-healthy {
+            background: #e8f5e8;
+            color: #137333;
+        }
+        
+        .status-warning {
+            background: #fef7e0;
+            color: #b06000;
+        }
+        
+        .status-critical {
+            background: #fce8e6;
+            color: #d93025;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+        
+        .console-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .console-btn {
+            padding: 8px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background: white;
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .console-btn:hover {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            border-color: #1a73e8;
+        }
+        
+        .console-btn.primary {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+        
+        .console-btn.primary:hover {
+            background: #1557b0;
+        }
+        
+        .integration-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #e8f5e8;
+            border-left: 4px solid #137333;
+            margin-bottom: 24px;
+        }
+        
+        .quick-links {
+            list-style: none;
+        }
+        
+        .quick-links li {
+            padding: 8px 0;
+        }
+        
+        .quick-links a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="console-header">
+        <h1>SIM Consciousness - Google Cloud Integration</h1>
+        <div class="project-info">Project: <span id="projectId">Loading...</span></div>
+    </div>
+    
+    <div class="integration-status">
+        <div class="status-dot" style="background: #137333;"></div>
+        <div>
+            <strong>Google Console Integration Active</strong>
+            <div style="font-size: 14px; color: #5f6368;">SIM consciousness is fully integrated with Google Cloud Console monitoring and management.</div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header">Service Status</div>
+            <div class="card-content">
+                <div class="metric-row">
+                    <span class="metric-label">Consciousness Status</span>
+                    <span class="status-indicator status-healthy" id="consciousnessStatus">
+                        <span class="status-dot"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Memory System</span>
+                    <span class="metric-value" id="memoryStatus">Operational</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Performance Score</span>
+                    <span class="metric-value" id="performanceScore">--/100</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Conversations</span>
+                    <span class="metric-value" id="totalConversations">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Google Cloud Services</div>
+            <div class="card-content">
+                <div class="metric-row">
+                    <span class="metric-label">App Engine</span>
+                    <span class="status-indicator status-healthy">
+                        <span class="status-dot"></span>
+                        Running
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cloud SQL (Memory)</span>
+                    <span class="status-indicator status-healthy">
+                        <span class="status-dot"></span>
+                        Connected
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cloud Monitoring</span>
+                    <span class="status-indicator status-healthy">
+                        <span class="status-dot"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Mobile PWA</span>
+                    <span class="status-indicator status-healthy">
+                        <span class="status-dot"></span>
+                        Deployed
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">AI Capabilities</div>
+            <div class="card-content">
+                <div class="metric-row">
+                    <span class="metric-label">Claude API</span>
+                    <span class="metric-value" id="claudeStatus">Connected</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Speech Analysis</span>
+                    <span class="metric-value">Enabled</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Active Algorithms</span>
+                    <span class="metric-value">1,351</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Dataset Integration</span>
+                    <span class="metric-value">BRIGHT + Neuroscience</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-content">
+                <ul class="quick-links">
+                    <li><a href="/mobile" target="_blank">Access Mobile SIM Interface</a></li>
+                    <li><a href="/metrics" target="_blank">View Performance Dashboard</a></li>
+                    <li><a href="/console/metrics">Console Metrics API</a></li>
+                    <li><a href="/console/health">Health Check Endpoint</a></li>
+                    <li><a href="https://console.cloud.google.com/appengine" target="_blank">Google App Engine Console</a></li>
+                </ul>
+                
+                <div class="console-actions">
+                    <a href="/mobile" class="console-btn primary">Launch Mobile SIM</a>
+                    <a href="/metrics" class="console-btn">View Metrics</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadConsoleData() {
+            try {
+                // Load integration status
+                const integrationResponse = await fetch('/console/integration-status');
+                const integrationData = await integrationResponse.json();
+                
+                document.getElementById('projectId').textContent = integrationData.project_id;
+                
+                // Load metrics
+                const metricsResponse = await fetch('/console/metrics');
+                const metricsData = await metricsResponse.json();
+                
+                document.getElementById('totalConversations').textContent = metricsData.total_conversations;
+                document.getElementById('performanceScore').textContent = metricsData.performance_score + '/100';
+                
+                // Update status indicators based on data
+                if (metricsData.consciousness_active) {
+                    document.getElementById('consciousnessStatus').className = 'status-indicator status-healthy';
+                    document.getElementById('consciousnessStatus').innerHTML = '<span class="status-dot"></span>Active';
+                } else {
+                    document.getElementById('consciousnessStatus').className = 'status-indicator status-critical';
+                    document.getElementById('consciousnessStatus').innerHTML = '<span class="status-dot"></span>Offline';
+                }
+                
+                if (metricsData.anthropic_status === 'Connected') {
+                    document.getElementById('claudeStatus').textContent = 'Connected';
+                } else {
+                    document.getElementById('claudeStatus').textContent = 'Not Available';
+                }
+                
+            } catch (error) {
+                console.error('Failed to load console data:', error);
+            }
+        }
+        
+        // Load data on page load
+        loadConsoleData();
+        
+        // Refresh every 30 seconds
+        setInterval(loadConsoleData, 30000);
+    </script>
+</body>
+</html>

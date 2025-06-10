@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}NICE Clinical Knowledge Summaries - Policy Learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .topic-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .topic-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-process {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .btn-process:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+    
+    .btn-view {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+    
+    .btn-view:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">NICE Clinical Knowledge Summaries</h1>
+            <p class="lead">
+                NICE Clinical Knowledge Summaries (CKS) provide primary care knowledge for healthcare-related policies.
+                This integration enhances policy generation with evidence-based clinical guidance.
+            </p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_learning.index') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">NICE CKS</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Process Clinical Topics</h2>
+                    <p>
+                        Process clinical topics from NICE CKS to extract evidence-based guidelines and recommendations.
+                        This knowledge will be integrated with AI policy generation to create clinically accurate healthcare policies.
+                    </p>
+                    <form action="{{ url_for('policy_learning.process_nice_cks') }}" method="post">
+                        <button type="submit" class="btn btn-process text-white">
+                            <i class="fas fa-sync-alt me-1"></i> Process Clinical Topics
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 mb-3">
+            <h2 class="h4">Available Clinical Topics</h2>
+        </div>
+        
+        {% for topic in topics %}
+        <div class="col-md-4 mb-4">
+            <div class="card topic-card h-100">
+                <div class="card-body">
+                    <h3 class="h5 mb-2">{{ topic.name }}</h3>
+                    <p class="text-muted">
+                        <small>
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Last revised: {{ topic.last_revised or 'Unknown' }}
+                        </small>
+                    </p>
+                    <a href="{{ topic.url }}" target="_blank" class="text-decoration-none">
+                        <small>
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            View on NICE CKS
+                        </small>
+                    </a>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('policy_learning.view_topic', topic_id=topic.topic_id) }}" class="btn btn-view text-white btn-sm">
+                        <i class="fas fa-eye me-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No clinical topics available yet. Process clinical topics to extract knowledge.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}AI Policy Generator{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">AI Policy Generator</h1>
+    
+    <div class="alert alert-info">
+        This tool leverages AI to generate policy drafts based on your specific requirements.
+    </div>
+    
+    {% if not openai_available and not anthropic_available %}
+        <div class="alert alert-warning">
+            <strong>Note:</strong> AI services are currently unavailable. Please set up your API keys to use this feature.
+        </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Generate a New Policy</h3>
+        </div>
+        <div class="card-body">
+            <form action="{{ '/ai-policy-generator-direct/generate' if request.path.startswith('/ai-policy-generator-direct') else '/ai-policy-generator/generate' }}" method="POST">
+                <div class="mb-3">
+                    <label for="policy_objective" class="form-label">Policy Objective</label>
+                    <textarea class="form-control" id="policy_objective" name="policy_objective" rows="3" required placeholder="Describe what this policy should achieve..."></textarea>
+                    <div class="form-text">Example: "To ensure safe handling and administration of medications in care settings."</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="policy_category" class="form-label">Policy Category</label>
+                    <select class="form-select" id="policy_category" name="policy_category" required>
+                        <option value="" selected disabled>Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.name }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="staff_involved" class="form-label">Staff Roles Involved</label>
+                    <input type="text" class="form-control" id="staff_involved" name="staff_involved" placeholder="Nurses, Care Assistants, Managers, etc.">
+                    <div class="form-text">Specify which staff roles this policy applies to.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="regulations" class="form-label">Relevant Regulations</label>
+                    <textarea class="form-control" id="regulations" name="regulations" rows="2" placeholder="CQC regulations, legislation, etc."></textarea>
+                    <div class="form-text">List any regulations or legislation that should be referenced.</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">Generate Policy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

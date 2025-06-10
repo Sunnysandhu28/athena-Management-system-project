@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replicator{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Policy Replication Tool</h1>
+            <p class="lead">View, replicate, and manage policy documents</p>
+        </div>
+        <div class="col-md-auto d-flex align-items-center">
+            <a href="{{ url_for('policy_replicator.replication_guidelines') }}" class="btn btn-outline-info me-2">
+                <i class="fas fa-info-circle me-1"></i> Guidelines
+            </a>
+            <a href="{{ url_for('policy_replicator.upload_replicated') }}" class="btn btn-success">
+                <i class="fas fa-upload me-1"></i> Upload Replicated Document
+            </a>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Policy List</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if policies %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in policies %}
+                                <tr>
+                                    <td>{{ policy.title }}</td>
+                                    <td>
+                                        {% if policy.file_path and policy.file_path.endswith('.pdf') %}
+                                        <span class="badge bg-danger">PDF</span>
+                                        {% elif policy.file_path and policy.file_path.endswith('.docx') %}
+                                        <span class="badge bg-primary">DOCX</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                        
+                                        {% if "Replicated" in policy.description %}
+                                        <span class="badge bg-info">Replicated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% elif policy.status == 'draft' %}
+                                        <span class="badge bg-warning text-dark">Draft</span>
+                                        {% elif policy.status == 'archived' %}
+                                        <span class="badge bg-secondary">Archived</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ policy.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.created_at %}
+                                        {{ policy.created_at.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('policy_replicator.view_policy', policy_id=policy.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            
+                                            {% if policy.file_path and policy.file_path.endswith('.pdf') %}
+                                            <a href="{{ url_for('policy_replicator.create_template', policy_id=policy.id) }}" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-file-word"></i> Create Template
+                                            </a>
+                                            {% endif %}
+                                            
+                                            {% if "Replicated" in policy.description %}
+                                            {% set original_id = policy.description.split('ID ')[1] if 'ID ' in policy.description else None %}
+                                            {% if original_id %}
+                                            <a href="{{ url_for('policy_replicator.compare_policies', original_id=original_id, replicated_id=policy.id) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-exchange-alt"></i> Compare
+                                            </a>
+                                            {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center">
+                        <p class="mb-3">No policies found. Please ensure policies are available in the system.</p>
+                        <a href="{{ url_for('policy_replicator.upload_replicated') }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> Upload Policy
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Start Guide -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Start Guide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">
+                                        <i class="fas fa-eye me-2"></i> View Policies
+                                    </h5>
+                                    <p class="card-text">View PDF policies directly in your browser with enhanced text extraction and section identification.</p>
+                                    <a href="{{ url_for('policy_replicator.replication_guidelines') }}#viewing" class="btn btn-sm btn-outline-primary">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">
+                                        <i class="fas fa-copy me-2"></i> Replicate Content
+                                    </h5>
+                                    <p class="card-text">Create Word templates and replicate policy documents word-for-word while maintaining document structure.</p>
+                                    <a href="{{ url_for('policy_replicator.replication_guidelines') }}#replication" class="btn btn-sm btn-outline-success">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info">
+                                        <i class="fas fa-exchange-alt me-2"></i> Compare Documents
+                                    </h5>
+                                    <p class="card-text">Verify your replications with the powerful document comparison tool to ensure accuracy.</p>
+                                    <a href="{{ url_for('policy_replicator.replication_guidelines') }}#comparison" class="btn btn-sm btn-outline-info">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

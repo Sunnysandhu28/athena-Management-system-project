@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Download QCS Policies{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Download Authentic QCS Policies</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        This tool allows you to download real policies from the QCS portal and import them directly into the system.
+                        The downloaded policies will be stored in the database and available for viewing, replication, and batch processing.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle me-2"></i>
+                        Using your QCS credentials from environment variables to authenticate.
+                    </div>
+                    
+                    <form method="post" action="{{ url_for('download_qcs_policies_route') }}" class="mt-4">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="limit_per_category" class="form-label">Policies per Category:</label>
+                                    <input type="number" class="form-control" id="limit_per_category" name="limit_per_category" 
+                                           value="2" min="1" max="10">
+                                    <small class="form-text text-muted">Maximum number of policies to download per category</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="max_total" class="form-label">Total Policies:</label>
+                                    <input type="number" class="form-control" id="max_total" name="max_total" 
+                                           value="10" min="1" max="50">
+                                    <small class="form-text text-muted">Maximum total number of policies to download</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Downloading a large number of policies may take some time. Please be patient.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-download me-2"></i> Download QCS Policies
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">QCS Downloader Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6>How it works:</h6>
+                    <ol>
+                        <li>The system authenticates with QCS using your stored credentials</li>
+                        <li>It retrieves the list of available policy categories</li>
+                        <li>For each category, it downloads the specified number of policies</li>
+                        <li>Policies are saved both as files and in the database</li>
+                        <li>Categories are automatically created in the system</li>
+                    </ol>
+                    
+                    <h6>Features:</h6>
+                    <ul>
+                        <li>Intelligent category detection and mapping</li>
+                        <li>Automatic retry for failed downloads</li>
+                        <li>Detailed logging for troubleshooting</li>
+                        <li>No duplicate policy imports</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

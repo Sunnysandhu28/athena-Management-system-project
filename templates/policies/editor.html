@@ -1,0 +1,443 @@
+{% extends "layout.html" %}
+
+{% block title %}Policy Editor - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 editor-header">
+        <h1 class="mb-0">Policy Editor</h1>
+        <div class="d-flex">
+            <button id="template-button" class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#templateModal">
+                <i class="fas fa-file-alt me-1"></i> Choose Template
+            </button>
+            <button id="preview-button" class="btn btn-outline-primary me-2">
+                <i class="fas fa-eye me-1"></i> Preview
+            </button>
+            <button id="rewording-button" class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#rewordingModal">
+                <i class="fas fa-sync-alt me-1"></i> Reword
+            </button>
+            <button id="framework-button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#frameworkModal">
+                <i class="fas fa-tasks me-1"></i> Framework
+            </button>
+            <button id="save-button" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Save
+            </button>
+        </div>
+    </div>
+    
+    <!-- Template Selection Modal -->
+    <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="templateModalLabel">Choose a Policy Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="templateTabs" role="tablist">
+                        {% for category in categories %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {% if loop.first %}active{% endif %}" 
+                                        id="tab-{{ category.name|lower|replace(' ', '-') }}" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#panel-{{ category.name|lower|replace(' ', '-') }}" 
+                                        type="button" 
+                                        role="tab" 
+                                        aria-controls="panel-{{ category.name|lower|replace(' ', '-') }}" 
+                                        aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                                    {{ category.name }}
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="tab-content pt-3" id="templateTabsContent">
+                        {% for category in categories %}
+                            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+                                 id="panel-{{ category.name|lower|replace(' ', '-') }}" 
+                                 role="tabpanel" 
+                                 aria-labelledby="tab-{{ category.name|lower|replace(' ', '-') }}">
+                                
+                                {% set category_policies = policies|selectattr('category', 'equalto', category.name)|list %}
+                                
+                                {% if category_policies %}
+                                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                                        {% for policy in category_policies %}
+                                            <div class="col">
+                                                <div class="card h-100 template-card">
+                                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">{{ policy.code }}</h6>
+                                                        <span class="badge bg-primary">{{ category.name }}</span>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ policy.title }}</h5>
+                                                        <p class="card-text text-truncate">{{ policy.content|striptags|truncate(100) }}</p>
+                                                    </div>
+                                                    <div class="card-footer text-center">
+                                                        <button class="btn btn-sm btn-primary select-template" data-policy-id="{{ policy.id }}" data-bs-dismiss="modal">
+                                                            Use This Template
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        No templates available for {{ category.name }}. Please choose another category.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create-blank">Create Blank Policy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-lg-3">
+            <div class="card policy-editor-sidebar mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="policy-code" class="form-label">Policy Code</label>
+                        <input type="text" class="form-control" id="policy-code" value="{{ policy.code if policy else '' }}" placeholder="e.g. CM01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="policy-title" class="form-label">Policy Title</label>
+                        <input type="text" class="form-control" id="policy-title" value="{{ policy.title if policy else '' }}" placeholder="Enter policy title">
+                    </div>
+                    <div class="mb-3">
+                        <label for="policy-category" class="form-label">Category</label>
+                        <select class="form-select" id="policy-category">
+                            <option value="">Select category</option>
+                            <option value="Care_Management" {% if policy and policy.category == 'Care_Management' %}selected{% endif %}>Care Management</option>
+                            <option value="Health_Safety" {% if policy and policy.category == 'Health_Safety' %}selected{% endif %}>Health & Safety</option>
+                            <option value="Human_Resources" {% if policy and policy.category == 'Human_Resources' %}selected{% endif %}>Human Resources</option>
+                            <option value="Medication" {% if policy and policy.category == 'Medication' %}selected{% endif %}>Medication</option>
+                            <option value="Data_Protection" {% if policy and policy.category == 'Data_Protection' %}selected{% endif %}>Data Protection</option>
+                            <option value="Clinical" {% if policy and policy.category == 'Clinical' %}selected{% endif %}>Clinical</option>
+                            <option value="Customer_Rights" {% if policy and policy.category == 'Customer_Rights' %}selected{% endif %}>Customer Rights</option>
+                            <option value="Business" {% if policy and policy.category == 'Business' %}selected{% endif %}>Business</option>
+                            <option value="Maintenance" {% if policy and policy.category == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="policy-version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="policy-version" value="{{ policy.version if policy else '1.0' }}" placeholder="e.g. 1.0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="policy-date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="policy-date" value="{{ policy.date if policy else '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card policy-editor-sidebar mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Section Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Icon Markers</label>
+                        <div class="icon-markers-panel">
+                            <div class="icon-marker-option" data-icon="warning" title="Warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="info" title="Information">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="safety" title="Safety">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="compliance" title="Compliance">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="tech" title="Technical">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="business" title="Business">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="icon-marker-option" data-icon="finance" title="Finance">
+                                <i class="fas fa-pound-sign"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2 d-none" id="remove-icon-button-container">
+                            <button class="btn btn-sm btn-outline-danger d-none" id="remove-icon-button">
+                                <i class="fas fa-times me-1"></i> Remove Icon
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Editor -->
+        <div class="col-lg-9">
+            <div class="policy-editor">
+                <div class="policy-editor-header">
+                    <h2 id="editor-title">{{ policy.title if policy else 'New Policy' }}</h2>
+                    <p class="text-muted" id="editor-meta">
+                        <span id="editor-code">{{ policy.code if policy else 'CODE' }}</span> | 
+                        <span id="editor-category">{{ policy.category|replace('_', ' ') if policy else 'Category' }}</span> | 
+                        Version <span id="editor-version">{{ policy.version if policy else '1.0' }}</span> |
+                        <span id="editor-date">{{ policy.date if policy else 'Date' }}</span>
+                    </p>
+                </div>
+                
+                <div class="policy-editor-toolbar">
+                    <div class="policy-editor-toolbar-group">
+                        <button class="btn btn-sm btn-outline-secondary" title="Bold" onclick="document.execCommand('bold', false, null)">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Italic" onclick="document.execCommand('italic', false, null)">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Underline" onclick="document.execCommand('underline', false, null)">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="policy-editor-toolbar-group">
+                        <button class="btn btn-sm btn-outline-secondary" title="Align Left" onclick="document.execCommand('justifyLeft', false, null)">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Align Center" onclick="document.execCommand('justifyCenter', false, null)">
+                            <i class="fas fa-align-center"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Align Right" onclick="document.execCommand('justifyRight', false, null)">
+                            <i class="fas fa-align-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="policy-editor-toolbar-group">
+                        <button class="btn btn-sm btn-outline-secondary" title="Indent" onclick="document.execCommand('indent', false, null)">
+                            <i class="fas fa-indent"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Outdent" onclick="document.execCommand('outdent', false, null)">
+                            <i class="fas fa-outdent"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="policy-editor-toolbar-group">
+                        <button class="btn btn-sm btn-outline-secondary" title="Undo" onclick="document.execCommand('undo', false, null)">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" title="Redo" onclick="document.execCommand('redo', false, null)">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="policy-editor-container">
+                    <div id="policy-content-editor" class="policy-editor-content">
+                        {% if policy and policy.content %}
+                            {{ policy.content|safe }}
+                        {% else %}
+                            <!-- Policy sections will be created by JavaScript initialization -->
+                            <div class="policy-section" id="section-review">
+                                <div class="section-header">
+                                    <h3>Review Sheet</h3>
+                                </div>
+                                <div class="section-content">
+                                    <p>Policy review information will appear here.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="policy-section" id="section-legislation">
+                                <div class="section-header">
+                                    <h3>Relevant Legislation</h3>
+                                </div>
+                                <div class="section-content">
+                                    <p>Add relevant legislation and regulations here.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="policy-section" id="section-policy">
+                                <div class="section-header">
+                                    <h3>Policy</h3>
+                                </div>
+                                <div class="section-content">
+                                    <p>Add the policy content here.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="policy-section" id="section-procedure">
+                                <div class="section-header">
+                                    <h3>Procedure</h3>
+                                </div>
+                                <div class="section-content">
+                                    <p>Add the procedure steps here.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="policy-section" id="section-definitions">
+                                <div class="section-header">
+                                    <h3>Definitions</h3>
+                                </div>
+                                <div class="section-content">
+                                    <p>Add any definitions here.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rewording Modal -->
+<div class="modal fade" id="rewordingModal" tabindex="-1" aria-labelledby="rewordingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rewordingModalLabel">Reword Policy Content</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="originalContent" class="form-label">Original Content:</label>
+                    <div id="originalContent" class="p-3 bg-light rounded">
+                        <!-- Original content will be populated here -->
+                        Click on a section in the policy editor to reword it.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="rewordingStyle" class="form-label">Rewording Style:</label>
+                    <select class="form-select" id="rewordingStyle">
+                        <option value="simple">Simplified</option>
+                        <option value="formal">Formal</option>
+                        <option value="concise">Concise</option>
+                        <option value="detailed">Detailed</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="excludeLegislationRewording" checked>
+                    <label class="form-check-label" for="excludeLegislationRewording">
+                        Exclude legislation sections from rewording
+                    </label>
+                </div>
+                <div class="mb-3">
+                    <label for="similarityPercentage" class="form-label">Similarity to Original (5-80%):</label>
+                    <div class="d-flex align-items-center">
+                        <input type="range" class="form-range flex-grow-1 me-2" id="similarityPercentage" min="5" max="80" value="40">
+                        <span id="similarityValue" class="badge bg-primary">40%</span>
+                    </div>
+                    <small class="text-muted">Lower values create more unique content, higher values stay closer to the original.</small>
+                </div>
+                <div class="mb-3">
+                    <label for="rewordedContent" class="form-label">Reworded Content:</label>
+                    <textarea class="form-control" id="rewordedContent" rows="8" placeholder="The reworded content will appear here after generation..."></textarea>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="applyToAllSimilar">
+                    <label class="form-check-label" for="applyToAllSimilar">
+                        Apply changes to all similar sections
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="generateRewordingBtn">Generate Rewording</button>
+                <button type="button" class="btn btn-primary" id="applyRewordingBtn">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Framework Selection Modal -->
+<div class="modal fade" id="frameworkModal" tabindex="-1" aria-labelledby="frameworkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="frameworkModalLabel">Select Policy Framework</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <p class="text-muted">Choose the policy framework to work with:</p>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="policyFramework" id="qcsFramework" value="qcs" checked>
+                        <label class="form-check-label" for="qcsFramework">
+                            <strong>QCS Policies</strong>
+                            <div class="text-muted small">Original QCS policy format and content</div>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="policyFramework" id="adaptedFramework" value="adapted">
+                        <label class="form-check-label" for="adaptedFramework">
+                            <strong>Adapted Company Policies</strong>
+                            <div class="text-muted small">Company-specific adapted policy format</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Switching frameworks will change the policy format, structure, and standard sections.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveFrameworkChanges">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% set policy_editor = True %}
+
+{% block content_end %}
+<!-- This ensures our policy editor will have properly structured sections to work with -->
+<script>
+    // Initialize policy sections when a policy is loaded or created
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the main content editor
+        const policyContent = document.getElementById('policy-content-editor');
+        
+        if (policyContent) {
+            // Check if the content is empty or doesn't have sections
+            if (policyContent.querySelectorAll('.policy-section').length === 0) {
+                // Create initial structure with QCS standard sections
+                const initialSections = [
+                    {id: 'section-review', title: 'Review Sheet', content: '<p>Policy review information will appear here.</p>'},
+                    {id: 'section-legislation', title: 'Relevant Legislation', content: '<p>Add relevant legislation and regulations here.</p>'},
+                    {id: 'section-policy', title: 'Policy', content: '<p>Add the policy content here.</p>'},
+                    {id: 'section-procedure', title: 'Procedure', content: '<p>Add the procedure steps here.</p>'},
+                    {id: 'section-definitions', title: 'Definitions', content: '<p>Add any definitions here.</p>'}
+                ];
+                
+                initialSections.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'policy-section';
+                    sectionDiv.id = section.id;
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'section-header';
+                    headerDiv.innerHTML = `<h3>${section.title}</h3>`;
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'section-content';
+                    contentDiv.innerHTML = section.content;
+                    
+                    sectionDiv.appendChild(headerDiv);
+                    sectionDiv.appendChild(contentDiv);
+                    policyContent.appendChild(sectionDiv);
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

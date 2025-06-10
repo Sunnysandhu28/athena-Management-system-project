@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Process Policies - Policy Learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-process {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .btn-process:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Process Policies</h1>
+            <p class="lead">
+                Process policy documents to extract their structure, formatting patterns, and key regulatory requirements.
+                This knowledge will be used to enhance AI policy generation.
+            </p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_learning.index') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Process Policies</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card form-card">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-4">Process Policy Documents</h2>
+                    
+                    <form action="{{ url_for('policy_learning.process_policies') }}" method="post">
+                        <div class="mb-3">
+                            <label for="folder_path" class="form-label">Folder Path</label>
+                            <input type="text" class="form-control" id="folder_path" name="folder_path" value="attached_assets" required>
+                            <div class="form-text">Path to the folder containing policy PDF documents</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="analyze_with_ai" name="analyze_with_ai" value="true">
+                            <label class="form-check-label" for="analyze_with_ai">Use AI for detailed analysis</label>
+                            <div class="form-text">Enable AI-powered analysis of policy documents (requires OpenAI or Anthropic API keys)</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This process will extract policy structure, formatting patterns, and CQC regulatory requirements
+                            from PDF policy documents in the specified folder. The extracted knowledge will be used to enhance
+                            AI policy generation.
+                        </div>
+                        
+                        <div class="d-flex mt-4">
+                            <button type="submit" class="btn btn-process text-white me-2">
+                                <i class="fas fa-cogs me-1"></i> Process Policies
+                            </button>
+                            <a href="{{ url_for('policy_learning.index') }}" class="btn btn-cancel text-white">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

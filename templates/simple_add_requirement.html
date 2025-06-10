@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Requirement - Cathena Regulatory Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .form-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cathena Regulatory Assistant</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/requirements">Requirements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/evidence">Evidence</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="form-header text-center">
+                    <h2>Add Regulatory Requirement</h2>
+                    <p class="lead">Enter details of the regulatory requirement from CQC or other regulatory frameworks</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" action="/requirements/add">
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Requirement Code</label>
+                                <input type="text" class="form-control" id="code" name="code" placeholder="e.g., CQC-R01, GDPR-3.2">
+                                <div class="form-text">Optional - will be auto-generated if left blank</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Requirement Title</label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Person-centered care">
+                                <div class="form-text">Optional - will be auto-generated from framework if left blank</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Requirement Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Optional - content will be extracted from uploaded documents"></textarea>
+                                <div class="form-text">Content will be automatically extracted from uploaded documents</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="framework" class="form-label">Regulatory Framework</label>
+                                <select class="form-select" id="framework" name="framework">
+                                    {% for option in framework_options %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select from dropdown or will be extracted from documents</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category">
+                                    {% for option in category_options %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select from dropdown or will be extracted from documents</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="severity" class="form-label">Severity Level</label>
+                                <select class="form-select" id="severity" name="severity">
+                                    <option value="1">1 - Low</option>
+                                    <option value="2" selected>2 - Medium</option>
+                                    <option value="3">3 - High</option>
+                                    <option value="4">4 - Critical</option>
+                                </select>
+                                <div class="form-text">Importance or impact level of this requirement</div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Add Requirement</button>
+                                <a href="/requirements" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Cathena Regulatory Assistant</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

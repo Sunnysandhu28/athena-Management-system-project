@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}ML Analytics Dashboard | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .metric-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border-left: 4px solid #0d6efd;
+    }
+    .metric-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .metric-description {
+        margin-top: 10px;
+        font-size: 0.9rem;
+    }
+    .progress-container {
+        margin-top: 10px;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        height: 8px;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%;
+        border-radius: 8px;
+    }
+    .chart-container {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    .section-title {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eaeaea;
+    }
+    .refresh-btn {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .refresh-btn:hover {
+        background-color: #0b5ed7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>ML Analytics Dashboard</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="refresh-btn" id="refreshData">
+                <i class="fas fa-sync-alt me-2"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Metrics -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="metric-box">
+                <div class="metric-label">Knowledge Score</div>
+                <div class="metric-value">75.6%</div>
+                <div class="progress-container">
+                    <div class="progress-bar bg-primary" style="width: 75.6%"></div>
+                </div>
+                <div class="metric-description">Overall machine learning capability</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-box">
+                <div class="metric-label">Reports Analyzed</div>
+                <div class="metric-value">3450</div>
+                <div class="progress-container">
+                    <div class="progress-bar bg-success" style="width: 69%"></div>
+                </div>
+                <div class="metric-description">Total documents processed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-box">
+                <div class="metric-label">Insights Generated</div>
+                <div class="metric-value">52638</div>
+                <div class="progress-container">
+                    <div class="progress-bar bg-info" style="width: 82%"></div>
+                </div>
+                <div class="metric-description">Total insights extracted from reports</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-box">
+                <div class="metric-label">NHS Conditions</div>
+                <div class="metric-value">140/400</div>
+                <div class="progress-container">
+                    <div class="progress-bar bg-warning" style="width: 35%"></div>
+                </div>
+                <div class="metric-description">Healthcare conditions analyzed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Progress Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="section-title">Analysis Progress</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Training Progress</h5>
+                <div class="row mt-4">
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Reports Analysis</span>
+                            <span>69.0%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar bg-info" style="width: 69%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Conditions Analysis</span>
+                            <span>35.0%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar bg-success" style="width: 35%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Knowledge Score</span>
+                            <span>75.6%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar bg-primary" style="width: 75.6%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Target Completion</span>
+                            <span>69.0%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar bg-warning" style="width: 69%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Learning Progress Over Time</h5>
+                <div id="learningChart" style="height: 250px;">
+                    <!-- Chart will be rendered here -->
+                    <img src="https://via.placeholder.com/600x250.png?text=Learning+Progress+Chart" alt="Learning Progress Chart" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Focus Areas Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2 class="section-title">Focus Areas</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Domain Coverage</h5>
+                <div id="domainChart" style="height: 250px;">
+                    <!-- Chart will be rendered here -->
+                    <img src="https://via.placeholder.com/600x250.png?text=Domain+Coverage+Chart" alt="Domain Coverage Chart" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5>Processing Efficiency</h5>
+                <div id="efficiencyChart" style="height: 250px;">
+                    <!-- Chart will be rendered here -->
+                    <img src="https://via.placeholder.com/600x250.png?text=Processing+Efficiency+Chart" alt="Processing Efficiency Chart" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh data button functionality
+    document.getElementById('refreshData').addEventListener('click', function() {
+        // Simulate data refresh
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Refreshing...';
+        
+        // In a real implementation, you would fetch updated data from the server
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Refresh Data';
+            alert('Data refreshed successfully!');
+        }, 1500);
+    });
+});
+</script>
+{% endblock %}

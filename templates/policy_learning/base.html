@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}AI Policy Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Learning Tools</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('ai_policy_learning.index') }}" class="list-group-item list-group-item-action {% if request.path == url_for('ai_policy_learning.index') %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('ai_policy_learning.batch_enhance') }}" class="list-group-item list-group-item-action {% if request.path == url_for('ai_policy_learning.batch_enhance') %}active{% endif %}">
+                        <i class="fas fa-robot me-2"></i> Batch Enhance Policies
+                    </a>
+                    <a href="{{ url_for('ai_policy_learning.learn_template') }}" class="list-group-item list-group-item-action {% if request.path == url_for('ai_policy_learning.learn_template') %}active{% endif %}">
+                        <i class="fas fa-brain me-2"></i> Learn from Template
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">Related Tools</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('index') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-home me-2"></i> Home
+                    </a>
+                    <a href="{{ url_for('view_policies') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-alt me-2"></i> All Policies
+                    </a>
+                    <a href="{{ url_for('view_categories') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-folder me-2"></i> Categories
+                    </a>
+                    <a href="/format-learning/" class="list-group-item list-group-item-action">
+                        <i class="fas fa-code me-2"></i> Format Learning
+                    </a>
+                    {% if request.path.startswith('/policy-learning') %}
+                    <a href="{{ url_for('policy_learning.index') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-graduation-cap me-2"></i> Policy Learning
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('policy_learning.index') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-graduation-cap me-2"></i> Policy Learning
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block learning_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

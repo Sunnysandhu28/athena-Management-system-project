@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Regulatory Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('regulatory_analysis.index') }}">Regulatory Analysis</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ report.report_title }}</li>
+                </ol>
+            </nav>
+            <h1>Regulatory Analysis: {{ report.report_title }}</h1>
+            <p class="lead">Compliance analysis against multiple regulatory frameworks</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Report Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Title:</strong> {{ report.report_title }}</p>
+                    <p><strong>Reference:</strong> {{ report.reference or 'N/A' }}</p>
+                    <p><strong>Type:</strong> 
+                        {% if report.type_code.startswith('M') %}
+                            <span class="badge bg-info">Management</span>
+                        {% elif report.type_code.startswith('C') %}
+                            <span class="badge bg-success">CQC</span>
+                        {% elif report.type_code.startswith('F') %}
+                            <span class="badge bg-warning">Financial</span>
+                        {% elif report.type_code.startswith('A') %}
+                            <span class="badge bg-secondary">Audit</span>
+                        {% else %}
+                            <span class="badge bg-dark">Other</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Analysis Date:</strong> {{ analysis.analysis_date }}</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('regulatory_analysis.export_analysis', report_id=report.id) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Export Analysis
+                        </a>
+                        <a href="{{ url_for('regulatory_analysis.api_analyze', report_id=report.id) }}" class="btn btn-outline-secondary" target="_blank">
+                            <i class="bi bi-code-slash"></i> View API Response
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Compliance Heat Map</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="complianceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="accordion" id="frameworkAccordion">
+                {% for framework_name, framework_data in analysis.frameworks.items() %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="collapse{{ loop.index }}">
+                            <div class="d-flex align-items-center w-100">
+                                <div style="flex: 1;">
+                                    <strong>{{ framework_name }}</strong>
+                                </div>
+                                <div class="mx-3">
+                                    <span class="badge {% if framework_data.compliance_level == 'Very High' %}bg-success{% elif framework_data.compliance_level == 'High' %}bg-info{% elif framework_data.compliance_level == 'Medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ framework_data.compliance_level }}
+                                    </span>
+                                </div>
+                                <div style="width: 50px;">
+                                    <span class="badge bg-dark">{{ framework_data.score }}%</span>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#frameworkAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Key Findings</h5>
+                                    <ul class="list-group mb-3">
+                                        {% for finding in framework_data.key_findings %}
+                                        <li class="list-group-item">{{ finding }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Recommendations</h5>
+                                    <ul class="list-group">
+                                        {% for recommendation in framework_data.recommendations %}
+                                        <li class="list-group-item">{{ recommendation }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js for heat map -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Extract data for the chart from the analysis
+    const frameworkNames = [];
+    const frameworkScores = [];
+    const frameworkColors = [];
+    
+    {% for framework_name, framework_data in analysis.frameworks.items() %}
+        frameworkNames.push('{{ framework_name }}');
+        frameworkScores.push({{ framework_data.score }});
+        
+        // Set color based on compliance level
+        {% if framework_data.compliance_level == 'Very High' %}
+            frameworkColors.push('rgba(40, 167, 69, 0.8)');  // Success green
+        {% elif framework_data.compliance_level == 'High' %}
+            frameworkColors.push('rgba(23, 162, 184, 0.8)'); // Info blue
+        {% elif framework_data.compliance_level == 'Medium' %}
+            frameworkColors.push('rgba(255, 193, 7, 0.8)');  // Warning yellow
+        {% else %}
+            frameworkColors.push('rgba(220, 53, 69, 0.8)');  // Danger red
+        {% endif %}
+    {% endfor %}
+    
+    // Create the chart
+    const ctx = document.getElementById('complianceChart').getContext('2d');
+    const complianceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: frameworkNames,
+            datasets: [{
+                label: 'Compliance Score (%)',
+                data: frameworkScores,
+                backgroundColor: frameworkColors,
+                borderColor: frameworkColors.map(color => color.replace('0.8', '1')),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Regulatory Compliance Scores'
+                },
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Compliance (%)'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

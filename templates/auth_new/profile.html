@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Profile Menu</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('auth_new.profile') }}" class="list-group-item list-group-item-action active">Profile Details</a>
+                    <a href="{{ url_for('auth_new.change_password') }}" class="list-group-item list-group-item-action">Change Password</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">My Profile</h5>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('auth_new.profile') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if form.first_name is defined %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if form.last_name is defined %}
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Account Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-success">Active</span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Created:</dt>
+                                <dd class="col-sm-8">{{ current_user.format_created_date() }}</dd>
+                                
+                                <dt class="col-sm-4">Last Updated:</dt>
+                                <dd class="col-sm-8">{{ current_user.format_updated_date() }}</dd>
+                                
+                                <dt class="col-sm-4">Last Login:</dt>
+                                <dd class="col-sm-8">{{ current_user.format_last_login() }}</dd>
+                                
+                                <dt class="col-sm-4">Admin Access:</dt>
+                                <dd class="col-sm-8">
+                                    {% if current_user.is_admin %}
+                                        <span class="badge bg-primary">Yes</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if activities and activities|length > 0 %}
+                        <ul class="list-group">
+                            {% for activity in activities %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>{{ activity.action }}</strong>
+                                            <div class="text-muted small">{{ activity.details }}</div>
+                                        </div>
+                                        <div class="text-muted small">{{ activity.timestamp }}</div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">No recent activity found.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

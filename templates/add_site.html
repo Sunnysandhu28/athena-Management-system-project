@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Site - Cathena Policy Downloader</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-dark text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-cloud-download-alt me-2"></i>Cathena Policy Downloader
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <!-- Admin-only navigation items -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('downloads') }}">Downloaded Policies</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('compare_policies') }}">Compare Policies</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('format_policies') }}">Format Policies</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('cross_reference_policies') }}">Cross-Reference</a>
+                            </li>
+                        {% else %}
+                            <!-- Regular user navigation - restricted view without formatting, directories, etc. -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('downloads') }}">View Policies</a>
+                            </li>
+                        {% endif %}
+                        <!-- Available to all authenticated users -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('request_policy') }}">Request Policy</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle active" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-tools me-1"></i>Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('manage_users') }}">Manage Users</a></li>
+                                <li><a class="dropdown-item active" href="{{ url_for('manage_sites') }}">Manage Sites</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('manage_policy_requests') }}">Policy Requests</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('register') }}">Add User</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><span class="dropdown-item-text text-muted">{{ current_user.email }}</span></li>
+                                {% if current_user.site %}
+                                <li><span class="dropdown-item-text text-muted">Site: {{ current_user.site.name }}</span></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-sm btn-outline-light" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <header class="mb-4">
+            <h1 class="h2 border-bottom pb-2">Add New Site</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('manage_sites') }}">Manage Sites</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Site</li>
+                </ol>
+            </nav>
+        </header>
+
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Site Information</h2>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                <form action="{{ url_for('add_site') }}" method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="form-text text-secondary">The name of the care home or facility.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="manager_name" class="form-label">Manager Name</label>
+                            <input type="text" class="form-control" id="manager_name" name="manager_name" required>
+                            <div class="form-text text-secondary">The name of the site manager.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        <div class="form-text text-secondary">The physical address of the site (optional).</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input class="form-check-input" type="checkbox" id="needs_qcs_policies" name="needs_qcs_policies" checked>
+                        <label class="form-check-label" for="needs_qcs_policies">
+                            Requires External Policies
+                        </label>
+                        <div class="form-text text-secondary">Check this box if this site needs external policies. Unchecking will exclude this site from policy updates.</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('manage_sites') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Site</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card bg-dark border-secondary">
+            <div class="card-header">
+                <h2 class="h5 mb-0">About Multi-Site Management</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="h6">Benefits of Multiple Sites</h3>
+                        <ul>
+                            <li>Customize policies for different care home locations</li>
+                            <li>Assign users to specific sites for access control</li>
+                            <li>Use site-specific manager names in policy documents</li>
+                            <li>Track which sites need policy updates</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="h6">How Site Information is Used</h3>
+                        <ul>
+                            <li>Site names and manager names can be used when formatting policies</li>
+                            <li>User accounts can be restricted to specific sites</li>
+                            <li>Policy download and formatting can be configured per-site</li>
+                            <li>Reports and policy usage can be tracked at the site level</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

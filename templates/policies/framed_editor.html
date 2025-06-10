@@ -1,0 +1,1122 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Format & Layout Editor{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    /* Main container styles */
+    .content-container {
+        padding: 20px;
+    }
+    
+    /* Policy Editor Frame */
+    .policy-frame {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        background-color: #fff;
+        margin-bottom: 30px;
+    }
+    
+    .policy-frame-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 15px 20px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .policy-frame-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .policy-frame-content {
+        padding: 20px;
+        min-height: 300px;
+    }
+    
+    /* Section styling */
+    .policy-section {
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-number {
+        background-color: #e9ecef;
+        color: #495057;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-right: 10px;
+        min-width: 40px;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin: 0;
+        flex: 1;
+    }
+    
+    .section-content {
+        padding: 15px;
+        background-color: #fff;
+    }
+    
+    /* Sidebar navigation */
+    .sidebar-menu {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .sidebar-header {
+        background-color: #343a40;
+        color: #fff;
+        padding: 15px;
+    }
+    
+    .sidebar-title {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    .sidebar-content {
+        padding: 0;
+    }
+    
+    .nav-menu-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .nav-menu-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .nav-menu-item.active {
+        background-color: #e9ecef;
+    }
+    
+    .nav-menu-icon {
+        color: #6c757d;
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+    
+    .nav-menu-text {
+        font-weight: 500;
+    }
+    
+    /* Formatting toolbar */
+    .formatting-toolbar {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .toolbar-group {
+        display: inline-block;
+        margin-right: 15px;
+        border-right: 1px solid #e9ecef;
+        padding-right: 15px;
+    }
+    
+    .toolbar-group:last-child {
+        border-right: none;
+    }
+    
+    .toolbar-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+        font-weight: 600;
+        display: block;
+    }
+    
+    .toolbar-button {
+        padding: 6px 10px;
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-right: 5px;
+        color: #495057;
+        transition: all 0.2s;
+    }
+    
+    .toolbar-button:hover {
+        background-color: #e9ecef;
+    }
+    
+    .toolbar-button.active {
+        background-color: #e7f1ff;
+        border-color: #b6d4fe;
+        color: #0d6efd;
+    }
+    
+    /* Template item styling */
+    .template-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background-color: #fff;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .template-item:hover {
+        border-color: #b6d4fe;
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+    
+    .template-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e9ecef;
+        color: #0d6efd;
+        border-radius: 6px;
+        margin-right: 15px;
+    }
+    
+    .template-info {
+        flex: 1;
+    }
+    
+    .template-title {
+        font-weight: 600;
+        margin: 0 0 5px 0;
+    }
+    
+    .template-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    /* Format Example Styles */
+    .format-example {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .format-example:hover {
+        border-color: #b6d4fe;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    
+    .example-header {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+    
+    .example-content {
+        padding: 15px;
+    }
+    
+    /* Special Formats */
+    .key-point-box {
+        background-color: #e7f5ff;
+        border-left: 4px solid #0d6efd;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .warning-box {
+        background-color: #fff3e6;
+        border-left: 4px solid #fd7e14;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .note-box {
+        background-color: #f8f9fa;
+        border: 1px dashed #adb5bd;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .checklist {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    
+    .checklist li {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 10px;
+    }
+    
+    .checklist li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 20px;
+        height: 20px;
+        color: #198754;
+        font-weight: bold;
+        text-align: center;
+        line-height: 20px;
+    }
+    
+    .definition-list dt {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .definition-list dd {
+        margin-bottom: 15px;
+        padding-left: 15px;
+        border-left: 2px solid #e9ecef;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        border: 2px dashed #dee2e6;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #adb5bd;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #343a40;
+    }
+    
+    .empty-state-text {
+        color: #6c757d;
+        max-width: 400px;
+        margin: 0 auto 20px auto;
+    }
+    
+    /* Save indicator */
+    .save-indicator {
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 0.8rem;
+    }
+    
+    .save-indicator.saved {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .save-indicator.saving {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+    
+    .save-indicator.error {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    /* Styled highlight box */
+    .styled-highlight {
+        border-left: 3px solid;
+        border-radius: 3px;
+        padding: 2px 4px;
+        margin: 0 2px;
+    }
+    
+    .yellow-highlight {
+        background-color: #fff9c4;
+        border-color: #ffd600;
+    }
+    
+    .blue-highlight {
+        background-color: #e3f2fd;
+        border-color: #2196f3;
+    }
+    
+    .green-highlight {
+        background-color: #e8f5e9;
+        border-color: #4caf50;
+    }
+    
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+        .toolbar-group {
+            display: block;
+            border-right: none;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .toolbar-button {
+            margin-bottom: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid content-container">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>
+                <i class="bi bi-file-text"></i> 
+                Policy Format & Layout Editor
+            </h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <button id="saveButton" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save Policy
+            </button>
+            <a href="#" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left sidebar with section templates and formatting options -->
+        <div class="col-md-3">
+            <!-- Section Templates -->
+            <div class="sidebar-menu mb-4">
+                <div class="sidebar-header">
+                    <h3 class="sidebar-title">
+                        <i class="bi bi-layout-text-sidebar"></i> Policy Sections
+                    </h3>
+                </div>
+                <div class="sidebar-content">
+                    <div class="template-item" data-section="1.0">
+                        <div class="template-icon">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                        <div class="template-info">
+                            <h4 class="template-title">1.0 Policy Statement</h4>
+                            <p class="template-description">Main policy declaration and purpose</p>
+                        </div>
+                    </div>
+                    
+                    <div class="template-item" data-section="2.0">
+                        <div class="template-icon">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+                        <div class="template-info">
+                            <h4 class="template-title">2.0 Scope</h4>
+                            <p class="template-description">Who and what the policy applies to</p>
+                        </div>
+                    </div>
+                    
+                    <div class="template-item" data-section="3.0">
+                        <div class="template-icon">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <div class="template-info">
+                            <h4 class="template-title">3.0 Procedure</h4>
+                            <p class="template-description">Step-by-step process details</p>
+                        </div>
+                    </div>
+                    
+                    <div class="template-item" data-section="4.0">
+                        <div class="template-icon">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="template-info">
+                            <h4 class="template-title">4.0 Definitions</h4>
+                            <p class="template-description">Key terms and their meanings</p>
+                        </div>
+                    </div>
+                    
+                    <div class="template-item" data-section="5.0">
+                        <div class="template-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="template-info">
+                            <h4 class="template-title">5.0 Responsibilities</h4>
+                            <p class="template-description">Who is responsible for what</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formatting Examples -->
+            <div class="sidebar-menu">
+                <div class="sidebar-header">
+                    <h3 class="sidebar-title">
+                        <i class="bi bi-palette"></i> Visual Elements
+                    </h3>
+                </div>
+                <div class="sidebar-content p-3">
+                    <div class="format-example" data-format="key-point">
+                        <div class="example-header">
+                            <i class="bi bi-star-fill text-primary me-2"></i> Key Point
+                        </div>
+                        <div class="example-content">
+                            <div class="key-point-box">
+                                <strong>Important:</strong> Highlight essential information that staff need to remember.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="format-example" data-format="warning">
+                        <div class="example-header">
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Warning
+                        </div>
+                        <div class="example-content">
+                            <div class="warning-box">
+                                <strong>Warning:</strong> Draw attention to critical compliance requirements.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="format-example" data-format="note">
+                        <div class="example-header">
+                            <i class="bi bi-info-circle-fill text-info me-2"></i> Note
+                        </div>
+                        <div class="example-content">
+                            <div class="note-box">
+                                <em>Note:</em> Add helpful context or additional information.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="format-example" data-format="checklist">
+                        <div class="example-header">
+                            <i class="bi bi-check-square-fill text-success me-2"></i> Checklist
+                        </div>
+                        <div class="example-content">
+                            <ul class="checklist">
+                                <li>First item to check</li>
+                                <li>Second item to verify</li>
+                                <li>Third item to confirm</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="format-example" data-format="definition">
+                        <div class="example-header">
+                            <i class="bi bi-book-fill text-secondary me-2"></i> Definition
+                        </div>
+                        <div class="example-content">
+                            <dl class="definition-list">
+                                <dt>Term</dt>
+                                <dd>The definition of the term goes here with a detailed explanation.</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main policy editor area -->
+        <div class="col-md-9">
+            <!-- Policy Details Frame -->
+            <div class="policy-frame mb-4">
+                <div class="policy-frame-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="policy-frame-title">
+                            <i class="bi bi-file-earmark-text me-2"></i> Policy Details
+                        </h3>
+                    </div>
+                </div>
+                <div class="policy-frame-content">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="policyTitle" class="form-label">Policy Title</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="policyCodePrefix">{{ policy.code if policy and policy.code else 'CODE' }}</span>
+                                    <input type="text" class="form-control" id="policyTitle" placeholder="Enter policy title" value="{{ policy.title if policy and policy.title else '' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="policyVersion" class="form-label">Version</label>
+                                <input type="text" class="form-control" id="policyVersion" placeholder="1.0" value="{{ policy.version if policy and policy.version else '1.0' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="policyCategory" class="form-label">Category</label>
+                                <select class="form-select" id="policyCategory">
+                                    <option value="">-- Select Category --</option>
+                                    <option value="Care Management" {% if policy and policy.category == 'Care Management' %}selected{% endif %}>Care Management</option>
+                                    <option value="Health and Safety" {% if policy and policy.category == 'Health and Safety' %}selected{% endif %}>Health and Safety</option>
+                                    <option value="Governance" {% if policy and policy.category == 'Governance' %}selected{% endif %}>Governance</option>
+                                    <option value="Medication Management" {% if policy and policy.category == 'Medication Management' %}selected{% endif %}>Medication Management</option>
+                                    <option value="Quality Assurance" {% if policy and policy.category == 'Quality Assurance' %}selected{% endif %}>Quality Assurance</option>
+                                    <option value="Administration" {% if policy and policy.category == 'Administration' %}selected{% endif %}>Administration</option>
+                                    <option value="Information Governance" {% if policy and policy.category == 'Information Governance' %}selected{% endif %}>Information Governance</option>
+                                    <option value="Clinical Governance" {% if policy and policy.category == 'Clinical Governance' %}selected{% endif %}>Clinical Governance</option>
+                                    <option value="Human Resources" {% if policy and policy.category == 'Human Resources' %}selected{% endif %}>Human Resources</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="policyDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="policyDate" value="{{ policy.date if policy and policy.date else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="policyStatus" class="form-label">Status</label>
+                                <select class="form-select" id="policyStatus">
+                                    <option value="draft" selected>Draft</option>
+                                    <option value="review">In Review</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="archived">Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formatting Toolbar -->
+            <div class="formatting-toolbar mb-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Text Style</span>
+                            <button class="toolbar-button" data-command="bold" title="Bold"><i class="bi bi-type-bold"></i> Bold</button>
+                            <button class="toolbar-button" data-command="italic" title="Italic"><i class="bi bi-type-italic"></i> Italic</button>
+                            <button class="toolbar-button" data-command="underline" title="Underline"><i class="bi bi-type-underline"></i> Underline</button>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Text Color</span>
+                            <button class="toolbar-button" data-command="color" data-value="black" title="Black"><i class="bi bi-circle-fill" style="color: black;"></i></button>
+                            <button class="toolbar-button" data-command="color" data-value="blue" title="Blue"><i class="bi bi-circle-fill" style="color: blue;"></i></button>
+                            <button class="toolbar-button" data-command="color" data-value="red" title="Red"><i class="bi bi-circle-fill" style="color: red;"></i></button>
+                            <button class="toolbar-button" data-command="color" data-value="green" title="Green"><i class="bi bi-circle-fill" style="color: green;"></i></button>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Highlight</span>
+                            <button class="toolbar-button" data-command="highlight" data-value="yellow" title="Yellow"><i class="bi bi-highlighter" style="color: #ffd600;"></i></button>
+                            <button class="toolbar-button" data-command="highlight" data-value="blue" title="Blue"><i class="bi bi-highlighter" style="color: #2196f3;"></i></button>
+                            <button class="toolbar-button" data-command="highlight" data-value="green" title="Green"><i class="bi bi-highlighter" style="color: #4caf50;"></i></button>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Elements</span>
+                            <button class="toolbar-button" data-command="heading" data-value="h2" title="Heading"><i class="bi bi-type-h2"></i> Heading</button>
+                            <button class="toolbar-button" data-command="list" data-value="bullet" title="Bullet List"><i class="bi bi-list-ul"></i> List</button>
+                            <button class="toolbar-button" data-command="list" data-value="number" title="Numbered List"><i class="bi bi-list-ol"></i> Numbered</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Insert</span>
+                            <button class="toolbar-button" data-command="insert" data-value="table" title="Table"><i class="bi bi-table"></i> Table</button>
+                            <button class="toolbar-button" data-command="insert" data-value="keypoint" title="Key Point"><i class="bi bi-star"></i> Key Point</button>
+                            <button class="toolbar-button" data-command="insert" data-value="warning" title="Warning"><i class="bi bi-exclamation-triangle"></i> Warning</button>
+                            <button class="toolbar-button" data-command="insert" data-value="note" title="Note"><i class="bi bi-info-circle"></i> Note</button>
+                        </div>
+                        
+                        <div class="toolbar-group">
+                            <span class="toolbar-label">Actions</span>
+                            <button class="toolbar-button" id="autoDetectSections" title="Auto-Detect Sections"><i class="bi bi-magic"></i> Auto-Detect Sections</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Policy Content Frame -->
+            <div class="policy-frame">
+                <div class="policy-frame-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="policy-frame-title">
+                            <i class="bi bi-file-earmark-richtext me-2"></i> Policy Content
+                        </h3>
+                        <div>
+                            <span id="saveStatus" class="save-indicator ms-2" style="display: none;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="policy-frame-content">
+                    {% if policy and policy.content %}
+                        <div id="policyContent" class="policy-editor-content">
+                            {{ policy.content|safe }}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <h4 class="empty-state-title">No Content Yet</h4>
+                            <p class="empty-state-text">
+                                Start by adding sections from the templates on the left side. 
+                                Click any template to add it to your policy document.
+                            </p>
+                            <button class="btn btn-primary" id="addFirstSection">
+                                <i class="bi bi-plus-circle"></i> Add First Section
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Document Settings -->
+            <div class="policy-frame mt-4">
+                <div class="policy-frame-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="policy-frame-title">
+                            <i class="bi bi-gear me-2"></i> Document Settings
+                        </h3>
+                    </div>
+                </div>
+                <div class="policy-frame-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="codeDisplay" class="form-label">Policy Code Display</label>
+                                <select class="form-select" id="codeDisplay">
+                                    <option value="before_title" {% if policy and policy.code_display == 'before_title' %}selected{% endif %}>Before Title</option>
+                                    <option value="after_title" {% if policy and policy.code_display == 'after_title' %}selected{% endif %}>After Title</option>
+                                    <option value="header" {% if policy and policy.code_display == 'header' %}selected{% endif %}>In Header</option>
+                                    <option value="footer" {% if policy and policy.code_display == 'footer' %}selected{% endif %}>In Footer</option>
+                                    <option value="hidden" {% if policy and policy.code_display == 'hidden' %}selected{% endif %}>Hidden</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pageNumbers" class="form-label">Page Number Location</label>
+                                <select class="form-select" id="pageNumbers">
+                                    <option value="bottom_center" {% if policy and policy.page_number_location == 'bottom_center' %}selected{% endif %}>Bottom Center</option>
+                                    <option value="bottom_right" {% if policy and policy.page_number_location == 'bottom_right' %}selected{% endif %}>Bottom Right</option>
+                                    <option value="bottom_left" {% if policy and policy.page_number_location == 'bottom_left' %}selected{% endif %}>Bottom Left</option>
+                                    <option value="top_right" {% if policy and policy.page_number_location == 'top_right' %}selected{% endif %}>Top Right</option>
+                                    <option value="top_left" {% if policy and policy.page_number_location == 'top_left' %}selected{% endif %}>Top Left</option>
+                                    <option value="hidden" {% if policy and policy.page_number_location == 'hidden' %}selected{% endif %}>Hidden</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize policy editor
+        const policyContent = document.getElementById('policyContent');
+        const saveButton = document.getElementById('saveButton');
+        const saveStatus = document.getElementById('saveStatus');
+        const addFirstSectionBtn = document.getElementById('addFirstSection');
+        const autoDetectSectionsBtn = document.getElementById('autoDetectSections');
+        
+        // Template item click handler
+        const templateItems = document.querySelectorAll('.template-item');
+        templateItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const sectionNumber = this.getAttribute('data-section');
+                addSection(sectionNumber);
+            });
+        });
+        
+        // Format example click handler
+        const formatExamples = document.querySelectorAll('.format-example');
+        formatExamples.forEach(example => {
+            example.addEventListener('click', function() {
+                const formatType = this.getAttribute('data-format');
+                applyFormatting(formatType);
+            });
+        });
+        
+        // Toolbar button click handler
+        const toolbarButtons = document.querySelectorAll('.toolbar-button');
+        toolbarButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const command = this.getAttribute('data-command');
+                const value = this.getAttribute('data-value');
+                executeCommand(command, value);
+            });
+        });
+        
+        // Add first section button click handler
+        if (addFirstSectionBtn) {
+            addFirstSectionBtn.addEventListener('click', function() {
+                // Replace empty state with content editor
+                const emptyState = document.querySelector('.empty-state');
+                if (emptyState) {
+                    const policyFrameContent = emptyState.parentElement;
+                    policyFrameContent.innerHTML = '<div id="policyContent" class="policy-editor-content"></div>';
+                    
+                    // Add the first section (Policy Statement)
+                    addSection('1.0');
+                }
+            });
+        }
+        
+        // Auto-detect sections button click handler
+        if (autoDetectSectionsBtn) {
+            autoDetectSectionsBtn.addEventListener('click', function() {
+                detectSections();
+            });
+        }
+        
+        // Save button click handler
+        if (saveButton) {
+            saveButton.addEventListener('click', function() {
+                savePolicy();
+            });
+        }
+        
+        // Function to add a section to the policy
+        function addSection(sectionNumber) {
+            if (!policyContent) return;
+            
+            let sectionTitle;
+            let sectionTemplate;
+            
+            switch(sectionNumber) {
+                case '1.0':
+                    sectionTitle = 'Policy Statement';
+                    sectionTemplate = '<p>Enter the main policy statement here. This should clearly state what the policy is about and its purpose.</p>';
+                    break;
+                case '2.0':
+                    sectionTitle = 'Scope';
+                    sectionTemplate = '<p>Define who this policy applies to and what activities or areas it covers.</p>';
+                    break;
+                case '3.0':
+                    sectionTitle = 'Procedure';
+                    sectionTemplate = '<ol><li>Step one of the procedure</li><li>Step two of the procedure</li><li>Step three of the procedure</li></ol>';
+                    break;
+                case '4.0':
+                    sectionTitle = 'Definitions';
+                    sectionTemplate = '<dl class="definition-list"><dt>Term 1</dt><dd>Definition of term 1</dd><dt>Term 2</dt><dd>Definition of term 2</dd></dl>';
+                    break;
+                case '5.0':
+                    sectionTitle = 'Responsibilities';
+                    sectionTemplate = '<p>Outline who is responsible for implementing and following this policy.</p>';
+                    break;
+                default:
+                    sectionTitle = 'New Section';
+                    sectionTemplate = '<p>Enter content for this section here.</p>';
+            }
+            
+            // Create new section HTML
+            const sectionHtml = `
+                <div class="policy-section">
+                    <div class="section-header">
+                        <div class="section-number">${sectionNumber}</div>
+                        <h2 class="section-title" contenteditable="true">${sectionTitle}</h2>
+                    </div>
+                    <div class="section-content" contenteditable="true">
+                        ${sectionTemplate}
+                    </div>
+                </div>
+            `;
+            
+            // Append the new section to the policy content
+            policyContent.insertAdjacentHTML('beforeend', sectionHtml);
+        }
+        
+        // Function to apply formatting based on format type
+        function applyFormatting(formatType) {
+            if (!policyContent) return;
+            
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            const selectedContent = range.toString();
+            
+            let formattedHtml;
+            
+            switch(formatType) {
+                case 'key-point':
+                    formattedHtml = `<div class="key-point-box"><strong>Key Point:</strong> ${selectedContent || 'Important information that staff need to remember.'}</div>`;
+                    break;
+                case 'warning':
+                    formattedHtml = `<div class="warning-box"><strong>Warning:</strong> ${selectedContent || 'Critical information about risks or compliance issues.'}</div>`;
+                    break;
+                case 'note':
+                    formattedHtml = `<div class="note-box"><em>Note:</em> ${selectedContent || 'Additional context or helpful information for policy users.'}</div>`;
+                    break;
+                case 'checklist':
+                    formattedHtml = `<ul class="checklist"><li>${selectedContent || 'First item to check'}</li><li>Second item to verify</li><li>Third item to confirm</li></ul>`;
+                    break;
+                case 'definition':
+                    formattedHtml = `<dl class="definition-list"><dt>${selectedContent || 'Term'}</dt><dd>The definition of the term goes here with a detailed explanation.</dd></dl>`;
+                    break;
+                default:
+                    return;
+            }
+            
+            if (selectedContent) {
+                // Replace selected content with formatted content
+                range.deleteContents();
+                const fragment = range.createContextualFragment(formattedHtml);
+                range.insertNode(fragment);
+            } else {
+                // Insert at cursor position if no selection
+                const focusedElement = document.activeElement;
+                if (focusedElement && focusedElement.getAttribute('contenteditable') === 'true') {
+                    focusedElement.innerHTML += formattedHtml;
+                } else {
+                    // Show a helper message if no editable element is focused
+                    showHelperMessage('Please click inside a section content area first, then try again.');
+                }
+            }
+        }
+        
+        // Function to execute toolbar commands
+        function executeCommand(command, value) {
+            if (!policyContent) return;
+            
+            switch(command) {
+                case 'bold':
+                case 'italic':
+                case 'underline':
+                    document.execCommand(command, false, null);
+                    break;
+                case 'color':
+                    document.execCommand('foreColor', false, value);
+                    break;
+                case 'highlight':
+                    // Custom highlight implementation
+                    const selection = window.getSelection();
+                    if (selection.rangeCount) {
+                        const range = selection.getRangeAt(0);
+                        const selectedContent = range.toString();
+                        
+                        if (selectedContent) {
+                            const highlightClass = value + '-highlight';
+                            const span = document.createElement('span');
+                            span.className = 'styled-highlight ' + highlightClass;
+                            span.textContent = selectedContent;
+                            
+                            range.deleteContents();
+                            range.insertNode(span);
+                        } else {
+                            showHelperMessage('Please select text to highlight first.');
+                        }
+                    }
+                    break;
+                case 'heading':
+                    document.execCommand('formatBlock', false, value);
+                    break;
+                case 'list':
+                    if (value === 'bullet') {
+                        document.execCommand('insertUnorderedList', false, null);
+                    } else if (value === 'number') {
+                        document.execCommand('insertOrderedList', false, null);
+                    }
+                    break;
+                case 'insert':
+                    insertElement(value);
+                    break;
+            }
+        }
+        
+        // Function to insert elements
+        function insertElement(elementType) {
+            const focusedElement = document.activeElement;
+            if (!focusedElement || focusedElement.getAttribute('contenteditable') !== 'true') {
+                showHelperMessage('Please click inside a section content area first, then try again.');
+                return;
+            }
+            
+            let html;
+            
+            switch(elementType) {
+                case 'table':
+                    const rows = prompt('Enter number of rows:', '3');
+                    const cols = prompt('Enter number of columns:', '3');
+                    
+                    if (rows && cols) {
+                        html = '<table class="table table-bordered"><thead><tr>';
+                        
+                        // Create header row
+                        for (let i = 0; i < parseInt(cols); i++) {
+                            html += `<th>Header ${i+1}</th>`;
+                        }
+                        
+                        html += '</tr></thead><tbody>';
+                        
+                        // Create data rows
+                        for (let i = 0; i < parseInt(rows); i++) {
+                            html += '<tr>';
+                            for (let j = 0; j < parseInt(cols); j++) {
+                                html += `<td>Cell ${i+1},${j+1}</td>`;
+                            }
+                            html += '</tr>';
+                        }
+                        
+                        html += '</tbody></table>';
+                    }
+                    break;
+                case 'keypoint':
+                    html = '<div class="key-point-box"><strong>Key Point:</strong> Important information that staff need to remember.</div>';
+                    break;
+                case 'warning':
+                    html = '<div class="warning-box"><strong>Warning:</strong> Critical information about risks or compliance issues.</div>';
+                    break;
+                case 'note':
+                    html = '<div class="note-box"><em>Note:</em> Additional context or helpful information for policy users.</div>';
+                    break;
+            }
+            
+            if (html) {
+                focusedElement.innerHTML += html;
+            }
+        }
+        
+        // Function to detect and format sections in the policy content
+        function detectSections() {
+            if (!policyContent) return;
+            
+            const content = policyContent.innerHTML;
+            
+            // Send content to server for processing
+            fetch('/improved-editor/auto-detect-sections', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: content
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    policyContent.innerHTML = data.content;
+                    showHelperMessage('Sections detected and formatted successfully!', 'success');
+                } else {
+                    showHelperMessage('Error detecting sections: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showHelperMessage('Error: ' + error.message, 'error');
+            });
+        }
+        
+        // Function to save the policy
+        function savePolicy() {
+            if (!policyContent) return;
+            
+            // Show saving indicator
+            showSaveStatus('Saving...', 'saving');
+            
+            // Gather policy data
+            const policyData = {
+                id: '{{ policy.id if policy and policy.id else "demo" }}',
+                code: document.getElementById('policyCodePrefix').textContent,
+                title: document.getElementById('policyTitle').value,
+                version: document.getElementById('policyVersion').value,
+                category: document.getElementById('policyCategory').value,
+                date: document.getElementById('policyDate').value,
+                content: policyContent.innerHTML,
+                code_display: document.getElementById('codeDisplay').value,
+                page_number_location: document.getElementById('pageNumbers').value
+            };
+            
+            // Send to server
+            fetch('/improved-editor/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(policyData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSaveStatus('Saved successfully!', 'saved');
+                } else {
+                    showSaveStatus('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showSaveStatus('Error: ' + error.message, 'error');
+            });
+        }
+        
+        // Function to show save status
+        function showSaveStatus(message, status) {
+            if (!saveStatus) return;
+            
+            saveStatus.textContent = message;
+            saveStatus.className = 'save-indicator ' + status;
+            saveStatus.style.display = 'inline-block';
+            
+            if (status === 'saved') {
+                setTimeout(() => {
+                    saveStatus.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Function to show helper message
+        function showHelperMessage(message, type = 'info') {
+            const helperMsg = document.createElement('div');
+            helperMsg.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            helperMsg.style.zIndex = '9999';
+            helperMsg.innerHTML = `
+                <i class="bi bi-info-circle me-2"></i> ${message}
+                <button type="button" class="btn-close ms-3" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(helperMsg);
+            
+            setTimeout(() => {
+                helperMsg.remove();
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %}

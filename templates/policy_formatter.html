@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Format Policies - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Format QCS Policies to Company Format</h1>
+    <p class="lead">Convert QCS policies to your company format with cross-references and British English spelling</p>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Policy Formatting Options</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('format_policies') }}">
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" value="Cathena Care" required>
+                            <div class="form-text">The name of your organisation to replace QCS references</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="care_home_name" class="form-label">Care Home Name</label>
+                            <input type="text" class="form-control" id="care_home_name" name="care_home_name" value="Oakwood House" required>
+                            <div class="form-text">The name of your care home to use in documents</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="manager_name" class="form-label">Registered Manager Name</label>
+                            <input type="text" class="form-control" id="manager_name" name="manager_name" value="Jane Smith" required>
+                            <div class="form-text">The name of the registered manager to use in documents</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Formatting Options</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="keep_qcs" name="keep_qcs" value="1">
+                                <label class="form-check-label" for="keep_qcs">
+                                    Keep QCS references (don't replace with company name)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="add_cross_references" name="add_cross_references" value="1" checked>
+                                <label class="form-check-label" for="add_cross_references">
+                                    Add cross-references to related policies
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="create_index" name="create_index" value="1" checked>
+                                <label class="form-check-label" for="create_index">
+                                    Create policy index document
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="target_format" class="form-label">Output Format</label>
+                            <select class="form-select" id="target_format" name="target_format">
+                                <option value="Company" selected>Company Format</option>
+                                <option value="QCS">QCS Format (just replace names)</option>
+                            </select>
+                            <div class="form-text">The formatting style to apply to the documents</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="index_organization" class="form-label">Index Organisation</label>
+                            <select class="form-select" id="index_organization" name="index_organization">
+                                <option value="alphabetical" selected>Alphabetical</option>
+                                <option value="category">By Category</option>
+                            </select>
+                            <div class="form-text">How to organise the policy index document</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formatting_scope" class="form-label">Policies to Format</label>
+                            <select class="form-select" id="formatting_scope" name="formatting_scope">
+                                <option value="all" selected>All Policies</option>
+                                <option value="category">Specific Category</option>
+                                <option value="code">Specific Policy Code</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="category_selector" style="display: none;">
+                            <label for="category_id" class="form-label">Select Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="code_selector" style="display: none;">
+                            <label for="policy_code" class="form-label">Policy Code</label>
+                            <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="e.g. HS01, CR63">
+                            <div class="form-text">Enter the specific policy code to format</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync-alt"></i> Format Policies
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formattingScope = document.getElementById('formatting_scope');
+        const categorySelector = document.getElementById('category_selector');
+        const codeSelector = document.getElementById('code_selector');
+        
+        formattingScope.addEventListener('change', function() {
+            if (this.value === 'category') {
+                categorySelector.style.display = 'block';
+                codeSelector.style.display = 'none';
+            } else if (this.value === 'code') {
+                categorySelector.style.display = 'none';
+                codeSelector.style.display = 'block';
+            } else {
+                categorySelector.style.display = 'none';
+                codeSelector.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

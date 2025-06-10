@@ -1,0 +1,689 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Analysis{% endblock %}
+
+{% block styles %}
+<style>
+    .framework-section {
+        border-left: 4px solid #f8f9fa;
+        padding-left: 15px;
+        margin-bottom: 20px;
+        transition: all 0.2s ease;
+    }
+    .framework-section:hover {
+        border-left-width: 8px;
+    }
+    .framework-section.cqc {
+        border-left-color: #28a745;
+    }
+    .framework-section.riddor {
+        border-left-color: #dc3545;
+    }
+    .framework-section.fire-safety {
+        border-left-color: #fd7e14;
+    }
+    .framework-section.financial {
+        border-left-color: #17a2b8;
+    }
+    .framework-section.gdpr {
+        border-left-color: #6f42c1;
+    }
+    .section-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+    .score-high {
+        color: #28a745;
+    }
+    .score-medium {
+        color: #ffc107;
+    }
+    .score-low {
+        color: #dc3545;
+    }
+    .chart-container {
+        height: 250px;
+    }
+    .key-term-badge {
+        margin-right: 6px;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+    }
+    .gap-item {
+        padding: 10px;
+        border-left: 3px solid #dc3545;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+    .recommendation-item {
+        padding: 10px;
+        border-left: 3px solid #28a745;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+    .heat-map-cell {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        margin: 2px;
+        border-radius: 3px;
+    }
+    .document-metadata {
+        font-size: 0.9rem;
+    }
+    .document-content {
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+    }
+    .document-content.expanded {
+        max-height: none;
+    }
+    .content-toggle {
+        cursor: pointer;
+        color: #007bff;
+    }
+    .highlighted-text {
+        background-color: rgba(255, 215, 0, 0.3);
+        border-radius: 2px;
+        padding: 0 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 mb-0">Document Analysis</h1>
+            <p class="text-muted">Detailed regulatory analysis and insights</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('regulatory.dashboard') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('regulatory.export_analysis', document_id=document.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-download me-1"></i> Export PDF
+            </a>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show mb-4">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Document Header Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3>{{ document.original_filename or document.filename }}</h3>
+                    <p class="mb-3 document-metadata">
+                        <span class="badge bg-secondary me-2">{{ document.document_type|capitalize }}</span>
+                        {% if document.regulatory_framework %}
+                        <span class="badge bg-info me-2">{{ document.regulatory_framework }}</span>
+                        {% endif %}
+                        {% if document.source_type %}
+                        <span class="badge bg-light text-dark me-2">{{ document.source_type }}</span>
+                        {% endif %}
+                        <span class="me-2"><i class="fas fa-file-alt me-1"></i> {{ document.word_count|default(0) }} words</span>
+                        <span class="me-2"><i class="fas fa-calendar me-1"></i> {{ document.created_at|default('') }}</span>
+                    </p>
+                    
+                    {% if document.document_summary %}
+                    <div class="mb-3">
+                        <h5 class="section-label">Document Summary</h5>
+                        <p>{{ document.document_summary }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="section-label">Overall Compliance</h5>
+                            <h2 class="display-4 mb-2 {% if document.compliance_score > 80 %}score-high{% elif document.compliance_score > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(document.compliance_score) }}%
+                            </h2>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar 
+                                    {% if document.compliance_score > 80 %}bg-success
+                                    {% elif document.compliance_score > 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ document.compliance_score }}%;" 
+                                    aria-valuenow="{{ document.compliance_score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                            <p class="mb-0 small">
+                                {% if document.compliance_score > 80 %}
+                                <span class="text-success"><i class="fas fa-check-circle me-1"></i> Strong compliance</span>
+                                {% elif document.compliance_score > 60 %}
+                                <span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i> Moderate compliance, improvement needed</span>
+                                {% else %}
+                                <span class="text-danger"><i class="fas fa-times-circle me-1"></i> Poor compliance, significant revisions required</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Document Content Preview -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Document Content</h5>
+            <span class="content-toggle" id="contentToggle">
+                <i class="fas fa-expand-alt me-1"></i> Expand
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="document-content" id="documentContent">
+                {% if document.highlighted_content %}
+                    {{ document.highlighted_content|safe }}
+                {% else %}
+                    {{ document.content }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Compliance Charts -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Compliance by Framework</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="complianceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Terms -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Key Terms & Concepts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {% if document.key_terms %}
+                            {% for term in document.key_terms %}
+                                <span class="badge bg-light text-dark key-term-badge">{{ term }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No key terms identified</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if document.key_themes %}
+                    <div>
+                        <h6 class="section-label">Primary Themes</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for theme in document.key_themes %}
+                            <li class="list-group-item bg-transparent px-0">
+                                <i class="fas fa-bookmark me-2 text-primary"></i> {{ theme }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Regulatory Framework Analysis -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Regulatory Framework Analysis</h5>
+        </div>
+        <div class="card-body">
+            <!-- CQC Framework -->
+            {% if document.framework_analysis and document.framework_analysis.cqc %}
+            <div class="framework-section cqc mb-4">
+                <h5><i class="fas fa-clipboard-check me-2"></i> CQC Compliance</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="section-label">Compliance Score</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="me-3 mb-0 {% if document.framework_analysis.cqc.score > 80 %}score-high{% elif document.framework_analysis.cqc.score > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(document.framework_analysis.cqc.score) }}%
+                            </h3>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar 
+                                    {% if document.framework_analysis.cqc.score > 80 %}bg-success
+                                    {% elif document.framework_analysis.cqc.score > 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ document.framework_analysis.cqc.score }}%;" 
+                                    aria-valuenow="{{ document.framework_analysis.cqc.score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Relevant Regulations</h6>
+                        <ul class="small mb-0">
+                            {% for reg in document.framework_analysis.cqc.relevant_regulations %}
+                            <li>{{ reg }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Key Findings</h6>
+                        <p class="small mb-0">{{ document.framework_analysis.cqc.summary }}</p>
+                    </div>
+                </div>
+                
+                {% if document.framework_analysis.cqc.gaps %}
+                <div class="mt-3">
+                    <h6 class="section-label">Identified Gaps</h6>
+                    <div>
+                        {% for gap in document.framework_analysis.cqc.gaps %}
+                        <div class="gap-item">
+                            <p class="mb-0"><strong>{{ gap.title }}:</strong> {{ gap.description }}</p>
+                            {% if gap.recommendation %}
+                            <p class="small text-success mb-0 mt-1">
+                                <i class="fas fa-lightbulb me-1"></i> <strong>Recommendation:</strong> {{ gap.recommendation }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- RIDDOR Framework -->
+            {% if document.framework_analysis and document.framework_analysis.riddor %}
+            <div class="framework-section riddor mb-4">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i> RIDDOR Compliance</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="section-label">Compliance Score</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="me-3 mb-0 {% if document.framework_analysis.riddor.score > 80 %}score-high{% elif document.framework_analysis.riddor.score > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(document.framework_analysis.riddor.score) }}%
+                            </h3>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar 
+                                    {% if document.framework_analysis.riddor.score > 80 %}bg-success
+                                    {% elif document.framework_analysis.riddor.score > 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ document.framework_analysis.riddor.score }}%;" 
+                                    aria-valuenow="{{ document.framework_analysis.riddor.score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Relevant Regulations</h6>
+                        <ul class="small mb-0">
+                            {% for reg in document.framework_analysis.riddor.relevant_regulations %}
+                            <li>{{ reg }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Key Findings</h6>
+                        <p class="small mb-0">{{ document.framework_analysis.riddor.summary }}</p>
+                    </div>
+                </div>
+                
+                {% if document.framework_analysis.riddor.gaps %}
+                <div class="mt-3">
+                    <h6 class="section-label">Identified Gaps</h6>
+                    <div>
+                        {% for gap in document.framework_analysis.riddor.gaps %}
+                        <div class="gap-item">
+                            <p class="mb-0"><strong>{{ gap.title }}:</strong> {{ gap.description }}</p>
+                            {% if gap.recommendation %}
+                            <p class="small text-success mb-0 mt-1">
+                                <i class="fas fa-lightbulb me-1"></i> <strong>Recommendation:</strong> {{ gap.recommendation }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Fire Safety Framework -->
+            {% if document.framework_analysis and document.framework_analysis.fire_safety %}
+            <div class="framework-section fire-safety mb-4">
+                <h5><i class="fas fa-fire me-2"></i> Fire Safety Compliance</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="section-label">Compliance Score</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="me-3 mb-0 {% if document.framework_analysis.fire_safety.score > 80 %}score-high{% elif document.framework_analysis.fire_safety.score > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(document.framework_analysis.fire_safety.score) }}%
+                            </h3>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar 
+                                    {% if document.framework_analysis.fire_safety.score > 80 %}bg-success
+                                    {% elif document.framework_analysis.fire_safety.score > 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ document.framework_analysis.fire_safety.score }}%;" 
+                                    aria-valuenow="{{ document.framework_analysis.fire_safety.score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Relevant Regulations</h6>
+                        <ul class="small mb-0">
+                            {% for reg in document.framework_analysis.fire_safety.relevant_regulations %}
+                            <li>{{ reg }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Key Findings</h6>
+                        <p class="small mb-0">{{ document.framework_analysis.fire_safety.summary }}</p>
+                    </div>
+                </div>
+                
+                {% if document.framework_analysis.fire_safety.gaps %}
+                <div class="mt-3">
+                    <h6 class="section-label">Identified Gaps</h6>
+                    <div>
+                        {% for gap in document.framework_analysis.fire_safety.gaps %}
+                        <div class="gap-item">
+                            <p class="mb-0"><strong>{{ gap.title }}:</strong> {{ gap.description }}</p>
+                            {% if gap.recommendation %}
+                            <p class="small text-success mb-0 mt-1">
+                                <i class="fas fa-lightbulb me-1"></i> <strong>Recommendation:</strong> {{ gap.recommendation }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Financial Framework -->
+            {% if document.framework_analysis and document.framework_analysis.financial %}
+            <div class="framework-section financial">
+                <h5><i class="fas fa-pound-sign me-2"></i> Financial/Accounting Compliance</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="section-label">Compliance Score</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="me-3 mb-0 {% if document.framework_analysis.financial.score > 80 %}score-high{% elif document.framework_analysis.financial.score > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(document.framework_analysis.financial.score) }}%
+                            </h3>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar 
+                                    {% if document.framework_analysis.financial.score > 80 %}bg-success
+                                    {% elif document.framework_analysis.financial.score > 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ document.framework_analysis.financial.score }}%;" 
+                                    aria-valuenow="{{ document.framework_analysis.financial.score }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Relevant Regulations</h6>
+                        <ul class="small mb-0">
+                            {% for reg in document.framework_analysis.financial.relevant_regulations %}
+                            <li>{{ reg }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="section-label">Key Findings</h6>
+                        <p class="small mb-0">{{ document.framework_analysis.financial.summary }}</p>
+                    </div>
+                </div>
+                
+                {% if document.framework_analysis.financial.gaps %}
+                <div class="mt-3">
+                    <h6 class="section-label">Identified Gaps</h6>
+                    <div>
+                        {% for gap in document.framework_analysis.financial.gaps %}
+                        <div class="gap-item">
+                            <p class="mb-0"><strong>{{ gap.title }}:</strong> {{ gap.description }}</p>
+                            {% if gap.recommendation %}
+                            <p class="small text-success mb-0 mt-1">
+                                <i class="fas fa-lightbulb me-1"></i> <strong>Recommendation:</strong> {{ gap.recommendation }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recommendations -->
+    {% if document.recommendations %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Recommendations</h5>
+        </div>
+        <div class="card-body">
+            {% for recommendation in document.recommendations %}
+            <div class="recommendation-item">
+                <h6 class="mb-1">{{ recommendation.title }}</h6>
+                <p class="mb-1">{{ recommendation.description }}</p>
+                {% if recommendation.priority %}
+                <p class="small mb-0">
+                    <strong>Priority:</strong>
+                    <span class="{% if recommendation.priority == 'High' %}text-danger{% elif recommendation.priority == 'Medium' %}text-warning{% else %}text-success{% endif %}">
+                        {{ recommendation.priority }}
+                    </span>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Heat Map -->
+    {% if document.heat_map_data %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Compliance Heat Map</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="heatMapChart"></canvas>
+            </div>
+            <div class="small text-muted mt-2">
+                <i class="fas fa-square text-success me-1"></i> High Compliance
+                <i class="fas fa-square text-warning mx-1"></i> Medium Compliance
+                <i class="fas fa-square text-danger mx-1"></i> Low Compliance
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Content Toggle
+    const contentToggle = document.getElementById('contentToggle');
+    const documentContent = document.getElementById('documentContent');
+    
+    if (contentToggle && documentContent) {
+        contentToggle.addEventListener('click', function() {
+            documentContent.classList.toggle('expanded');
+            
+            if (documentContent.classList.contains('expanded')) {
+                contentToggle.innerHTML = '<i class="fas fa-compress-alt me-1"></i> Collapse';
+            } else {
+                contentToggle.innerHTML = '<i class="fas fa-expand-alt me-1"></i> Expand';
+            }
+        });
+    }
+    
+    // Compliance Chart
+    var complianceData = {
+        labels: [
+            {% if document.framework_analysis and document.framework_analysis.cqc %}
+            'CQC',
+            {% endif %}
+            {% if document.framework_analysis and document.framework_analysis.riddor %}
+            'RIDDOR',
+            {% endif %}
+            {% if document.framework_analysis and document.framework_analysis.fire_safety %}
+            'Fire Safety',
+            {% endif %}
+            {% if document.framework_analysis and document.framework_analysis.financial %}
+            'Financial',
+            {% endif %}
+        ],
+        datasets: [{
+            label: 'Compliance Score',
+            data: [
+                {% if document.framework_analysis and document.framework_analysis.cqc %}
+                {{ document.framework_analysis.cqc.score }},
+                {% endif %}
+                {% if document.framework_analysis and document.framework_analysis.riddor %}
+                {{ document.framework_analysis.riddor.score }},
+                {% endif %}
+                {% if document.framework_analysis and document.framework_analysis.fire_safety %}
+                {{ document.framework_analysis.fire_safety.score }},
+                {% endif %}
+                {% if document.framework_analysis and document.framework_analysis.financial %}
+                {{ document.framework_analysis.financial.score }},
+                {% endif %}
+            ],
+            backgroundColor: [
+                '#28a745',
+                '#dc3545',
+                '#fd7e14',
+                '#17a2b8'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    if (document.getElementById('complianceChart')) {
+        var complianceChart = new Chart(document.getElementById('complianceChart'), {
+            type: 'bar',
+            data: complianceData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Heat Map Chart (if data exists)
+    {% if document.heat_map_data %}
+    var heatMapData = {{ document.heat_map_data|safe }};
+    
+    if (document.getElementById('heatMapChart')) {
+        var heatMapChart = new Chart(document.getElementById('heatMapChart'), {
+            type: 'heatmap',
+            data: {
+                datasets: [{
+                    data: heatMapData,
+                    backgroundColor: function(context) {
+                        const value = context.dataset.data[context.dataIndex].v;
+                        return value > 80 ? '#28a745' : value > 60 ? '#ffc107' : '#dc3545';
+                    },
+                    width: 40,
+                    height: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const data = context.dataset.data[context.dataIndex];
+                                return `${data.x}: ${data.v}% compliance`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'category',
+                        labels: ['CQC', 'RIDDOR', 'Fire Safety', 'Financial']
+                    },
+                    y: {
+                        type: 'category',
+                        labels: ['Requirements']
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

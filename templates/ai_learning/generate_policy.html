@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Policy from Concepts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_learning.index') }}">AI Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Generate Policy</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-4">Generate Policy</h1>
+            <p class="lead">
+                Create a new policy based on AI-learned regulatory concepts.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Policy Generation Form</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('ai_learning.generate_policy') }}" method="post">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Policy Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                            <div class="form-text">Enter a clear, descriptive title for the policy.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Policy Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <div class="form-text">Provide a brief description of the policy's purpose and scope.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Select Concepts to Include</label>
+                            <div class="form-text mb-2">Choose the regulatory concepts that should be addressed in this policy.</div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px">Select</th>
+                                            <th>Concept</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Importance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for concept in concepts %}
+                                            <tr>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="concept_ids" value="{{ concept.id }}" id="concept_{{ concept.id }}"
+                                                            {% if request.args.get('concept_ids') == concept.id|string %}checked{% endif %}>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="form-check-label" for="concept_{{ concept.id }}">
+                                                        <a href="{{ url_for('ai_learning.view_concept', concept_id=concept.id) }}" target="_blank">
+                                                            {{ concept.name }}
+                                                        </a>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ concept.concept_type }}</span>
+                                                </td>
+                                                <td>{{ concept.description|truncate(70) }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 10px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" 
+                                                             style="width: {{ (concept.importance_score * 100)|int }}%;" 
+                                                             aria-valuenow="{{ (concept.importance_score * 100)|int }}" 
+                                                             aria-valuemin="0" aria-valuemax="100">
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">{{ (concept.importance_score * 100)|int }}%</small>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic"></i> Generate Policy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

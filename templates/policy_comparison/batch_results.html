@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+
+{% block title %}Batch Policy Comparison Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Batch Policy Comparison Results</h1>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('policy_comparison.index') }}">Policy Comparison Tool</a></li>
+                            <li class="breadcrumb-item active">Batch Results</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h4 mb-0">Overall Compliance</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="display-4 mb-2">{{ overall_compliance|round(1) }}%</div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-{{ 'success' if overall_compliance >= 80 else 'warning' if overall_compliance >= 60 else 'danger' }}" 
+                                     role="progressbar" 
+                                     style="width: {{ overall_compliance }}%">
+                                </div>
+                            </div>
+                            <p class="mt-2">
+                                {% if overall_compliance >= 80 %}
+                                <span class="text-success"><i class="fas fa-check-circle me-2"></i> Policies were <strong>largely compliant</strong> with QCS standards</span>
+                                {% elif overall_compliance >= 60 %}
+                                <span class="text-warning"><i class="fas fa-exclamation-circle me-2"></i> Policies were <strong>partially compliant</strong> with QCS standards</span>
+                                {% else %}
+                                <span class="text-danger"><i class="fas fa-times-circle me-2"></i> Policies were <strong>significantly non-compliant</strong> with QCS standards</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Batch Comparison Summary</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="fw-bold">Total Policies Compared:</label>
+                                                <p>{{ results|length }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="fw-bold">Matched with QCS:</label>
+                                                <p>{{ results|selectattr('qcs_policy')|list|length }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="fw-bold">No Match Found:</label>
+                                                <p>{{ results|rejectattr('qcs_policy')|list|length }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="mt-2">
+                                        The analysis shows the overall compliance of your historical policies against current QCS standards.
+                                        This helps identify areas where your organization's documentation may have been at risk during inspections.
+                                    </p>
+                                    
+                                    <a href="{{ url_for('policy_comparison.comparison_report') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-file-export me-2"></i> Generate Full Report
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h4 mb-0">Individual Policy Results</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Old Policy</th>
+                                    <th>QCS Policy</th>
+                                    <th>Compliance Score</th>
+                                    <th>Structure Match</th>
+                                    <th>Content Match</th>
+                                    <th>Key Elements</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>
+                                        {{ result.old_policy.title }}
+                                        {% if result.old_policy.code %}
+                                        <br><small class="text-muted">{{ result.old_policy.code }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if result.qcs_policy %}
+                                        {{ result.qcs_policy.title }}
+                                        {% if result.qcs_policy.code %}
+                                        <br><small class="text-muted">{{ result.qcs_policy.code }}</small>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="text-danger">Not found</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if result.qcs_policy %}
+                                        <div class="progress" title="{{ result.compliance_score }}%">
+                                            <div class="progress-bar bg-{{ 'success' if result.compliance_score >= 80 else 'warning' if result.compliance_score >= 60 else 'danger' }}" 
+                                                 role="progressbar" style="width: {{ result.compliance_score }}%">
+                                                {{ result.compliance_score }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if result.qcs_policy %}
+                                        <div class="progress" title="{{ result.structure_match }}%">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ result.structure_match }}%">
+                                                {{ result.structure_match }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if result.qcs_policy %}
+                                        <div class="progress" title="{{ result.content_match }}%">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ result.content_match }}%">
+                                                {{ result.content_match }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if result.qcs_policy %}
+                                        <div class="progress" title="{{ result.key_elements_match }}%">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ result.key_elements_match }}%">
+                                                {{ result.key_elements_match }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('policy_comparison.compare_policy', policy_id=result.old_policy.id) }}" 
+                                           class="btn btn-sm btn-primary">Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

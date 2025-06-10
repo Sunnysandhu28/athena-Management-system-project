@@ -1,0 +1,53 @@
+<!-- Compact Navigation Bar Template - This is a more condensed, horizontal layout -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-shield-alt"></i> Cathena
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCompact">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarCompact">
+            <div class="navbar-nav mx-auto">
+                <a class="nav-link text-center" href="/">
+                    <i class="fas fa-home"></i>
+                    <div>Home</div>
+                </a>
+                <a class="nav-link text-center" href="/ml-analytics-dashboard">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>ML Analytics</div>
+                </a>
+                <a class="nav-link text-center" href="/ml-processing-live-feed">
+                    <i class="fas fa-sync-alt"></i>
+                    <div>Live Feed</div>
+                </a>
+                <a class="nav-link text-center" href="/cqc-analysis">
+                    <i class="fas fa-chart-line"></i>
+                    <div>CQC Analysis</div>
+                </a>
+                <a class="nav-link text-center" href="/condition-policy-mapping">
+                    <i class="fas fa-heartbeat"></i>
+                    <div>NHS Mappings</div>
+                </a>
+                <a class="nav-link text-center" href="/policy-repository">
+                    <i class="fas fa-file-alt"></i>
+                    <div>Policies</div>
+                </a>
+            </div>
+            
+            <div class="navbar-nav">
+                <a class="nav-link" href="#" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </a>
+                <a class="nav-link" href="#" onclick="window.location.reload();">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Add spacing after the navbar -->
+<div style="height: 1rem;"></div>

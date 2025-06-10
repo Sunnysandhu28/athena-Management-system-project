@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Policies - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .policies-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .policy-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .policy-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .category-section {
+        margin-bottom: 30px;
+    }
+    
+    .category-header {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .category-title {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+    
+    .policy-count {
+        background-color: #007bff;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+    }
+    
+    .search-container {
+        max-width: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="policies-header">
+        <div>
+            <h1 class="display-4">Policy Repository</h1>
+            <p class="lead">Access and manage your organization's policies</p>
+        </div>
+        <a href="{{ url_for('policies.search') }}" class="btn btn-primary">
+            <i class="fas fa-search"></i> Search Policies
+        </a>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="btn-group me-3">
+                <a href="{{ url_for('policies.categories') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-th-large"></i> View by Categories
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <form action="{{ url_for('policies.search') }}" method="get">
+                <div class="input-group search-container float-end">
+                    <input type="text" name="q" class="form-control" placeholder="Search policies...">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if policy_count == 0 %}
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading"><i class="fas fa-info-circle"></i> No Policies Found</h4>
+        <p>There are no policies currently in the system. Policies will appear here once they've been added.</p>
+    </div>
+    {% else %}
+    <p class="text-muted mb-4">Showing {{ policy_count }} policies across {{ categories|length }} categories</p>
+    
+    <!-- Categories -->
+    {% for category_name, policies in categories.items() %}
+    <div class="category-section">
+        <div class="category-header">
+            <h3 class="category-title">{{ category_name }}</h3>
+            <span class="policy-count">{{ policies|length }}</span>
+        </div>
+        
+        <div class="row">
+            {% for policy in policies %}
+            <div class="col-md-4">
+                <div class="card policy-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ policy.name }}</h5>
+                        <p class="card-text text-muted">{{ policy.filename }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="{{ url_for('policies.view_policy', policy_id=policy.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-file-alt"></i> View Policy
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Repository | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .policy-card {
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .policy-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    .policy-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .policy-code {
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .policy-category {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .policy-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .policy-tag {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        margin-right: 5px;
+        color: #495057;
+    }
+    .policy-tag.tag-core {
+        background-color: #cfe2ff;
+        color: #0d6efd;
+    }
+    .policy-tag.tag-qcs {
+        background-color: #d1e7dd;
+        color: #198754;
+    }
+    .policy-tag.tag-cqc {
+        background-color: #f8d7da;
+        color: #dc3545;
+    }
+    .policy-tag.tag-nhs {
+        background-color: #fff3cd;
+        color: #fd7e14;
+    }
+    .filter-form {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .category-badge {
+        display: inline-block;
+        padding: 8px 15px;
+        margin: 0 5px 10px 0;
+        background-color: #e9ecef;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .category-badge:hover {
+        background-color: #dee2e6;
+    }
+    .category-badge.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5">Policy Repository</h1>
+            <p class="lead">Browse, search, and manage organizational policies and procedures</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/full-policies" class="btn btn-success me-2">
+                <i class="fas fa-folder-open me-1"></i> View All Policies
+            </a>
+            <button class="btn btn-primary">
+                <i class="fas fa-upload me-2"></i> Upload New Policy
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="filter-form">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search policies..." id="policySearch">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="Administration">Administration</option>
+                            <option value="Care Management">Care Management</option>
+                            <option value="Clinical">Clinical</option>
+                            <option value="Health and Safety">Health and Safety</option>
+                            <option value="Human Resources">Human Resources</option>
+                            <option value="Information Governance">Information Governance</option>
+                            <option value="Medication">Medication</option>
+                            <option value="Quality Assurance">Quality Assurance</option>
+                            <option value="Service User">Service User</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="In Review">In Review</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="category-badges">
+                            <span class="category-badge active">All</span>
+                            <span class="category-badge">QCS Standard</span>
+                            <span class="category-badge">CQC Compliant</span>
+                            <span class="category-badge">NHS Mapped</span>
+                            <span class="category-badge">Recently Updated</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Cards -->
+    <div class="row" id="policyCards">
+        <!-- Administration Policies -->
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Administration">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">AD01</span>
+                    <div>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                        <span class="policy-tag tag-cqc">CQC</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Data Protection Policy</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Administration</p>
+                    <p class="card-text">Comprehensive policy covering GDPR compliance, data handling procedures, and security measures for personal information management.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: May 15, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Administration">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">AD02</span>
+                    <div>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Record Keeping Policy</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Administration</p>
+                    <p class="card-text">Guidelines for maintaining accurate and compliant records, including retention periods, storage, and access protocols.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: May 10, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Care Management Policies -->
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Care Management">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">CM01</span>
+                    <div>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                        <span class="policy-tag tag-cqc">CQC</span>
+                        <span class="policy-tag tag-nhs">NHS</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Person-Centered Care Policy</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Care Management</p>
+                    <p class="card-text">Procedures for ensuring resident-focused care planning and delivery, with emphasis on individual needs and preferences.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: May 18, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Care Management">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">CM08</span>
+                    <div>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                        <span class="policy-tag tag-nhs">NHS</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Medication Management</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Care Management</p>
+                    <p class="card-text">Comprehensive guidelines for safe handling, administration, and monitoring of medications for residents.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: April 30, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health and Safety Policies -->
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Health and Safety">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">HS03</span>
+                    <div>
+                        <span class="policy-tag tag-core">Core</span>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                        <span class="policy-tag tag-cqc">CQC</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Infection Control</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Health and Safety</p>
+                    <p class="card-text">Protocols for preventing and managing infections, including hygiene standards and outbreak management procedures.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: May 12, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Human Resources Policies -->
+        <div class="col-md-6 col-lg-4 mb-4 policy-item" data-category="Human Resources">
+            <div class="card policy-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="policy-code">HR05</span>
+                    <div>
+                        <span class="policy-tag tag-qcs">QCS</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="policy-title">Staff Training and Development</h5>
+                    <p class="policy-category"><i class="fas fa-folder me-1"></i> Human Resources</p>
+                    <p class="card-text">Framework for ongoing professional development, training requirements, and competency assessments for care staff.</p>
+                    <p class="policy-date"><i class="fas fa-clock me-1"></i> Last updated: April 25, 2025</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-1"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Policy pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category badge filtering
+        const categoryBadges = document.querySelectorAll('.category-badge');
+        categoryBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                categoryBadges.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Here you would add logic to filter policies based on selection
+                // For now, just a visual indicator
+            });
+        });
+        
+        // Search functionality (basic client-side filtering)
+        const searchInput = document.getElementById('policySearch');
+        const policyItems = document.querySelectorAll('.policy-item');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            policyItems.forEach(item => {
+                const title = item.querySelector('.policy-title').textContent.toLowerCase();
+                const description = item.querySelector('.card-text').textContent.toLowerCase();
+                const code = item.querySelector('.policy-code').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm) || code.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Category filter
+        const categoryFilter = document.getElementById('categoryFilter');
+        categoryFilter.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            
+            if (selectedCategory === '') {
+                // Show all
+                policyItems.forEach(item => {
+                    item.style.display = 'block';
+                });
+            } else {
+                // Filter by category
+                policyItems.forEach(item => {
+                    if (item.dataset.category === selectedCategory) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

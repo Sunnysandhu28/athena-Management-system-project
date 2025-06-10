@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Reports Dashboard - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Reports Dashboard</h1>
+        <div>
+            <a href="{{ url_for('reports_enhanced.cqc_appendix') }}" class="btn btn-primary">
+                <i class="fas fa-file-alt me-2"></i>CQC Appendix
+            </a>
+            <a href="{{ url_for('reports_enhanced.action_plan_heatmap') }}" class="btn btn-success ms-2">
+                <i class="fas fa-map me-2"></i>Action Plan Heat Map
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Available Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('reports_enhanced.cqc_appendix') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">CQC Appendix Report</h5>
+                                <p class="mb-1">Comprehensive appendix for the CQC compliance report with detailed regional analysis.</p>
+                                <small class="text-muted">Last updated: May 20, 2025</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">Enhanced</span>
+                        </a>
+                        <a href="{{ url_for('reports_enhanced.action_plan_heatmap') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Action Plan Heat Map</h5>
+                                <p class="mb-1">Visual heat map tracking of action plan progress across regions and requirements.</p>
+                                <small class="text-muted">Last updated: May 20, 2025</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">New</span>
+                        </a>
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">CQC Compliance Report</h5>
+                                <p class="mb-1">Main compliance report for Care Quality Commission standards and requirements.</p>
+                                <small class="text-muted">Last updated: May 15, 2025</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">Basic</span>
+                        </div>
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Policy Analysis Report</h5>
+                                <p class="mb-1">Comprehensive analysis of policy compliance and implementation.</p>
+                                <small class="text-muted">Last updated: May 10, 2025</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">Basic</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Report Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Reports
+                            <span class="badge bg-primary rounded-pill">4</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Enhanced Reports
+                            <span class="badge bg-success rounded-pill">2</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Basic Reports
+                            <span class="badge bg-secondary rounded-pill">2</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Last Generated
+                            <span class="text-muted">May 20, 2025</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('reports_enhanced.cqc_appendix') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt me-2"></i>CQC Appendix Report
+                        </a>
+                        <a href="{{ url_for('reports_enhanced.action_plan_heatmap') }}" class="btn btn-outline-success">
+                            <i class="fas fa-map me-2"></i>Action Plan Heat Map
+                        </a>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-chart-bar me-2"></i>Analytics Dashboard
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-file-export me-2"></i>Export All Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

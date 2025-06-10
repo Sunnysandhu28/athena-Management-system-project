@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">AI Document Processing</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ai_document_processing.analyze_document') }}">Analyze Document</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Results</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Analysis Results: {{ filename }}</h1>
+            <span class="badge {% if analysis.analysis_source == 'ai' %}badge-success{% else %}badge-warning{% endif %}">
+                {{ analysis.analysis_source|upper }} Analysis
+            </span>
+        </div>
+        <div class="card-body">
+            {% if analysis.error %}
+                <div class="alert alert-danger">
+                    <strong>Error analyzing document:</strong> {{ analysis.error }}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <strong>Document Type:</strong> {{ analysis.type|upper }}
+                    {% if analysis.document_type %}
+                    <span class="ml-3"><strong>Content Type:</strong> {{ analysis.document_type }}</span>
+                    {% endif %}
+                </div>
+                
+                <h3>Summary</h3>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        {% if analysis.summary %}
+                            <p>{{ analysis.summary }}</p>
+                        {% else %}
+                            <p class="text-muted">No summary available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if analysis.key_topics %}
+                    <h3>Key Topics</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for topic in analysis.key_topics %}
+                                    <li class="list-group-item">{{ topic }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if analysis.key_policies %}
+                    <h3>Key Policies</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for policy in analysis.key_policies %}
+                                    <li class="list-group-item">{{ policy }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if analysis.structured_data %}
+                    <h3>Structured Data</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <pre><code>{{ analysis.structured_data|tojson(indent=2) }}</code></pre>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if analysis.quality_issues or analysis.formatting_suggestions or analysis.quality_assessment %}
+                    <h3>Quality Assessment</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            {% if analysis.quality_issues %}
+                                <h4>Quality Issues</h4>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for issue in analysis.quality_issues %}
+                                        <li class="list-group-item list-group-item-warning">{{ issue }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            
+                            {% if analysis.formatting_suggestions %}
+                                <h4>Formatting Suggestions</h4>
+                                <ul class="list-group list-group-flush mb-3">
+                                    {% for suggestion in analysis.formatting_suggestions %}
+                                        <li class="list-group-item list-group-item-info">{{ suggestion }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            
+                            {% if analysis.quality_assessment %}
+                                <div class="alert alert-secondary">
+                                    {{ analysis.quality_assessment }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if analysis.statistics %}
+                    <h3>Document Statistics</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for key, value in analysis.statistics.items() %}
+                                    <li class="list-group-item">
+                                        <strong>{{ key|replace('_', ' ')|title }}:</strong> {{ value }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="alert alert-light">
+                    <small>
+                        <strong>Analysis Timestamp:</strong> {{ analysis.timestamp }}
+                    </small>
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('ai_document_processing.analyze_document') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left mr-2"></i> Analyze Another Document
+                </a>
+                
+                <a href="{{ url_for('ai_document_processing.replicate_doc') }}" class="btn btn-primary ml-2">
+                    <i class="fas fa-copy mr-2"></i> Replicate This Document
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

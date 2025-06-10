@@ -1,0 +1,1090 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Report{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<style>
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-number {
+        background-color: #0d6efd;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+    
+    .remove-item-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .add-item-btn {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: 1px dashed #0d6efd;
+        border-radius: 5px;
+        padding: 10px;
+        color: #0d6efd;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .add-item-btn:hover {
+        background-color: #f0f7ff;
+    }
+    
+    .connected-reports-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .dynamic-items-container > div {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin: 40px 0;
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+    
+    .step {
+        width: 18%;
+        text-align: center;
+        position: relative;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 10px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .step.active .step-number {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .step.completed .step-number {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .step.active .step-label {
+        color: #0d6efd;
+        font-weight: bold;
+    }
+    
+    .step.completed .step-label {
+        color: #198754;
+    }
+    
+    .step-divider {
+        position: absolute;
+        top: 20px;
+        left: 60%;
+        width: 80%;
+        height: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .step.completed .step-divider {
+        background-color: #198754;
+    }
+    
+    .step:last-child .step-divider {
+        display: none;
+    }
+    
+    .regulatory-body-dropdown {
+        font-weight: normal;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Create New Report</h1>
+            <p class="lead">Enter the details of your compliance report</p>
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step-indicator-1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Basic Information</div>
+                    <div class="step-divider"></div>
+                </div>
+                <div class="step" id="step-indicator-2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Requirements Upload</div>
+                    <div class="step-divider"></div>
+                </div>
+                <div class="step" id="step-indicator-3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Documentation</div>
+                    <div class="step-divider"></div>
+                </div>
+                <div class="step" id="step-indicator-4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">External Support</div>
+                    <div class="step-divider"></div>
+                </div>
+                <div class="step" id="step-indicator-5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Generate Report</div>
+                </div>
+            </div>
+            
+            <!-- Multi-step Form -->
+            <form id="reportForm" action="{{ url_for('reports.save_report') }}" method="post" enctype="multipart/form-data">
+                {{ form.csrf_token }}
+                
+                <!-- Step 1: Basic Information -->
+                <div class="form-section" id="step1">
+                    <div class="form-section-header">
+                        <div class="section-number">1</div>
+                        <h3>Basic Information</h3>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Regulatory Body <span class="text-danger">*</span></label>
+                            <select class="form-select" name="regulatory_body" required>
+                                <option value="" selected disabled>Select a regulatory body</option>
+                                <option value="cqc">Care Quality Commission (CQC)</option>
+                                <option value="ofsted">Office for Standards in Education (Ofsted)</option>
+                                <option value="hse">Health and Safety Executive (HSE)</option>
+                                <option value="lga">Local Government Authority</option>
+                                <option value="nhs">NHS England</option>
+                                <option value="ice">Information Commissioner's Office (ICO)</option>
+                                <option value="hmrc">HM Revenue & Customs (HMRC)</option>
+                                <option value="food_standards">Food Standards Agency</option>
+                                <option value="environmental_health">Environmental Health</option>
+                                <option value="fire_safety">Fire Safety Authority</option>
+                                <option value="cathena">Cathena Internal Audit</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="mt-2 hidden" id="other_regulatory_body_div">
+                                <input type="text" class="form-control" name="other_regulatory_body" placeholder="Please specify">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Report Type <span class="text-danger">*</span></label>
+                            <select class="form-select" name="report_type" required>
+                                <option value="" selected disabled>Select report type</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="audit">Audit</option>
+                                <option value="investigation">Investigation</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="review">Review</option>
+                                <option value="assessment">Assessment</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="mt-2 hidden" id="other_report_type_div">
+                                <input type="text" class="form-control" name="other_report_type" placeholder="Please specify">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control datepicker" name="start_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End Date</label>
+                            <input type="text" class="form-control datepicker" name="end_date">
+                            <small class="form-text text-muted">Leave blank if it's the same as the start date</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Additional Date Information</label>
+                            <textarea class="form-control" name="additional_date_info" rows="2" placeholder="Any specific time information or additional context about the dates"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">People Involved</label>
+                            <div id="people_container" class="dynamic-items-container">
+                                <div class="person-item">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="person_name[]" placeholder="Name">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="person_role[]" placeholder="Role">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-person" disabled>Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_person">
+                                <i class="fas fa-plus me-2"></i> Add Another Person
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3" placeholder="Brief description of the report (optional)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <label class="form-label">Connected Reports</label>
+                            <div id="connected_reports_container" class="dynamic-items-container">
+                                <!-- Connected reports will be added here -->
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_connected_report">
+                                <i class="fas fa-plus me-2"></i> Link to Another Report
+                            </button>
+                            <small class="form-text text-muted">Connect this report to others to track progress across multiple reports</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Requirements Upload -->
+                <div class="form-section hidden" id="step2">
+                    <div class="form-section-header">
+                        <div class="section-number">2</div>
+                        <h3>Requirements Upload</h3>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Upload any official requirements, warning letters, or initial feedback provided by the regulatory body.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Warning Letters</label>
+                            <input type="file" class="form-control" name="warning_letters[]" multiple>
+                            <small class="form-text text-muted">Upload any warning letters received (PDF, Word, or image files)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Initial Feedback</label>
+                            <input type="file" class="form-control" name="initial_feedback[]" multiple>
+                            <small class="form-text text-muted">Upload any initial feedback documents</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Verbal Feedback (Optional)</label>
+                            <textarea class="form-control" name="verbal_feedback" rows="3" placeholder="Describe any verbal feedback that was provided"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Requirements</label>
+                            <div id="requirements_container" class="dynamic-items-container">
+                                <div class="requirement-item">
+                                    <div class="row mb-2">
+                                        <div class="col-md-12">
+                                            <input type="text" class="form-control" name="requirement_title[]" placeholder="Requirement Title">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-12">
+                                            <textarea class="form-control" name="requirement_description[]" rows="2" placeholder="Requirement Description"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control datepicker" name="requirement_date[]" placeholder="Date Issued">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control datepicker" name="requirement_deadline[]" placeholder="Deadline (if applicable)">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select" name="requirement_priority[]">
+                                                <option value="" selected disabled>Priority</option>
+                                                <option value="high">High</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="low">Low</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12 text-end">
+                                            <button type="button" class="btn btn-sm btn-danger remove-requirement" disabled>Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_requirement">
+                                <i class="fas fa-plus me-2"></i> Add Another Requirement
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Documentation Upload -->
+                <div class="form-section hidden" id="step3">
+                    <div class="form-section-header">
+                        <div class="section-number">3</div>
+                        <h3>Documentation Upload</h3>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Upload documentation that provides evidence of actions taken or planned by the Care Home/Department.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Evidence of Actions Taken</label>
+                            <input type="file" class="form-control" name="evidence_files[]" multiple>
+                            <small class="form-text text-muted">Upload documentation proving actions have been completed</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Action Plans</label>
+                            <input type="file" class="form-control" name="action_plan_files[]" multiple>
+                            <small class="form-text text-muted">Upload any action plans created in response</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Documentation Contributors</label>
+                            <div id="contributors_container" class="dynamic-items-container">
+                                <div class="contributor-item">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="contributor_name[]" placeholder="Name">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" name="contributor_role[]" placeholder="Role">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-contributor" disabled>Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_contributor">
+                                <i class="fas fa-plus me-2"></i> Add Another Contributor
+                            </button>
+                            <small class="form-text text-muted">People who provided documentation on behalf of the Care Home/Department</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Additional Notes</label>
+                            <textarea class="form-control" name="documentation_notes" rows="3" placeholder="Any additional notes about the documentation (optional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: External Support -->
+                <div class="form-section hidden" id="step4">
+                    <div class="form-section-header">
+                        <div class="section-number">4</div>
+                        <h3>External Support</h3>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Record any external consultants or agencies involved in providing support.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">External Consultants</label>
+                            <div id="consultants_container" class="dynamic-items-container">
+                                <!-- Consultant entries will be added here -->
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_consultant">
+                                <i class="fas fa-plus me-2"></i> Add External Consultant
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Service Providers</label>
+                            <div id="service_providers_container" class="dynamic-items-container">
+                                <div class="service-provider-item">
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Provider Type</label>
+                                            <select class="form-select" name="provider_type[]">
+                                                <option value="" selected disabled>Select provider type</option>
+                                                <option value="building_services">Building Services</option>
+                                                <option value="trade_companies">Trade Companies</option>
+                                                <option value="suppliers">Suppliers</option>
+                                                <option value="training_education">Training and Education Companies</option>
+                                                <option value="local_authorities">Support from Local Authorities</option>
+                                                <option value="it_services">IT Services</option>
+                                                <option value="other">Other Agencies</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Company Name</label>
+                                            <input type="text" class="form-control" name="provider_company[]" placeholder="Company name">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Contact Person (Optional)</label>
+                                            <input type="text" class="form-control" name="provider_contact[]" placeholder="Contact person name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Role (Optional)</label>
+                                            <input type="text" class="form-control" name="provider_role[]" placeholder="Contact person role">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Service/Product Provided</label>
+                                            <input type="text" class="form-control" name="service_provided[]" placeholder="Description of service or product provided">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Start Date</label>
+                                            <input type="text" class="form-control datepicker" name="service_start_date[]" placeholder="Service start date">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">End Date / Ongoing</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control datepicker" name="service_end_date[]" placeholder="Service end date">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input ongoing-checkbox" type="checkbox" name="service_ongoing[]" value="1">
+                                                    <label class="form-check-label ms-2">Ongoing</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 text-end">
+                                            <button type="button" class="btn btn-sm btn-danger remove-service-provider" disabled>Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" id="add_service_provider">
+                                <i class="fas fa-plus me-2"></i> Add Service Provider
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <label class="form-label">Additional Comments</label>
+                            <textarea class="form-control" name="external_support_notes" rows="3" placeholder="Any additional information about external support (optional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Generate Report -->
+                <div class="form-section hidden" id="step5">
+                    <div class="form-section-header">
+                        <div class="section-number">5</div>
+                        <h3>Generate Report</h3>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Review your information and generate the final report or save as a work in progress.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Report Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="report_title" id="report_title" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Report Status</label>
+                            <select class="form-select" name="report_status">
+                                <option value="draft" selected>Save as Draft (Work in Progress)</option>
+                                <option value="final">Final Report</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Executive Summary</label>
+                            <textarea class="form-control" name="executive_summary" rows="4" placeholder="Brief summary of key findings and actions (optional)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="enhanced_ai_analysis" id="enhanced_ai_analysis" value="1">
+                                <label class="form-check-label" for="enhanced_ai_analysis">
+                                    Apply Enhanced AI Analysis to improve report quality
+                                </label>
+                                <div class="form-text">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-robot me-2"></i> Note: CQC compliance reports cannot be fully enhanced until the system completes analysis of all 1,000 regulatory reports. Currently {{ ml_progress.progress_percentage|default('0') }}% complete.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Navigation -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    <button type="submit" class="btn btn-success hidden" id="submitBtn">Save Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers
+        flatpickr(".datepicker", {
+            allowInput: true,
+            dateFormat: "Y-m-d",
+        });
+        
+        // Initialize multi-step form
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        // Show current step, hide others
+        function showStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById('step' + i).classList.add('hidden');
+                document.getElementById('step-indicator-' + i).classList.remove('active', 'completed');
+            }
+            
+            // Show current step
+            document.getElementById('step' + step).classList.remove('hidden');
+            document.getElementById('step-indicator-' + step).classList.add('active');
+            
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById('step-indicator-' + i).classList.add('completed');
+            }
+            
+            // Enable/disable navigation buttons
+            document.getElementById('prevBtn').disabled = (step === 1);
+            
+            if (step === totalSteps) {
+                document.getElementById('nextBtn').classList.add('hidden');
+                document.getElementById('submitBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('nextBtn').classList.remove('hidden');
+                document.getElementById('submitBtn').classList.add('hidden');
+            }
+        }
+        
+        // Next button click handler
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            // Validate current step
+            if (validateStep(currentStep)) {
+                currentStep++;
+                showStep(currentStep);
+                window.scrollTo(0, 0);
+            }
+        });
+        
+        // Previous button click handler
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            currentStep--;
+            showStep(currentStep);
+            window.scrollTo(0, 0);
+        });
+        
+        // Validate step fields
+        function validateStep(step) {
+            let isValid = true;
+            
+            if (step === 1) {
+                // Check required fields in step 1
+                const requiredFields = ['regulatory_body', 'report_type', 'start_date'];
+                requiredFields.forEach(field => {
+                    const element = document.getElementsByName(field)[0];
+                    if (!element.value) {
+                        element.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        element.classList.remove('is-invalid');
+                    }
+                });
+            }
+            
+            // Add validation for other steps as needed
+            
+            return isValid;
+        }
+        
+        // Handle "Other" selection for regulatory body
+        document.getElementsByName('regulatory_body')[0].addEventListener('change', function() {
+            const otherDiv = document.getElementById('other_regulatory_body_div');
+            if (this.value === 'other') {
+                otherDiv.classList.remove('hidden');
+            } else {
+                otherDiv.classList.add('hidden');
+            }
+        });
+        
+        // Handle "Other" selection for report type
+        document.getElementsByName('report_type')[0].addEventListener('change', function() {
+            const otherDiv = document.getElementById('other_report_type_div');
+            if (this.value === 'other') {
+                otherDiv.classList.remove('hidden');
+            } else {
+                otherDiv.classList.add('hidden');
+            }
+        });
+        
+        // Handle adding people
+        document.getElementById('add_person').addEventListener('click', function() {
+            const container = document.getElementById('people_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'person-item';
+            newItem.innerHTML = `
+                <div class="row mt-2">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="person_name[]" placeholder="Name">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="person_role[]" placeholder="Role">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-person">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Enable the first remove button if it was disabled
+            if (container.querySelectorAll('.person-item').length > 1) {
+                container.querySelector('.remove-person[disabled]')?.removeAttribute('disabled');
+            }
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-person').addEventListener('click', function() {
+                container.removeChild(newItem);
+                // If only one item remains, disable its remove button
+                if (container.querySelectorAll('.person-item').length === 1) {
+                    container.querySelector('.remove-person').setAttribute('disabled', true);
+                }
+            });
+        });
+        
+        // Handle adding connected reports
+        document.getElementById('add_connected_report').addEventListener('click', function() {
+            const container = document.getElementById('connected_reports_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'connected-reports-item';
+            newItem.innerHTML = `
+                <div class="row w-100">
+                    <div class="col-md-5">
+                        <select class="form-select" name="connected_report_id[]">
+                            <option value="" selected disabled>Select a report</option>
+                            {% if existing_reports %}
+                                {% for report in existing_reports %}
+                                    <option value="{{ report.id }}">{{ report.title }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled>No existing reports</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <select class="form-select" name="connection_type[]">
+                            <option value="" selected disabled>Relationship type</option>
+                            <option value="follow_up">Follow-up to</option>
+                            <option value="related">Related to</option>
+                            <option value="prerequisite">Prerequisite for</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-connected-report">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-connected-report').addEventListener('click', function() {
+                container.removeChild(newItem);
+            });
+        });
+        
+        // Handle adding requirements
+        document.getElementById('add_requirement').addEventListener('click', function() {
+            const container = document.getElementById('requirements_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'requirement-item';
+            newItem.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <input type="text" class="form-control" name="requirement_title[]" placeholder="Requirement Title">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <textarea class="form-control" name="requirement_description[]" rows="2" placeholder="Requirement Description"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control datepicker" name="requirement_date[]" placeholder="Date Issued">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control datepicker" name="requirement_deadline[]" placeholder="Deadline (if applicable)">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" name="requirement_priority[]">
+                            <option value="" selected disabled>Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-12 text-end">
+                        <button type="button" class="btn btn-sm btn-danger remove-requirement">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Initialize date pickers for new elements
+            flatpickr(newItem.querySelectorAll('.datepicker'), {
+                allowInput: true,
+                dateFormat: "Y-m-d",
+            });
+            
+            // Enable the first remove button if it was disabled
+            if (container.querySelectorAll('.requirement-item').length > 1) {
+                container.querySelector('.remove-requirement[disabled]')?.removeAttribute('disabled');
+            }
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-requirement').addEventListener('click', function() {
+                container.removeChild(newItem);
+                // If only one item remains, disable its remove button
+                if (container.querySelectorAll('.requirement-item').length === 1) {
+                    container.querySelector('.remove-requirement').setAttribute('disabled', true);
+                }
+            });
+        });
+        
+        // Handle adding contributors
+        document.getElementById('add_contributor').addEventListener('click', function() {
+            const container = document.getElementById('contributors_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'contributor-item';
+            newItem.innerHTML = `
+                <div class="row mt-2">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="contributor_name[]" placeholder="Name">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="contributor_role[]" placeholder="Role">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-contributor">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Enable the first remove button if it was disabled
+            if (container.querySelectorAll('.contributor-item').length > 1) {
+                container.querySelector('.remove-contributor[disabled]')?.removeAttribute('disabled');
+            }
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-contributor').addEventListener('click', function() {
+                container.removeChild(newItem);
+                // If only one item remains, disable its remove button
+                if (container.querySelectorAll('.contributor-item').length === 1) {
+                    container.querySelector('.remove-contributor').setAttribute('disabled', true);
+                }
+            });
+        });
+        
+        // Handle adding consultants
+        document.getElementById('add_consultant').addEventListener('click', function() {
+            const container = document.getElementById('consultants_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'consultant-item';
+            newItem.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Consultant/Company Name</label>
+                        <input type="text" class="form-control" name="consultant_name[]" placeholder="Consultant or company name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Area of Expertise</label>
+                        <input type="text" class="form-control" name="consultant_expertise[]" placeholder="Area of expertise">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Commissioned Date</label>
+                        <input type="text" class="form-control datepicker" name="consultant_start_date[]" placeholder="Date commissioned">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">End Date / Ongoing</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control datepicker" name="consultant_end_date[]" placeholder="End date">
+                            <div class="input-group-text">
+                                <input class="form-check-input ongoing-checkbox" type="checkbox" name="consultant_ongoing[]" value="1">
+                                <label class="form-check-label ms-2">Ongoing</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <label class="form-label">Description of Support</label>
+                        <textarea class="form-control" name="consultant_description[]" rows="2" placeholder="Description of support provided"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-end">
+                        <button type="button" class="btn btn-sm btn-danger remove-consultant">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Initialize date pickers for new elements
+            flatpickr(newItem.querySelectorAll('.datepicker'), {
+                allowInput: true,
+                dateFormat: "Y-m-d",
+            });
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-consultant').addEventListener('click', function() {
+                container.removeChild(newItem);
+            });
+            
+            // Add event listener to ongoing checkbox
+            newItem.querySelector('.ongoing-checkbox').addEventListener('change', function() {
+                const endDateInput = this.closest('.input-group').querySelector('.datepicker');
+                if (this.checked) {
+                    endDateInput.disabled = true;
+                    endDateInput.value = '';
+                } else {
+                    endDateInput.disabled = false;
+                }
+            });
+        });
+        
+        // Handle adding service providers
+        document.getElementById('add_service_provider').addEventListener('click', function() {
+            const container = document.getElementById('service_providers_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'service-provider-item';
+            newItem.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Provider Type</label>
+                        <select class="form-select" name="provider_type[]">
+                            <option value="" selected disabled>Select provider type</option>
+                            <option value="building_services">Building Services</option>
+                            <option value="trade_companies">Trade Companies</option>
+                            <option value="suppliers">Suppliers</option>
+                            <option value="training_education">Training and Education Companies</option>
+                            <option value="local_authorities">Support from Local Authorities</option>
+                            <option value="it_services">IT Services</option>
+                            <option value="other">Other Agencies</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" class="form-control" name="provider_company[]" placeholder="Company name">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Person (Optional)</label>
+                        <input type="text" class="form-control" name="provider_contact[]" placeholder="Contact person name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role (Optional)</label>
+                        <input type="text" class="form-control" name="provider_role[]" placeholder="Contact person role">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <label class="form-label">Service/Product Provided</label>
+                        <input type="text" class="form-control" name="service_provided[]" placeholder="Description of service or product provided">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Start Date</label>
+                        <input type="text" class="form-control datepicker" name="service_start_date[]" placeholder="Service start date">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">End Date / Ongoing</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control datepicker" name="service_end_date[]" placeholder="Service end date">
+                            <div class="input-group-text">
+                                <input class="form-check-input ongoing-checkbox" type="checkbox" name="service_ongoing[]" value="1">
+                                <label class="form-check-label ms-2">Ongoing</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-end">
+                        <button type="button" class="btn btn-sm btn-danger remove-service-provider">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Initialize date pickers for new elements
+            flatpickr(newItem.querySelectorAll('.datepicker'), {
+                allowInput: true,
+                dateFormat: "Y-m-d",
+            });
+            
+            // Enable the first remove button if it was disabled
+            if (container.querySelectorAll('.service-provider-item').length > 1) {
+                container.querySelector('.remove-service-provider[disabled]')?.removeAttribute('disabled');
+            }
+            
+            // Add event listener to new remove button
+            newItem.querySelector('.remove-service-provider').addEventListener('click', function() {
+                container.removeChild(newItem);
+                // If only one item remains, disable its remove button
+                if (container.querySelectorAll('.service-provider-item').length === 1) {
+                    container.querySelector('.remove-service-provider').setAttribute('disabled', true);
+                }
+            });
+            
+            // Add event listener to ongoing checkbox
+            newItem.querySelector('.ongoing-checkbox').addEventListener('change', function() {
+                const endDateInput = this.closest('.input-group').querySelector('.datepicker');
+                if (this.checked) {
+                    endDateInput.disabled = true;
+                    endDateInput.value = '';
+                } else {
+                    endDateInput.disabled = false;
+                }
+            });
+        });
+        
+        // Form submission
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate required fields in the final step
+            const titleField = document.getElementById('report_title');
+            if (!titleField.value) {
+                titleField.classList.add('is-invalid');
+                return;
+            }
+            
+            // Submit the form
+            this.submit();
+        });
+        
+        // Initialize the form
+        showStep(currentStep);
+        
+        // Add event listeners to all ongoing checkboxes
+        document.querySelectorAll('.ongoing-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const endDateInput = this.closest('.input-group').querySelector('.datepicker');
+                if (this.checked) {
+                    endDateInput.disabled = true;
+                    endDateInput.value = '';
+                } else {
+                    endDateInput.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

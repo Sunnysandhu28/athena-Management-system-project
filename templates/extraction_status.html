@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}QCS Policy Extraction Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">QCS Policy Extraction Status</h1>
+            
+            {% if results %}
+                {% if results.status == 'success' %}
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Extraction Successful!</h4>
+                        <p>Successfully extracted, reproduced, and validated policy from QCS.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Policy Information</h4>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Title:</strong> {{ results.policy.title }}</p>
+                            <p><strong>Code:</strong> {{ results.policy.code }}</p>
+                            <p><strong>Category:</strong> {{ results.policy.category }}</p>
+                            
+                            <p><strong>Validation:</strong> 
+                                {% if results.validation.is_valid %}
+                                <span class="badge bg-success">Valid</span>
+                                {% else %}
+                                <span class="badge bg-warning">Issues Found</span>
+                                {% endif %}
+                                with {{ results.validation.issues_count }} issues
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="card-title mb-0">Comparison Results</h4>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Overall Similarity:</strong> 
+                                {% if results.comparison.overall_similarity == 'Excellent' %}
+                                <span class="badge bg-success">Excellent</span>
+                                {% elif results.comparison.overall_similarity == 'Good' %}
+                                <span class="badge bg-primary">Good</span>
+                                {% elif results.comparison.overall_similarity == 'Fair' %}
+                                <span class="badge bg-warning">Fair</span>
+                                {% else %}
+                                <span class="badge bg-danger">Poor</span>
+                                {% endif %}
+                            </p>
+                            
+                            <p><strong>Text Similarity:</strong> {{ results.comparison.text_similarity_percent }}%</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">Word Count Comparison</div>
+                                        <div class="card-body">
+                                            <p><strong>Original:</strong> {{ results.comparison.word_count.original }} words</p>
+                                            <p><strong>Reproduced:</strong> {{ results.comparison.word_count.reproduced }} words</p>
+                                            <p><strong>Difference:</strong> {{ results.comparison.word_count.difference }} words ({{ results.comparison.word_count.difference_percent }}%)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">Structure Comparison</div>
+                                        <div class="card-body">
+                                            <p><strong>Original Sections:</strong> {{ results.comparison.structure.original_headings_count }}</p>
+                                            <p><strong>Reproduced Sections:</strong> {{ results.comparison.structure.reproduced_headings_count }}</p>
+                                            <p><strong>Headings Match:</strong> 
+                                                {% if results.comparison.structure.headings_match %}
+                                                <span class="badge bg-success">Yes</span>
+                                                {% else %}
+                                                <span class="badge bg-warning">No</span>
+                                                {% endif %}
+                                            </p>
+                                            
+                                            {% if results.comparison.structure.missing_headings %}
+                                            <p><strong>Missing Headings:</strong></p>
+                                            <ul>
+                                                {% for heading in results.comparison.structure.missing_headings %}
+                                                <li>{{ heading }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12 text-center">
+                            <a href="/neural_system" class="btn btn-primary">Back to Neural System</a>
+                            <a href="/extract_qcs_policy" class="btn btn-success">Extract Another Policy</a>
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    <div class="alert alert-danger">
+                        <h4 class="alert-heading">Extraction Failed</h4>
+                        <p>{{ results.message }}</p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12 text-center">
+                            <a href="/neural_system" class="btn btn-primary">Back to Neural System</a>
+                            <a href="/extract_qcs_policy" class="btn btn-warning">Try Again</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">Extraction in Progress</h4>
+                    <p>Policy extraction from QCS is currently in progress. This process has several steps:</p>
+                    <ol>
+                        <li>Logging into QCS using your credentials</li>
+                        <li>Navigating to the selected policy category</li>
+                        <li>Selecting a random policy to extract</li>
+                        <li>Analyzing the policy structure, formatting, and content</li>
+                        <li>Reproducing the policy with exact formatting and content</li>
+                        <li>Validating the reproduced policy through our neural validation system</li>
+                        <li>Comparing the original and reproduced policies</li>
+                    </ol>
+                    <p>This process may take a few minutes. The page will automatically refresh every 30 seconds.</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12 text-center">
+                        <a href="/neural_system" class="btn btn-secondary">Back to Neural System</a>
+                        <button class="btn btn-primary" onclick="window.location.reload();">Refresh Status</button>
+                    </div>
+                </div>
+                
+                <script>
+                    // Auto-refresh the page every 30 seconds
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 30000);
+                </script>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

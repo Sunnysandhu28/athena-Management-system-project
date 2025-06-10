@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master AI Communication Interface - Cathena</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1B365D 0%, #2E8B8B 50%, #1B365D 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .ai-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 3px solid #DAA520;
+            margin-bottom: 20px;
+        }
+        
+        .ai-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .ai-interface-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .command-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .ai-textarea {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid rgba(218, 165, 32, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-textarea:focus {
+            outline: none;
+            border-color: #DAA520;
+            box-shadow: 0 0 15px rgba(218, 165, 32, 0.3);
+        }
+        
+        .ai-button {
+            background: linear-gradient(135deg, #DAA520 0%, #B8941A 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .ai-button:hover {
+            background: linear-gradient(135deg, #B8941A 0%, #DAA520 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(218, 165, 32, 0.4);
+        }
+        
+        .ai-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading-section {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .ai-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #DAA520;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .conversation-history {
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .conversation-history::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .conversation-history::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .conversation-history::-webkit-scrollbar-thumb {
+            background: #DAA520;
+            border-radius: 4px;
+        }
+        
+        .message-card {
+            background: rgba(255, 255, 255, 0.08);
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #DAA520;
+            transition: all 0.3s ease;
+        }
+        
+        .message-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-type {
+            background: #DAA520;
+            color: #1B365D;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .message-content {
+            margin: 10px 0;
+        }
+        
+        .message-section {
+            margin: 15px 0;
+        }
+        
+        .message-section strong {
+            color: #DAA520;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            white-space: pre-wrap;
+            border-left: 4px solid #DAA520;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .code-block::before {
+            content: '< / >';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #DAA520;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .modifications-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .modifications-list li {
+            background: rgba(40, 167, 69, 0.2);
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .modifications-list li::before {
+            content: '✓ ';
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #DAA520;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .quick-commands {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .quick-command-btn {
+            background: rgba(46, 139, 139, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-command-btn:hover {
+            background: #2E8B8B;
+            transform: translateY(-1px);
+        }
+        
+        .ai-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ff6b6b;
+        }
+        
+        .success-message {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="ai-header">
+        <h1><i class="fas fa-robot"></i> Master AI Communication Interface</h1>
+        <p class="lead mb-0">Advanced AI-powered system management and intelligent automation</p>
+        <div class="ai-status">
+            <div class="status-indicator"></div>
+            <span>AI System Online & Ready</span>
+        </div>
+    </div>
+    
+    <div class="ai-container">
+        <div class="ai-interface-card">
+            <div class="command-section">
+                <h3><i class="fas fa-terminal"></i> Command Interface</h3>
+                <p class="mb-3">Communicate directly with your AI system. Generate code, analyze data, integrate new features, or manage daily operations.</p>
+                
+                <div class="quick-commands">
+                    <button class="quick-command-btn" onclick="setQuickCommand('Analyze current system performance and generate optimization recommendations')">
+                        <i class="fas fa-chart-line"></i> System Analysis
+                    </button>
+                    <button class="quick-command-btn" onclick="setQuickCommand('Generate code for a new machine learning enhancement')">
+                        <i class="fas fa-code"></i> Generate Code
+                    </button>
+                    <button class="quick-command-btn" onclick="setQuickCommand('Setup daily automated communication with Replit infrastructure')">
+                        <i class="fas fa-sync"></i> Replit Sync
+                    </button>
+                    <button class="quick-command-btn" onclick="setQuickCommand('Create advanced web scraping module for NHS medication data')">
+                        <i class="fas fa-spider"></i> Web Scraping
+                    </button>
+                    <button class="quick-command-btn" onclick="setQuickCommand('Integrate new Firebase features for enhanced data management')">
+                        <i class="fas fa-database"></i> Firebase Integration
+                    </button>
+                </div>
+                
+                <textarea id="commandInput" class="ai-textarea" 
+                         placeholder="Enter your command or request to the AI system...
+
+Examples:
+• Analyze the current system performance and suggest improvements
+• Generate code for a new policy analysis feature
+• Create a machine learning model for document classification
+• Setup automated daily reports for system health
+• Integrate with external APIs for enhanced functionality
+• Review and optimize existing code for better performance" 
+                         rows="6"></textarea>
+                
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button id="sendButton" class="ai-button">
+                        <i class="fas fa-paper-plane"></i> Send Command
+                    </button>
+                    <div>
+                        <button class="btn btn-outline-light btn-sm me-2" onclick="clearCommand()">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                        <button class="btn btn-outline-light btn-sm" onclick="exportHistory()">
+                            <i class="fas fa-download"></i> Export History
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="loading" class="loading-section">
+                    <div class="ai-spinner"></div>
+                    <h4>AI Processing Your Request...</h4>
+                    <p>Analyzing • Generating • Integrating</p>
+                </div>
+            </div>
+            
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalCommands">0</span>
+                    <div class="stat-label">Commands Processed</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="codeGenerated">0</span>
+                    <div class="stat-label">Code Modules Generated</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="systemMods">0</span>
+                    <div class="stat-label">System Modifications</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="aiInsights">0</span>
+                    <div class="stat-label">AI Insights Generated</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ai-interface-card">
+            <h3><i class="fas fa-history"></i> AI Conversation History</h3>
+            <div class="conversation-history" id="conversationHistory">
+                <div class="text-center p-4">
+                    <i class="fas fa-comments fa-3x mb-3" style="opacity: 0.5;"></i>
+                    <p>Your AI conversations will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationStats = {
+            totalCommands: 0,
+            codeGenerated: 0,
+            systemMods: 0,
+            aiInsights: 0
+        };
+
+        // Initialize event listeners
+        document.getElementById('sendButton').addEventListener('click', sendCommand);
+        document.getElementById('commandInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                sendCommand();
+            }
+        });
+
+        function setQuickCommand(command) {
+            document.getElementById('commandInput').value = command;
+            document.getElementById('commandInput').focus();
+        }
+
+        function clearCommand() {
+            document.getElementById('commandInput').value = '';
+            document.getElementById('commandInput').focus();
+        }
+
+        function sendCommand() {
+            const command = document.getElementById('commandInput').value.trim();
+            if (!command) {
+                showError('Please enter a command');
+                return;
+            }
+
+            // Show loading state
+            showLoading(true);
+            disableInterface(true);
+
+            // Send to API
+            fetch('/api/ai-communicate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    displayResponse(data);
+                    updateStats(data);
+                    document.getElementById('commandInput').value = '';
+                    showSuccess('Command processed successfully!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Communication failed: ' + error.message);
+            })
+            .finally(() => {
+                showLoading(false);
+                disableInterface(false);
+            });
+        }
+
+        function displayResponse(response) {
+            const history = document.getElementById('conversationHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-card';
+            
+            // Create message header
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'message-header';
+            headerDiv.innerHTML = `
+                <div class="message-type">${response.command_type || 'General'}</div>
+                <div class="message-time">${formatTime(response.timestamp)}</div>
+            `;
+            
+            // Create message content
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            let content = `
+                <div class="message-section">
+                    <strong><i class="fas fa-terminal"></i> Command:</strong>
+                    <div>${escapeHtml(response.command)}</div>
+                </div>
+                <div class="message-section">
+                    <strong><i class="fas fa-robot"></i> AI Response:</strong>
+                    <div>${escapeHtml(response.response)}</div>
+                </div>
+            `;
+            
+            if (response.code_generated) {
+                content += `
+                    <div class="message-section">
+                        <strong><i class="fas fa-code"></i> Generated Code:</strong>
+                        <div class="code-block">${escapeHtml(response.code_generated)}</div>
+                    </div>
+                `;
+            }
+            
+            if (response.system_modifications && response.system_modifications.length > 0) {
+                content += `
+                    <div class="message-section">
+                        <strong><i class="fas fa-cogs"></i> System Modifications:</strong>
+                        <ul class="modifications-list">
+                            ${response.system_modifications.map(mod => `<li>${escapeHtml(mod)}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (response.ai_insights && Object.keys(response.ai_insights).length > 0) {
+                content += `
+                    <div class="message-section">
+                        <strong><i class="fas fa-lightbulb"></i> AI Insights:</strong>
+                        <div class="code-block">${JSON.stringify(response.ai_insights, null, 2)}</div>
+                    </div>
+                `;
+            }
+            
+            contentDiv.innerHTML = content;
+            messageDiv.appendChild(headerDiv);
+            messageDiv.appendChild(contentDiv);
+            
+            // Add to top of history
+            if (history.firstChild && history.firstChild.className !== 'text-center') {
+                history.insertBefore(messageDiv, history.firstChild);
+            } else {
+                history.innerHTML = '';
+                history.appendChild(messageDiv);
+            }
+            
+            // Scroll to top
+            history.scrollTop = 0;
+        }
+
+        function updateStats(response) {
+            conversationStats.totalCommands++;
+            
+            if (response.code_generated) {
+                conversationStats.codeGenerated++;
+            }
+            
+            if (response.system_modifications && response.system_modifications.length > 0) {
+                conversationStats.systemMods += response.system_modifications.length;
+            }
+            
+            if (response.ai_insights && Object.keys(response.ai_insights).length > 0) {
+                conversationStats.aiInsights++;
+            }
+            
+            // Update display
+            document.getElementById('totalCommands').textContent = conversationStats.totalCommands;
+            document.getElementById('codeGenerated').textContent = conversationStats.codeGenerated;
+            document.getElementById('systemMods').textContent = conversationStats.systemMods;
+            document.getElementById('aiInsights').textContent = conversationStats.aiInsights;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function disableInterface(disable) {
+            document.getElementById('sendButton').disabled = disable;
+            document.getElementById('commandInput').disabled = disable;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            const container = document.querySelector('.command-section');
+            container.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            
+            const container = document.querySelector('.command-section');
+            container.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportHistory() {
+            fetch('/api/export-conversation')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess(`Conversation history exported to: ${data.filename}`);
+                    } else {
+                        showError('Export failed: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    showError('Export failed: ' + error.message);
+                });
+        }
+
+        function loadConversationHistory() {
+            fetch('/api/conversation-history?limit=10')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.history && data.history.length > 0) {
+                        const history = document.getElementById('conversationHistory');
+                        history.innerHTML = '';
+                        
+                        data.history.reverse().forEach(item => {
+                            displayResponse(item);
+                            updateStats(item);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading history:', error));
+        }
+
+        // Load initial conversation history
+        loadConversationHistory();
+
+        // Auto-refresh conversation history every 30 seconds
+        setInterval(loadConversationHistory, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-sync-alt me-2"></i>Format Policy
+        </h1>
+        <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Policy
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Format "{{ policy.name }}"</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>About Formatting:</strong> This process will replace QCS references with company information and apply consistent formatting to the document.
+                    </div>
+                    
+                    <form action="{{ url_for('format_policy', policy_id=policy.id) }}" method="post">
+                        <div class="mb-3">
+                            <label for="replacement_text" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="replacement_text" name="replacement_text" value="Company Policy" required>
+                            <div class="form-text">This text will replace references to "QCS" in the document</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="target_format" class="form-label">Formatting Style</label>
+                            <select class="form-select" id="target_format" name="target_format">
+                                <option value="Company" selected>Company Format (Recommended)</option>
+                                <option value="QCS">QCS Format (minimal changes)</option>
+                            </select>
+                            <div class="form-text">Choose how the document should be formatted</div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync-alt me-1"></i>Format Policy
+                            </button>
+                            <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Formatting Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">What Gets Changed</h6>
+                    <ul class="mb-4">
+                        <li>References to "QCS" will be replaced with your company name</li>
+                        <li>Document styling will be standardized</li>
+                        <li>Headers and footers will be updated</li>
+                        <li>Formatting will be consistent across documents</li>
+                    </ul>
+                    
+                    <h6 class="text-muted mb-2">What Stays the Same</h6>
+                    <ul class="mb-4">
+                        <li>All policy content and procedures</li>
+                        <li>Legal and compliance information</li>
+                        <li>Document structure and organization</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Note:</strong> The original policy document will be preserved. A new formatted version will be created.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

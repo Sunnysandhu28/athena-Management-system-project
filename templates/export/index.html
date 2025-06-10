@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Export Policies{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0"><i class="fas fa-file-export"></i> Export Policies</h2>
+        </div>
+        <div class="card-body">
+          <p class="lead">
+            Export all policies for physical review and record-keeping. The exported policies will be provided as a
+            downloadable ZIP file.
+          </p>
+
+          <form method="POST" action="{{ url_for('dashboard.index') }}">
+            <div class="mb-3">
+              <label for="site_name" class="form-label">Site Name (optional)</label>
+              <input type="text" class="form-control" id="site_name" name="site_name" 
+                placeholder="Enter site name for customization">
+              <div class="form-text">
+                Adding a site name will customize the exported policies for that site.
+              </div>
+            </div>
+
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="include_categories" name="include_categories" checked>
+              <label class="form-check-label" for="include_categories">Organize by Categories</label>
+              <div class="form-text">
+                Creates a folder structure based on policy categories.
+              </div>
+            </div>
+
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="include_metadata" name="include_metadata" checked>
+              <label class="form-check-label" for="include_metadata">Include Metadata File</label>
+              <div class="form-text">
+                Adds a report with information about the export and all included policies.
+              </div>
+            </div>
+
+            {% if is_admin %}
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="include_original" name="include_original">
+              <label class="form-check-label" for="include_original">Include Original Files (Admin Only)</label>
+              <div class="form-text">
+                Includes the original unmodified files in the export (only available for administrators).
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="alert alert-info">
+              <h5><i class="fas fa-info-circle"></i> Export Security Notes:</h5>
+              <ul>
+                <li>
+                  <strong>Administrator exports:</strong> Documents are downloadable in their original format.
+                  {% if is_admin %}You are an administrator.{% endif %}
+                </li>
+                <li>
+                  <strong>Staff and user exports:</strong> Documents are secured as PDFs with watermarks and copy
+                  protection to prevent unauthorized distribution.
+                </li>
+                <li>
+                  <strong>All exports:</strong> Include system-generated metadata and tracking information.
+                </li>
+              </ul>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="{{ url_for('export.history') }}" class="btn btn-secondary me-md-2">
+                <i class="fas fa-history"></i> Export History
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-file-export"></i> Export Policies
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}{{ index_name }} - QCS Policy Index{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item active">Policy Index: {{ index_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">{{ index_name }}</h2>
+        </div>
+        <div class="card-body">
+            {% if sections|length > 1 %}
+            <!-- Navigation tabs for different sections -->
+            <ul class="nav nav-tabs mb-3" id="indexTabs" role="tablist">
+                {% for section in sections %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if loop.first %}active{% endif %}" 
+                            id="{{ section.name|lower|replace(' ', '-')|replace('&', 'and')|replace(':', '') }}-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#{{ section.name|lower|replace(' ', '-')|replace('&', 'and')|replace(':', '') }}" 
+                            type="button" role="tab" 
+                            aria-controls="{{ section.name|lower|replace(' ', '-')|replace('&', 'and')|replace(':', '') }}" 
+                            aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                        {{ section.name }}
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Tab content for each section -->
+            <div class="tab-content" id="indexTabsContent">
+                {% for section in sections %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+                     id="{{ section.name|lower|replace(' ', '-')|replace('&', 'and')|replace(':', '') }}" 
+                     role="tabpanel" 
+                     aria-labelledby="{{ section.name|lower|replace(' ', '-')|replace('&', 'and')|replace(':', '') }}-tab">
+                    
+                    <h3 class="text-primary mb-3">{{ section.name }}</h3>
+                    
+                    {% if section.policies and section.policies[0].content %}
+                        <!-- This is a content display for a policy section -->
+                        <div class="policy-content mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">{{ section.name }}</h5>
+                                    {% if section.policies[0].code %}
+                                    <small class="text-muted">Reference Code: {{ section.policies[0].code }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <div class="policy-section">
+                                        {{ section.policies[0].content|replace('\n', '<br>')|safe }}
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-replicate-index"
+                                            data-code="{{ section.policies[0].code }}"
+                                            data-name="{{ section.name }}"
+                                            data-category="{{ section.category }}">
+                                        <i class="bi bi-plus-circle"></i> Replicate This Section
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif section.policies %}
+                        <!-- This is a table display for an index of policies -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th width="20%">Reference Code</th>
+                                        <th width="65%">Document</th>
+                                        <th width="15%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in section.policies %}
+                                    <tr>
+                                        <td><strong>{{ policy.code }}</strong></td>
+                                        <td>{{ policy.name }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary btn-replicate-index"
+                                                        data-code="{{ policy.code }}"
+                                                        data-name="{{ policy.name }}"
+                                                        data-category="{{ section.category }}">
+                                                    <i class="bi bi-plus-circle"></i> Replicate
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No policies found in this section.
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                {% if sections|length == 0 %}
+                <div class="alert alert-warning">
+                    No sections found in this index document. 
+                    <a href="{{ url_for('view_pdf', filename=pdf_path) }}" class="alert-link" target="_blank">
+                        View the original PDF
+                    </a> to see the content.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">About This Document</h4>
+        </div>
+        <div class="card-body">
+            {% if document_type == "policy" %}
+            <p>This is a complete policy document from Quality Compliance Systems (QCS).</p>
+            <p>The content is organized by sections for easy reading and reference.</p>
+            <p>You can replicate the entire policy or individual sections to your policy database.</p>
+            {% else %}
+            <p>This is a comprehensive index of {{ index_name }} policies from Quality Compliance Systems (QCS).</p>
+            <p>The policies are organized by section to help you identify the most relevant documents for your needs.</p>
+            <p>You can replicate any policy directly from this index to your policy database.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0">Download Options</h4>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-center">
+                <a href="{{ url_for('view_pdf', filename=pdf_path) }}" class="btn btn-primary me-2" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> View Original PDF
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Policies
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle replicate buttons
+        document.querySelectorAll('.btn-replicate-index').forEach(button => {
+            button.addEventListener('click', function() {
+                // Open replicate tab on main page
+                window.location.href = '{{ url_for("index") }}#replicate';
+                
+                // Store data in sessionStorage to be retrieved when page loads
+                sessionStorage.setItem('replicate_code', this.dataset.code);
+                sessionStorage.setItem('replicate_name', this.dataset.name);
+                sessionStorage.setItem('replicate_category', this.dataset.category);
+            });
+        });
+    });
+</script>
+{% endblock %}

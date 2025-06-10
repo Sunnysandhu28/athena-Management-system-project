@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}View Generated Policy{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Generated Policy</h1>
+        <div>
+            {% set safe_referrer = referrer_url if referrer_url and not referrer_url.endswith(request.path) else (url_for('ai_policy_generator_direct_index') if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.index')) %}
+            <a href="{{ safe_referrer }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <a href="{{ url_for('ai_policy_generator_direct_index') if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.index') }}" class="btn btn-outline-secondary">New Policy</a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>{{ result.title }}</h3>
+                <span class="badge bg-primary">{{ result.category }}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-0">Generated: {{ generation.completed_at }}</p>
+                        <p class="text-muted mb-0">Version: {{ current_version }}</p>
+                        {% if result.reference_code %}
+                        <p class="text-muted mb-0">Reference Code: {{ result.reference_code }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="actionsDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('ai_policy_generator_direct_refine', generation_id=generation_id) if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.refine_policy', generation_id=generation_id) }}">Refine with AI</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="window.print()">Print</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="policy-content border rounded p-4">
+                {{ result.content|safe }}
+            </div>
+        </div>
+    </div>
+    
+    {% if all_versions and all_versions|length > 1 %}
+    <div class="card">
+        <div class="card-header">
+            <h3>Version History</h3>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                {% for version in all_versions %}
+                <div class="list-group-item {% if loop.index == current_version %}active{% endif %}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Version {{ loop.index }}</h5>
+                        <small>{{ version.created_at }}</small>
+                    </div>
+                    <p class="mb-1">{{ version.change_summary }}</p>
+                    <small>Created by: {{ version.created_by }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if result.legislation_references %}
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Legislation References</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for ref in result.legislation_references %}
+                <li class="list-group-item">
+                    <h5>{{ ref.title }}</h5>
+                    <p>{{ ref.description }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .policy-content h1 {
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .policy-content h2 {
+        font-size: 1.25rem;
+        margin-top: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .policy-content h3 {
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .policy-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .policy-content ul, .policy-content ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+    }
+    
+    .policy-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+    
+    .policy-content th, .policy-content td {
+        padding: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .policy-content th {
+        background-color: #f8f9fa;
+    }
+    
+    @media print {
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .policy-content {
+            border: none !important;
+        }
+        
+        .card {
+            border: none !important;
+        }
+        
+        .card-header, .header-buttons, .dropdown, .btn, .actions {
+            display: none !important;
+        }
+        
+        body {
+            font-size: 12pt;
+        }
+    }
+</style>
+{% endblock %}

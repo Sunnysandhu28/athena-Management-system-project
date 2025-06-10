@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Repository{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Document Repository</h3>
+                    <div>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    {% if documents %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Reference</th>
+                                        <th>Title</th>
+                                        <th>Pages</th>
+                                        <th>Size (KB)</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for document in documents %}
+                                        <tr>
+                                            <td>{{ document.id }}</td>
+                                            <td>{{ document.reference_code }}</td>
+                                            <td class="text-truncate" style="max-width: 300px;">{{ document.title }}</td>
+                                            <td>{{ document.page_count }}</td>
+                                            <td>{{ (document.file_size / 1024) | round(1) }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if document.status == 'imported' else 'warning' }}">
+                                                    {{ document.status }}
+                                                </span>
+                                            </td>
+                                            <td>{{ document.created_at.strftime('%Y-%m-%d %H:%M') if document.created_at else '' }}</td>
+                                            <td>
+                                                <a href="{{ url_for('policy.view', document_id=document.id) }}" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>No documents found in the repository.</p>
+                            <p>Use the document import tool to add documents to the system.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

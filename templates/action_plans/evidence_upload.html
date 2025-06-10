@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Action Plan Evidence Upload{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Action Plan Evidence Upload</h1>
+            <p class="lead">Upload evidence files to demonstrate compliance with your action items.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Action Items &amp; Evidence Required</h2>
+        </div>
+        <div class="card-body">
+            <form id="evidence-upload-form" action="/action-plans/{{ action_plan.id }}/upload-evidence" method="post" enctype="multipart/form-data">
+                <input type="hidden" id="action-plan-id" name="action_plan_id" value="{{ action_plan.id }}">
+                
+                {% for action in action_plan.actions %}
+                <div class="action-item mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h3 class="h6">{{ action.description }}</h3>
+                            <p class="text-muted small">Due: {{ action.due_date }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge {% if action.status == 'completed' %}bg-success{% elif action.status == 'in_progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ action.status|title }}
+                            </span>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input action-complete-toggle" type="checkbox" 
+                                    id="action-{{ action.id }}-toggle" 
+                                    data-action-id="{{ action.id }}"
+                                    {% if action.status == 'completed' %}checked{% endif %}>
+                                <label class="form-check-label" for="action-{{ action.id }}-toggle">Mark Complete</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if action.evidence_required %}
+                    <div class="evidence-container mt-3 p-3 border rounded">
+                        <h4 class="h6 mb-3">Evidence Required</h4>
+                        
+                        {% for evidence in action.evidence %}
+                        <div class="evidence-row mb-3 p-2 border-bottom {% if evidence.has_files %}has-evidence{% endif %}" 
+                             data-evidence-id="{{ evidence.id }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p>{{ evidence.description }}</p>
+                                </div>
+                                <div class="col-md-3 evidence-status">
+                                    {% if evidence.has_files %}
+                                    <span class="badge bg-success">Evidence Uploaded</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Evidence Required</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 text-end evidence-upload-container">
+                                    <input type="file" name="evidence_file_{{ evidence.id }}" 
+                                           class="evidence-file-input" style="display: none;" 
+                                           data-evidence-id="{{ evidence.id }}">
+                                    <button type="button" class="btn btn-primary btn-sm evidence-upload-btn">
+                                        <i class="fas fa-upload"></i> Upload Evidence
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- File display area -->
+                            <div class="evidence-file-display mt-2">
+                                {% if evidence.files %}
+                                {% for file in evidence.files %}
+                                <div class="card mt-2 evidence-file-card">
+                                    {% if file.is_image %}
+                                    <img src="{{ file.url }}" class="card-img-top evidence-image-preview" 
+                                         style="max-height: 150px; object-fit: contain;">
+                                    {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-file fa-3x"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ file.name }}</h6>
+                                        <p class="card-text text-muted">{{ file.size_formatted }}</p>
+                                        <div class="btn-group w-100">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-file-btn" 
+                                                    data-file-id="{{ file.id }}">
+                                                <i class="fas fa-trash"></i> Remove
+                                            </button>
+                                            <a href="{{ file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-evidence-btn" 
+                                    data-action-id="{{ action.id }}">
+                                <i class="fas fa-plus"></i> Add Additional Evidence
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="/action-plans/{{ action_plan.id }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Action Plan
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save All Evidence
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Completion Status</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="progress-container mb-4">
+                        <h3 class="h6">Overall Action Plan Completion</h3>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ action_plan.completion_percentage }}%;" 
+                                 aria-valuenow="{{ action_plan.completion_percentage }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ action_plan.completion_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h3 class="h6">Completion Breakdown</h3>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr>
+                                    <td>Actions Completed</td>
+                                    <td class="text-end">{{ action_plan.completed_actions }} / {{ action_plan.total_actions }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Evidence Provided</td>
+                                    <td class="text-end">{{ action_plan.completed_evidence }} / {{ action_plan.total_evidence }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Days Remaining</td>
+                                    <td class="text-end">{{ action_plan.days_remaining }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h3 class="h6">Heat Map Overview</h3>
+                    <div id="heat-map-preview" style="height: 250px;">
+                        <!-- Heat map visualization will be rendered here by JavaScript -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading heat map preview...</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <a href="/action-plans/{{ action_plan.id }}/heat-map" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-th"></i> View Full Heat Map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.7.0/chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/evidence-upload.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the file upload functionality
+        initializeEvidenceUploads();
+        
+        // Load heat map preview
+        fetch('/api/action-plans/{{ action_plan.id }}/heat-map-preview')
+            .then(response => response.json())
+            .then(data => {
+                renderHeatMapPreview(data);
+            })
+            .catch(error => {
+                console.error('Error loading heat map preview:', error);
+                document.getElementById('heat-map-preview').innerHTML = 
+                    '<div class="alert alert-danger">Error loading heat map preview</div>';
+            });
+            
+        // Handle action completion toggle
+        document.querySelectorAll('.action-complete-toggle').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const actionId = this.getAttribute('data-action-id');
+                const isComplete = this.checked;
+                
+                fetch('/api/action-plans/action-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action_id: actionId,
+                        status: isComplete ? 'completed' : 'in_progress'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Action status updated:', data);
+                    // Update UI based on new status
+                    const actionRow = this.closest('.action-item');
+                    const statusBadge = actionRow.querySelector('.badge');
+                    
+                    if (isComplete) {
+                        statusBadge.className = 'badge bg-success';
+                        statusBadge.textContent = 'Completed';
+                    } else {
+                        statusBadge.className = 'badge bg-warning';
+                        statusBadge.textContent = 'In Progress';
+                    }
+                    
+                    // Update progress bar
+                    updateCompletionStatus();
+                })
+                .catch(error => {
+                    console.error('Error updating action status:', error);
+                    // Revert toggle if there was an error
+                    this.checked = !isComplete;
+                });
+            });
+        });
+        
+        // Add event listener for adding additional evidence
+        document.getElementById('add-evidence-btn').addEventListener('click', function() {
+            const actionId = this.getAttribute('data-action-id');
+            
+            fetch('/api/action-plans/add-evidence', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action_id: actionId,
+                    description: 'Additional evidence'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Evidence added:', data);
+                
+                // Add new evidence row to the UI
+                const evidenceContainer = this.closest('.evidence-container');
+                const newEvidenceRow = document.createElement('div');
+                newEvidenceRow.className = 'evidence-row mb-3 p-2 border-bottom';
+                newEvidenceRow.setAttribute('data-evidence-id', data.evidence_id);
+                
+                newEvidenceRow.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Additional evidence</p>
+                        </div>
+                        <div class="col-md-3 evidence-status">
+                            <span class="badge bg-warning">Evidence Required</span>
+                        </div>
+                        <div class="col-md-3 text-end evidence-upload-container">
+                            <input type="file" name="evidence_file_${data.evidence_id}" 
+                                   class="evidence-file-input" style="display: none;" 
+                                   data-evidence-id="${data.evidence_id}">
+                            <button type="button" class="btn btn-primary btn-sm evidence-upload-btn">
+                                <i class="fas fa-upload"></i> Upload Evidence
+                            </button>
+                        </div>
+                    </div>
+                    <div class="evidence-file-display mt-2"></div>
+                `;
+                
+                // Insert before the "Add Additional Evidence" button
+                evidenceContainer.insertBefore(newEvidenceRow, this.parentNode);
+                
+                // Initialize upload functionality for the new row
+                initializeEvidenceUploads();
+            })
+            .catch(error => {
+                console.error('Error adding evidence:', error);
+            });
+        });
+        
+        function updateCompletionStatus() {
+            fetch('/api/action-plans/{{ action_plan.id }}/completion')
+                .then(response => response.json())
+                .then(data => {
+                    // Update progress bar
+                    const progressBar = document.querySelector('.progress-bar');
+                    progressBar.style.width = `${data.completion_percentage}%`;
+                    progressBar.setAttribute('aria-valuenow', data.completion_percentage);
+                    progressBar.textContent = `${data.completion_percentage}%`;
+                    
+                    // Update completion breakdown
+                    const table = document.querySelector('.table-sm');
+                    table.rows[0].cells[1].textContent = `${data.completed_actions} / ${data.total_actions}`;
+                    table.rows[1].cells[1].textContent = `${data.completed_evidence} / ${data.total_evidence}`;
+                    
+                    // Update heat map
+                    fetch('/api/action-plans/{{ action_plan.id }}/heat-map-preview')
+                        .then(response => response.json())
+                        .then(mapData => {
+                            renderHeatMapPreview(mapData);
+                        });
+                })
+                .catch(error => {
+                    console.error('Error updating completion status:', error);
+                });
+        }
+        
+        function renderHeatMapPreview(data) {
+            const ctx = document.getElementById('heat-map-preview');
+            
+            // Clear loading indicator
+            ctx.innerHTML = '';
+            
+            // Create canvas for Chart.js
+            const canvas = document.createElement('canvas');
+            ctx.appendChild(canvas);
+            
+            // Create heat map chart
+            new Chart(canvas, {
+                type: 'polarArea',
+                data: {
+                    labels: data.categories,
+                    datasets: [{
+                        label: 'Completion by Category',
+                        data: data.values,
+                        backgroundColor: data.colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}% complete`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

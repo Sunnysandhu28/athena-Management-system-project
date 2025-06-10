@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Archive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        h1, h2, h3 {
+            color: #003366;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #003366;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px 10px 0;
+        }
+        .btn:hover {
+            background-color: #004a8f;
+        }
+        .btn-download {
+            background-color: #4CAF50;
+        }
+        .btn-view {
+            background-color: #2196F3;
+        }
+        .report-list {
+            list-style: none;
+            padding: 0;
+        }
+        .report-item {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #003366;
+        }
+        .report-title {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #003366;
+        }
+        .report-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .report-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .badge-draft {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .badge-final {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-cqc {
+            background-color: #e3f2fd;
+            color: #004085;
+        }
+        .badge-h-s {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f8f9fa;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+            color: #003366;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        nav {
+            background-color: #f8f8f8;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #003366;
+            font-weight: bold;
+            padding: 5px 10px;
+        }
+        nav ul li a:hover {
+            background-color: #003366;
+            color: white;
+            border-radius: 3px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cathena Policy Management System</h1>
+        <p>Advanced AI-powered enterprise document management and compliance platform</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/learning-path">Learning Path</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <h1>Report Archive</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('all')">All Reports</div>
+            <div class="tab" onclick="switchTab('final')">Final Reports</div>
+            <div class="tab" onclick="switchTab('draft')">Draft Reports</div>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Search reports...">
+        </div>
+        
+        <ul class="report-list" id="all-reports">
+            <li class="report-item">
+                <h3 class="report-title">CQC Compliance Report</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0001/CQC</span>
+                    <span><strong>Generated:</strong> May 18, 2025</span>
+                    <span class="badge badge-final">Final</span>
+                    <span class="badge badge-cqc">CQC</span>
+                </div>
+                <p>Comprehensive analysis of compliance with CQC regulations with detailed action plans.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+            
+            <li class="report-item">
+                <h3 class="report-title">Health and Safety Audit</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0008/H&S</span>
+                    <span><strong>Generated:</strong> May 10, 2025</span>
+                    <span class="badge badge-final">Final</span>
+                    <span class="badge badge-h-s">H&S</span>
+                </div>
+                <p>Analysis of health and safety compliance across all departments with risk assessment.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+            
+            <li class="report-item">
+                <h3 class="report-title">Medication Management Report</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0005/MED</span>
+                    <span><strong>Generated:</strong> May 15, 2025</span>
+                    <span class="badge badge-draft">Draft</span>
+                    <span class="badge badge-cqc">CQC</span>
+                </div>
+                <p>Analysis of medication policies, procedures and incidents with recommendations.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+            
+            <li class="report-item">
+                <h3 class="report-title">GDPR Compliance Analysis</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0012/GDPR</span>
+                    <span><strong>Generated:</strong> May 05, 2025</span>
+                    <span class="badge badge-final">Final</span>
+                    <span class="badge badge-cqc">CQC</span>
+                </div>
+                <p>Assessment of data protection policies and procedures with gap analysis.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+            
+            <li class="report-item">
+                <h3 class="report-title">Staff Training Analysis</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0015/TRN</span>
+                    <span><strong>Generated:</strong> May 17, 2025</span>
+                    <span class="badge badge-draft">Draft</span>
+                    <span class="badge badge-cqc">CQC</span>
+                </div>
+                <p>Comprehensive review of staff training records and competency assessment.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+            
+            <li class="report-item">
+                <h3 class="report-title">Complaints Handling Assessment</h3>
+                <div class="report-meta">
+                    <span><strong>Reference:</strong> Cat/Qu/aj.sandhu/0018/CMP</span>
+                    <span><strong>Generated:</strong> May 14, 2025</span>
+                    <span class="badge badge-final">Final</span>
+                    <span class="badge badge-cqc">CQC</span>
+                </div>
+                <p>Analysis of complaint tracking, response time, and resolution procedures.</p>
+                <div class="report-actions">
+                    <a href="/download-cqc-report" class="btn btn-download">Download PDF</a>
+                </div>
+            </li>
+        </ul>
+        
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="/dashboard" class="btn">Back to Dashboard</a>
+            <a href="/generate-pdf" class="btn">Generate New Report</a>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Cathena Policy Management System &copy; 2025</p>
+    </footer>
+    
+    <script>
+        function switchTab(tabType) {
+            // Get all tabs and remove active class
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            if (tabType === 'all') {
+                tabs[0].classList.add('active');
+            } else if (tabType === 'final') {
+                tabs[1].classList.add('active');
+            } else if (tabType === 'draft') {
+                tabs[2].classList.add('active');
+            }
+            
+            // Filter report list based on tab
+            const reports = document.querySelectorAll('.report-item');
+            reports.forEach(report => {
+                if (tabType === 'all') {
+                    report.style.display = 'block';
+                } else if (tabType === 'final' && report.querySelector('.badge-final')) {
+                    report.style.display = 'block';
+                } else if (tabType === 'draft' && report.querySelector('.badge-draft')) {
+                    report.style.display = 'block';
+                } else {
+                    report.style.display = 'none';
+                }
+            });
+        }
+        
+        // Search functionality
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const reports = document.querySelectorAll('.report-item');
+            
+            reports.forEach(report => {
+                const title = report.querySelector('.report-title').textContent.toLowerCase();
+                const content = report.querySelector('p').textContent.toLowerCase();
+                const reference = report.querySelector('.report-meta').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || content.includes(searchTerm) || reference.includes(searchTerm)) {
+                    report.style.display = 'block';
+                } else {
+                    report.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

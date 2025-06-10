@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy_name }} - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .policy-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-top: 20px;
+        white-space: pre-wrap;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .policy-header {
+        margin-bottom: 30px;
+    }
+    
+    .policy-category {
+        background-color: #e9ecef;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    
+    .policy-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .policy-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .text-section {
+        margin-bottom: 20px;
+    }
+    
+    h2, h3, h4 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="{{ url_for('policies.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Policies
+        </a>
+    </div>
+    
+    <div class="policy-header">
+        <h1>{{ policy_name }}</h1>
+        <div class="d-flex align-items-center mt-2">
+            <span class="policy-category me-2">
+                <i class="fas fa-folder"></i> {{ policy_category }}
+            </span>
+            <span class="text-muted">ID: {{ policy_id }}</span>
+        </div>
+    </div>
+    
+    <!-- Policy Content -->
+    <div class="policy-content">
+        {{ policy_content | safe }}
+    </div>
+    
+    <!-- Policy Actions -->
+    <div class="policy-actions">
+        <button class="btn btn-outline-primary" onclick="printPolicy()">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <button class="btn btn-outline-primary" id="exportPdfBtn">
+            <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+        <button class="btn btn-outline-primary" id="exportWordBtn">
+            <i class="fas fa-file-word"></i> Export Word
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    function printPolicy() {
+        window.print();
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // PDF Export
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            const policyContent = document.querySelector('.policy-content');
+            const policyName = "{{ policy_name }}";
+            
+            // Configure PDF options
+            const options = {
+                margin: 15,
+                filename: `${policyName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                }
+            };
+            
+            // Generate PDF
+            html2pdf()
+                .set(options)
+                .from(policyContent)
+                .save()
+                .then(() => {
+                    console.log('PDF exported successfully');
+                })
+                .catch(err => {
+                    console.error('Error exporting PDF', err);
+                });
+        });
+        
+        // Word Export (simplified - in reality would need a server-side component)
+        document.getElementById('exportWordBtn').addEventListener('click', function() {
+            alert('Word export functionality will be implemented in a future update.');
+        });
+    });
+</script>
+{% endblock %}

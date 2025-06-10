@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Policy Replication Dashboard</h1>
+            <p class="lead">Replicate policies from PDF to Word documents</p>
+            
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Policies Available for Replication</h5>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Reference Code</th>
+                                    <th>Category</th>
+                                    <th>Date Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in policies %}
+                                <tr>
+                                    <td>{{ policy.title }}</td>
+                                    <td>{{ policy.reference_code }}</td>
+                                    <td>{{ policy.category }}</td>
+                                    <td>{{ policy.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge {% if policy.status.value == 'ACTIVE' %}bg-success{% elif policy.status.value == 'DRAFT' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ policy.status.value }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('policy_replicator.view_policy', policy_id=policy.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                            <a href="{{ url_for('policy_replicator.replicate_policy', policy_id=policy.id) }}" class="btn btn-sm btn-outline-success">Replicate</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p>No policies found in the system. Please <a href="{{ url_for('policy.create') }}">create a policy</a> or import policies from QCS.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Automatic Replication</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Start an automatic replication job to process multiple policies at once.</p>
+                            <a href="{{ url_for('qcs_download.dashboard') }}" class="btn btn-info">QCS Policy Download</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">AI-Assisted Formatting</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Use AI to assist with policy formatting and generation.</p>
+                            <a href="{{ url_for('policy_ai.policy_learning') }}" class="btn btn-success">AI Policy Assistance</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!-- Standard Navigation Bar Template -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-shield-alt"></i> Cathena
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/ml-analytics-dashboard"><i class="fas fa-chart-bar"></i> ML Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/ml-processing-live-feed"><i class="fas fa-sync-alt"></i> Live Feed</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cqc-analysis"><i class="fas fa-chart-line"></i> CQC Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/condition-policy-mapping"><i class="fas fa-heartbeat"></i> NHS Mappings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/policy-repository"><i class="fas fa-file-alt"></i> Policies</a>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/settings"><i class="fas fa-sliders-h"></i> Preferences</a></li>
+                        <li><a class="dropdown-item" href="/help"><i class="fas fa-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/inspections"><i class="fas fa-clipboard-check"></i> Inspections</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a id="refreshButton" class="nav-link" href="#" onclick="window.location.reload();">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Spacer to prevent content from being hidden under fixed navbar -->
+<div style="height: 60px;"></div>

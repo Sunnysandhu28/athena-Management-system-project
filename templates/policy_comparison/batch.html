@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Batch Policy Comparison{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Batch Policy Comparison</h1>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('policy_comparison.index') }}">Policy Comparison Tool</a></li>
+                            <li class="breadcrumb-item active">Batch Comparison</li>
+                        </ol>
+                    </nav>
+                    
+                    <p class="lead">
+                        Compare multiple old policies at once against QCS standards to determine 
+                        compliance variation at the time of inspection.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h4 mb-0">Batch Comparison Settings</h2>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('policy_comparison.batch_comparison') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Filter by Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select a category to limit the comparison to policies in that category.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="save_results" name="save_results" value="1" checked>
+                                <label class="form-check-label" for="save_results">Save comparison results</label>
+                            </div>
+                            <small class="text-muted">When enabled, comparison results will be saved to the policy metadata for future reference.</small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> The system will automatically match old policies with QCS standards 
+                            based on policy codes. For best results, ensure your old policies have the correct policy codes.
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play me-2"></i> Run Batch Comparison
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

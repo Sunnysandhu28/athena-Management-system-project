@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Navigation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 3rem;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .card-header {
+            background-color: #343a40;
+            color: white;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            padding: 1rem;
+        }
+        .dashboard-link {
+            color: #343a40;
+            text-decoration: none;
+        }
+        .dashboard-link:hover {
+            text-decoration: none;
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
+        .description {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1>Cathena Management System</h1>
+                <p class="lead">Access your dashboards and monitoring tools</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <a href="/ml-analytics-dashboard" class="dashboard-link">
+                    <div class="card text-center">
+                        <div class="card-header">ML Analytics Dashboard</div>
+                        <div class="card-body">
+                            <div class="icon">📊</div>
+                            <h5 class="card-title">ML Analytics</h5>
+                            <p class="description">View comprehensive ML analysis results and insights from CQC reports</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="/ml-processing-live-feed" class="dashboard-link">
+                    <div class="card text-center">
+                        <div class="card-header">Live Processing Feed</div>
+                        <div class="card-body">
+                            <div class="icon">⚡</div>
+                            <h5 class="card-title">Live Processing</h5>
+                            <p class="description">Monitor real-time CQC report processing with detailed metrics</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="/reports" class="dashboard-link">
+                    <div class="card text-center">
+                        <div class="card-header">Report Management</div>
+                        <div class="card-body">
+                            <div class="icon">📝</div>
+                            <h5 class="card-title">Reports</h5>
+                            <p class="description">Manage and review CQC reports and generated insights</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <a href="/policy-comparison" class="dashboard-link">
+                    <div class="card text-center">
+                        <div class="card-header">Policy Comparison</div>
+                        <div class="card-body">
+                            <div class="icon">🔍</div>
+                            <h5 class="card-title">Compare Policies</h5>
+                            <p class="description">Compare existing policies with QCS standards to identify compliance gaps</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-6">
+                <a href="/heatmap-visualization" class="dashboard-link">
+                    <div class="card text-center">
+                        <div class="card-header">Action Plan Heatmap</div>
+                        <div class="card-body">
+                            <div class="icon">🔥</div>
+                            <h5 class="card-title">Action Plan Heatmap</h5>
+                            <p class="description">Visualize action plans and track progress with heat map visualization</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

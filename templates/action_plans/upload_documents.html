@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Regulatory Documents{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Upload Regulatory Documents</h1>
+            <p class="lead">Upload inspection reports, audit findings, and other regulatory documents for AI analysis.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Action Plan: {{ action_plan.title }}</h2>
+        </div>
+        <div class="card-body">
+            <form id="document-upload-form" action="/action-plans/{{ action_plan.id }}/upload-documents" method="post" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <h3 class="h6">Current Description of Non-Compliance</h3>
+                    <div class="border rounded p-3 bg-light">
+                        {% if action_plan.non_compliance_description %}
+                        <p>{{ action_plan.non_compliance_description }}</p>
+                        {% else %}
+                        <p class="text-muted fst-italic">No description provided yet. Upload documents to generate an AI analysis.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h3 class="h6">Upload Regulatory Documents</h3>
+                    <p class="small text-muted">Upload inspection reports, audit findings, and other regulatory documents. Supported formats: PDF, DOC, DOCX, TXT, XLS, XLSX</p>
+                    
+                    <div class="document-dropzone p-5 border rounded text-center" id="document-dropzone">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                        <p>Drag and drop files here, or click to select files</p>
+                        <input type="file" id="document-file-input" name="documents[]" multiple style="display: none;" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx">
+                        <button type="button" class="btn btn-outline-primary" id="browse-button">Browse Files</button>
+                    </div>
+                    
+                    <div class="document-list mt-3" id="document-list">
+                        <!-- Files will be listed here -->
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="/action-plans/{{ action_plan.id }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Action Plan
+                    </a>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Documents
+                        </button>
+                        <button type="button" class="btn btn-success" id="analyze-button" {% if not documents %}disabled{% endif %}>
+                            <i class="fas fa-brain"></i> Analyze with AI
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if documents %}
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Uploaded Documents</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                        <tr>
+                            <td>{{ doc.original_filename }}</td>
+                            <td>{{ doc.file_type }}</td>
+                            <td>{{ doc.size_formatted }}</td>
+                            <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ doc.url }}" target="_blank" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger delete-document-btn" data-document-id="{{ doc.id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if action_plan.ai_analysis %}
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">AI Analysis</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <small class="text-muted">Generated: {{ action_plan.ai_generated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            
+            <div class="border rounded p-3 mb-3">
+                {{ action_plan.ai_analysis }}
+            </div>
+            
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" id="use-analysis-btn">
+                    <i class="fas fa-check"></i> Use This Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- AI Analysis Modal -->
+<div class="modal fade" id="analysis-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Analyzing Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4 analysis-progress">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing documents with AI...</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="analysis-result" style="display: none;">
+                    <h4>Analysis Results</h4>
+                    <div class="border rounded p-3 mb-3" id="analysis-content">
+                        <!-- Analysis content will be displayed here -->
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="modal-use-analysis-btn">
+                            <i class="fas fa-check"></i> Use This Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropzone = document.getElementById('document-dropzone');
+        const fileInput = document.getElementById('document-file-input');
+        const browseButton = document.getElementById('browse-button');
+        const documentList = document.getElementById('document-list');
+        const analyzeButton = document.getElementById('analyze-button');
+        const useAnalysisBtn = document.getElementById('use-analysis-btn');
+        const modalUseAnalysisBtn = document.getElementById('modal-use-analysis-btn');
+        
+        // File input change handler
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Browse button click handler
+        browseButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Dropzone event handlers
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('border-primary');
+        });
+        
+        dropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('border-primary');
+        });
+        
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('border-primary');
+            
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        // Handle files function
+        function handleFiles(files) {
+            for (const file of files) {
+                // Check if file is allowed
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const allowedExts = ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx'];
+                
+                if (!allowedExts.includes(fileExt)) {
+                    alert(`File type .${fileExt} is not supported. Please upload PDF, DOC, DOCX, TXT, XLS, or XLSX files.`);
+                    continue;
+                }
+                
+                // Create file item
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item d-flex align-items-center p-2 border-bottom';
+                
+                // Determine icon based on file type
+                let icon = 'fa-file';
+                if (fileExt === 'pdf') icon = 'fa-file-pdf';
+                else if (['doc', 'docx'].includes(fileExt)) icon = 'fa-file-word';
+                else if (['xls', 'xlsx'].includes(fileExt)) icon = 'fa-file-excel';
+                else if (fileExt === 'txt') icon = 'fa-file-alt';
+                
+                fileItem.innerHTML = `
+                    <div class="me-3">
+                        <i class="fas ${icon} fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div>${file.name}</div>
+                        <div class="small text-muted">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-file-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Add remove button handler
+                const removeBtn = fileItem.querySelector('.remove-file-btn');
+                removeBtn.addEventListener('click', function() {
+                    fileItem.remove();
+                    
+                    // Create a new FileList without this file
+                    const dt = new DataTransfer();
+                    for (const f of fileInput.files) {
+                        if (f !== file) {
+                            dt.items.add(f);
+                        }
+                    }
+                    fileInput.files = dt.files;
+                    
+                    // Update analyze button state
+                    analyzeButton.disabled = fileInput.files.length === 0;
+                });
+                
+                documentList.appendChild(fileItem);
+            }
+            
+            // Enable analyze button if there are files
+            analyzeButton.disabled = fileInput.files.length === 0;
+        }
+        
+        // Format file size function
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        
+        // Analyze button click handler
+        analyzeButton.addEventListener('click', function() {
+            // Show analysis modal
+            const analysisModal = new bootstrap.Modal(document.getElementById('analysis-modal'));
+            analysisModal.show();
+            
+            // Reset modal state
+            document.querySelector('.analysis-progress').style.display = 'block';
+            document.querySelector('.analysis-result').style.display = 'none';
+            
+            // Simulate progress (this will be replaced with actual API call)
+            const progressBar = document.querySelector('.progress-bar');
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    // Call the API to analyze documents
+                    analyzeDocuments();
+                }
+            }, 200);
+        });
+        
+        // Function to call API for document analysis
+        function analyzeDocuments() {
+            fetch('/api/ai-analysis/analyze-documents', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action_plan_id: {{ action_plan.id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide progress, show result
+                document.querySelector('.analysis-progress').style.display = 'none';
+                document.querySelector('.analysis-result').style.display = 'block';
+                
+                if (data.success) {
+                    // Show analysis
+                    document.getElementById('analysis-content').textContent = data.analysis;
+                } else {
+                    // Show error
+                    document.getElementById('analysis-content').innerHTML = `
+                        <div class="alert alert-danger">${data.message}</div>
+                    `;
+                }
+            })
+            .catch(error => {
+                // Hide progress, show result with error
+                document.querySelector('.analysis-progress').style.display = 'none';
+                document.querySelector('.analysis-result').style.display = 'block';
+                
+                document.getElementById('analysis-content').innerHTML = `
+                    <div class="alert alert-danger">Error: ${error.message}</div>
+                `;
+            });
+        }
+        
+        // Use analysis button click handlers
+        if (useAnalysisBtn) {
+            useAnalysisBtn.addEventListener('click', updateDescription);
+        }
+        
+        if (modalUseAnalysisBtn) {
+            modalUseAnalysisBtn.addEventListener('click', function() {
+                updateDescription();
+                // Close the modal
+                const analysisModal = bootstrap.Modal.getInstance(document.getElementById('analysis-modal'));
+                if (analysisModal) {
+                    analysisModal.hide();
+                }
+                // Reload the page to show the updated description
+                window.location.reload();
+            });
+        }
+        
+        function updateDescription() {
+            fetch('/api/ai-analysis/update-description', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action_plan_id: {{ action_plan.id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert('Non-compliance description updated successfully!');
+                    // Reload the page to show the updated description
+                    window.location.reload();
+                } else {
+                    // Show error
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                alert(`Error: ${error.message}`);
+            });
+        }
+        
+        // Delete document button handlers
+        const deleteButtons = document.querySelectorAll('.delete-document-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const documentId = this.getAttribute('data-document-id');
+                if (confirm('Are you sure you want to delete this document?')) {
+                    fetch(`/api/documents/${documentId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the row from the table
+                            this.closest('tr').remove();
+                        } else {
+                            alert(`Error: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        alert(`Error: ${error.message}`);
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

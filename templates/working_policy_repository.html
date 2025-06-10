@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cathena Policy Repository - {{ total_policies }} Authentic Policies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .policy-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #007bff;
+        }
+        .policy-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 20px;
+        }
+        .policy-status {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .status-active {
+            background-color: #28a745;
+            color: white;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="fas fa-file-medical-alt me-3"></i>
+                        Cathena Policy Repository
+                    </h1>
+                    <p class="lead mb-4">
+                        Complete collection of {{ total_policies }} authentic QCS policies with full 8-section format structure
+                    </p>
+                    <div class="d-flex gap-3">
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>
+                            {{ total_policies }} Policies Active
+                        </span>
+                        <span class="badge bg-info fs-6">
+                            <i class="fas fa-layer-group me-1"></i>
+                            8-Section Format
+                        </span>
+                        <span class="badge bg-warning fs-6">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            QCS Compliant
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-info-circle me-2"></i>Policy Repository Status</h5>
+                    <p class="mb-0">All policies follow the complete 8-section format: Review Sheet → 1. Purpose → 2. Scope → 3. Objectives → 4. Policy → 5. Procedure → 6. Definitions → 7. Key Facts - Professionals → 8. Key Facts - People Affected</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policy Categories -->
+        {% for category_name, policy_list in categories.items() %}
+        {% if policy_list %}
+        <div class="mb-5">
+            <div class="category-header p-3 rounded">
+                <h3 class="mb-1">
+                    <i class="fas fa-folder-open me-2"></i>
+                    {{ category_name }}
+                </h3>
+                <p class="mb-0 opacity-75">{{ policy_list|length }} policies available</p>
+            </div>
+            
+            <div class="row">
+                {% for policy in policy_list %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="card policy-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title text-primary fw-bold">{{ policy.code }}</h6>
+                                <span class="policy-status status-active">{{ policy.status }}</span>
+                            </div>
+                            <p class="card-text">{{ policy.title }}</p>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    {{ policy.format }}
+                                </small>
+                            </div>
+                            <a href="/policy/{{ policy.code }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>
+                                View Policy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        
+        <!-- No Policies Message -->
+        {% if total_policies == 0 %}
+        <div class="text-center py-5">
+            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+            <h4>No Policies Found</h4>
+            <p class="text-muted">The policy processing system is still loading your authentic policies.</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+                <i class="fas fa-refresh me-1"></i>
+                Refresh Page
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Cathena Policy Management System</h6>
+                    <p class="text-muted mb-0">Comprehensive policy repository with authentic QCS content</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        Last Updated: May 24, 2025
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

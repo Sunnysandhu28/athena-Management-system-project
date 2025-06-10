@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ policy.title }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            line-height: 1.6; 
+            color: #333; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+        .policy-title {
+            color: #004080;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        .carbon-copy-tag {
+            color: #004080;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        .policy-info {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0 30px 0;
+        }
+        .policy-reference-code {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .policy-category {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .policy-location {
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        .policy-address {
+            margin-bottom: 20px;
+        }
+        h2 { 
+            color: #004080; 
+            border-bottom: 2px solid #004080;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #004080;
+            margin-top: 20px;
+        }
+        .card { 
+            border: 1px solid #ddd; 
+            padding: 20px 30px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        .policy-content { 
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .policy-content p {
+            margin-bottom: 15px;
+        }
+        .policy-content ul, 
+        .policy-content ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+        .button { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            background-color: #004080; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin-top: 20px;
+            margin-right: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .button:hover { 
+            background-color: #002850; 
+        }
+        .button.secondary {
+            background-color: #6c757d;
+        }
+        .button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* QCS Style Formatting */
+        .section-header {
+            background-color: #e6f0ff;
+            padding: 8px 15px;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid #004080;
+            font-weight: bold;
+        }
+        
+        /* Review sheet styling */
+        .review-sheet {
+            margin-top: 30px;
+            font-weight: bold;
+        }
+        .review-table {
+            margin-top: 15px;
+            display: table;
+            width: 100%;
+        }
+        .review-row {
+            display: table-row;
+        }
+        .review-cell {
+            display: table-cell;
+            padding: 5px 15px 5px 0;
+            vertical-align: top;
+        }
+        .review-cell.header {
+            font-weight: bold;
+            color: #333;
+        }
+        .review-cell.data {
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="policy-title">{{ policy.title }}</div>
+        
+        {% if 'enhanced' in policy.reference_code|lower or 'carbon copy' in policy.reference_code|lower %}
+        <div class="carbon-copy-tag">(Enhanced Carbon Copy)</div>
+        {% endif %}
+        
+        <div class="policy-info">
+            <div class="policy-reference-code">{{ policy.reference_code|replace('ENHANCED', '') }}</div>
+            <div class="policy-category">
+                {% if policy.category_id %}{{ policy.category_id }}{% else %}General{% endif %}
+            </div>
+            
+            <div class="policy-location">Quenby Rest Home</div>
+            <div class="policy-address">Brightlingsea Road Thorrington Colchester Essex CO7 8JH</div>
+            
+            <div class="review-sheet">Review Sheet</div>
+            <div class="review-table">
+                <div class="review-row">
+                    <div class="review-cell header">Last Reviewed</div>
+                    <div class="review-cell header">Last Amended</div>
+                    <div class="review-cell header">This policy will be reviewed as needs require or at the following interval:</div>
+                </div>
+                <div class="review-row">
+                    <div class="review-cell data">24 Apr 2025</div>
+                    <div class="review-cell data">24 Apr 2025</div>
+                    <div class="review-cell data">Annual</div>
+                </div>
+            </div>
+            
+            <div class="review-table" style="margin-top: 20px;">
+                <div class="review-row">
+                    <div class="review-cell header">Business Impact:</div>
+                    <div class="review-cell data">MEDIUM</div>
+                </div>
+            </div>
+            
+            <div class="legislation" style="margin-top: 20px;">
+                <div class="legislation-header" style="font-weight: bold;">This policy is informed by:</div>
+                <ul class="legislation-list" style="margin-top: 10px; list-style-type: disc; padding-left: 20px;">
+                    {% if 'diabetes' in policy.title|lower %}
+                    <li>Diabetes UK - <a href="https://www.diabetes.org.uk/professionals/resources/shared-practice/care-homes" target="_blank">Care Homes Good Clinical Practice Guidelines</a></li>
+                    <li>NICE NG28 - Type 2 diabetes in adults: management</li>
+                    <li>NICE NG17 - Type 1 diabetes in adults: diagnosis and management</li>
+                    <li>NICE QS6 - Diabetes in adults</li>
+                    <li>The Health and Social Care Act 2008 (Regulated Activities) Regulations 2014</li>
+                    <li>Care Quality Commission Regulation 9: Person Centered Care</li>
+                    <li>Care Quality Commission Regulation 12: Safe Care and Treatment</li>
+                    {% else %}
+                    <li>Care Quality Commission Regulation 9: Person Centered Care</li>
+                    <li>Care Quality Commission Regulation 12: Safe Care and Treatment</li>
+                    <li>Care Quality Commission Regulation 17: Good Governance</li>
+                    <li>The Health and Social Care Act 2008 (Regulated Activities) Regulations 2014</li>
+                    <li>Equality Act 2010</li>
+                    <li>Health and Safety at Work etc. Act 1974</li>
+                    <li>Mental Capacity Act 2005</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="policy-content">
+                {% autoescape false %}
+                {% set content = policy.content | replace("\n", "<br>") %}
+                
+                {# Convert section headers to styled sections #}
+                {% set content = content | replace("<br>1. Purpose<br>", '<div class="section-header">1. Purpose</div>') %}
+                {% set content = content | replace("<br>2. Scope<br>", '<div class="section-header">2. Scope</div>') %}
+                {% set content = content | replace("<br>3. Objectives<br>", '<div class="section-header">3. Objectives</div>') %}
+                {% set content = content | replace("<br>4. Policy<br>", '<div class="section-header">4. Policy</div>') %}
+                {% set content = content | replace("<br>5. Procedure<br>", '<div class="section-header">5. Procedure</div>') %}
+                {% set content = content | replace("<br>6. Definitions<br>", '<div class="section-header">6. Definitions</div>') %}
+                
+                {{ content }}
+                {% endautoescape %}
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <a href="/policies" class="button">Back to Policies</a>
+            <a href="/validation" class="button secondary">Back to Validation Dashboard</a>
+            <a href="/" class="button secondary">Back to Home</a>
+        </div>
+        
+        <div class="footer">
+            <p>© Quality Compliance Systems (QCS) Ltd. Copyright Policy and Procedure content is provided under license by QCS.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Crawl QCS Site{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_ai.policy_learning') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crawl QCS Site</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Crawl QCS Site</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        This tool will crawl the QCS website to extract policy metadata and structure.
+                        The collected data will be used to build a comprehensive site map for better policy generation.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> You need valid QCS credentials to access the policy content.
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        <div class="form-group">
+                            <label for="username"><strong>QCS Username</strong></label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <small class="form-text text-muted">Enter your QCS account username</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password"><strong>QCS Password</strong></label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <small class="form-text text-muted">Enter your QCS account password</small>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Important:</strong> Credentials are only used for this session and are not stored permanently.
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-spider mr-1"></i> Start QCS Crawl
+                        </button>
+                        <a href="{{ url_for('policy_ai.policy_learning') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-info-circle mr-1"></i> 
+                            The crawling process may take several minutes depending on the site size.
+                            You will be redirected to the Policy Learning dashboard when complete.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

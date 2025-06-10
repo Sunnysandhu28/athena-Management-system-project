@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document for Regulatory Analysis{% endblock %}
+
+{% block head %}
+<style>
+    .framework-options {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .document-preview {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .document-preview i {
+        font-size: 48px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+    
+    .document-preview.has-file {
+        border-color: #28a745;
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    
+    .document-preview.has-file i {
+        color: #28a745;
+    }
+    
+    .upload-progress {
+        display: none;
+        margin-top: 20px;
+    }
+    
+    .drag-instruction {
+        display: block;
+        margin-top: 10px;
+        color: #6c757d;
+    }
+    
+    .file-details {
+        display: none;
+        text-align: left;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Upload Document for Regulatory Analysis</h1>
+            <p class="lead">Upload a document to analyze its compliance with regulatory frameworks.</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Document Upload</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('regulatory_analysis.upload_document') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Document Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="document_type" class="form-label">Document Type</label>
+                                    <select class="form-select" id="document_type" name="document_type" required>
+                                        <option value="" selected disabled>Select document type</option>
+                                        <option value="CQC Document">CQC Document</option>
+                                        <option value="RIDDOR Document">RIDDOR Document</option>
+                                        <option value="Fire Safety Document">Fire Safety Document</option>
+                                        <option value="Financial Document">Financial Document</option>
+                                        <option value="Management Document">Management Document</option>
+                                        <option value="Health Document">Health Document</option>
+                                        <option value="Safety Document">Safety Document</option>
+                                        <option value="Governance Document">Governance Document</option>
+                                        <option value="Audit Document">Audit Document</option>
+                                        <option value="Inspection Report">Inspection Report</option>
+                                        <option value="Policy Document">Policy Document</option>
+                                        <option value="Procedure Document">Procedure Document</option>
+                                        <option value="Training Record">Training Record</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="regulatory_body" class="form-label">Regulatory Body</label>
+                                    <select class="form-select" id="regulatory_body" name="regulatory_body">
+                                        <option value="" selected>None/Internal</option>
+                                        <option value="Care Quality Commission">Care Quality Commission</option>
+                                        <option value="Health and Safety Executive">Health and Safety Executive</option>
+                                        <option value="Fire and Rescue Authority">Fire and Rescue Authority</option>
+                                        <option value="Financial Conduct Authority">Financial Conduct Authority</option>
+                                        <option value="Companies House">Companies House</option>
+                                        <option value="Environment Agency">Environment Agency</option>
+                                        <option value="Information Commissioner's Office">Information Commissioner's Office</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="inspector_name" class="form-label">Inspector Name (if applicable)</label>
+                                    <input type="text" class="form-control" id="inspector_name" name="inspector_name">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="inspection_date" class="form-label">Inspection Date (if applicable)</label>
+                                    <input type="date" class="form-control" id="inspection_date" name="inspection_date">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="document-preview" id="documentPreview">
+                                    <i class="fas fa-file-upload"></i>
+                                    <h5>Drag & Drop Document Here</h5>
+                                    <span class="drag-instruction">or click to browse files</span>
+                                    
+                                    <div class="file-details" id="fileDetails">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-file-pdf me-2"></i>
+                                            <span id="fileName">document.pdf</span>
+                                        </div>
+                                        <small class="text-muted" id="fileSize">0 KB</small>
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeFile">
+                                            <i class="fas fa-times me-1"></i> Remove
+                                        </button>
+                                    </div>
+                                    
+                                    <input type="file" class="d-none" id="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt">
+                                </div>
+                                
+                                <div class="upload-progress" id="uploadProgress">
+                                    <label class="form-label">Upload Progress</label>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%" id="progressBar"></div>
+                                    </div>
+                                    <small class="text-muted" id="progressText">0%</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Frameworks to Analyze Against</label>
+                                    <div class="framework-options">
+                                        {% for framework in frameworks %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="framework_{{ framework.id }}" name="framework_{{ framework.id }}" checked>
+                                            <label class="form-check-label" for="framework_{{ framework.id }}">
+                                                {{ framework.name }} - {{ framework.regulatory_body }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="generate_action_plan" name="generate_action_plan" checked>
+                                    <label class="form-check-label" for="generate_action_plan">
+                                        Generate Action Plan
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" id="uploadButton">
+                                        <i class="fas fa-upload me-2"></i> Upload and Analyze Document
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Upload Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Supported File Types:</h6>
+                    <ul>
+                        <li>PDF Documents (.pdf)</li>
+                        <li>Word Documents (.doc, .docx)</li>
+                        <li>Excel Spreadsheets (.xls, .xlsx)</li>
+                        <li>Text Files (.txt)</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Recommended Practices:</h6>
+                    <ol>
+                        <li>Ensure document has a clear title that reflects its content</li>
+                        <li>Select the appropriate document type for accurate analysis</li>
+                        <li>Include inspection date if document is from an external inspection</li>
+                        <li>Check all relevant frameworks to analyze against</li>
+                    </ol>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i> The analysis will identify compliance issues, risk levels, and recommend actions based on the content of your document.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Batch Upload</h5>
+                </div>
+                <div class="card-body">
+                    <p>Need to analyze multiple documents at once?</p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('regulatory_analysis.batch_upload') }}" class="btn btn-success">
+                            <i class="fas fa-file-upload me-2"></i> Go to Batch Upload
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const documentPreview = document.getElementById('documentPreview');
+        const fileInput = document.getElementById('file');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileDetails = document.getElementById('fileDetails');
+        const removeFile = document.getElementById('removeFile');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadButton = document.getElementById('uploadButton');
+        
+        // Handle click on the document preview area
+        documentPreview.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle drag and drop
+        documentPreview.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            documentPreview.classList.add('border-primary');
+        });
+        
+        documentPreview.addEventListener('dragleave', function() {
+            documentPreview.classList.remove('border-primary');
+        });
+        
+        documentPreview.addEventListener('drop', function(e) {
+            e.preventDefault();
+            documentPreview.classList.remove('border-primary');
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = file.name;
+                
+                // Format file size
+                let size = file.size;
+                let unit = 'B';
+                
+                if (size > 1024) {
+                    size /= 1024;
+                    unit = 'KB';
+                }
+                
+                if (size > 1024) {
+                    size /= 1024;
+                    unit = 'MB';
+                }
+                
+                fileSize.textContent = size.toFixed(2) + ' ' + unit;
+                
+                // Show file details and update preview
+                fileDetails.style.display = 'block';
+                documentPreview.classList.add('has-file');
+                
+                // Set appropriate icon based on file type
+                const fileIcon = documentPreview.querySelector('i');
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                if (ext === 'pdf') {
+                    fileIcon.className = 'fas fa-file-pdf';
+                } else if (ext === 'doc' || ext === 'docx') {
+                    fileIcon.className = 'fas fa-file-word';
+                } else if (ext === 'xls' || ext === 'xlsx') {
+                    fileIcon.className = 'fas fa-file-excel';
+                } else if (ext === 'txt') {
+                    fileIcon.className = 'fas fa-file-alt';
+                } else {
+                    fileIcon.className = 'fas fa-file';
+                }
+            }
+        }
+        
+        // Handle remove file button
+        removeFile.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.value = '';
+            fileDetails.style.display = 'none';
+            documentPreview.classList.remove('has-file');
+            documentPreview.querySelector('i').className = 'fas fa-file-upload';
+        });
+        
+        // Handle form submission
+        uploadForm.addEventListener('submit', function(e) {
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('Please select a file to upload.');
+                return;
+            }
+            
+            // Show upload progress (simulated in this demo)
+            uploadProgress.style.display = 'block';
+            uploadButton.disabled = true;
+            
+            // Simulate upload progress (in a real app, this would use AJAX)
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // In a real implementation, we would submit the form here after upload is complete
+                }
+            }, 200);
+            
+            // In this demo, we'll let the form submit normally after the progress simulation
+            // is complete, so we'll prevent the default submission and then submit later
+            if (!e.submitter || e.submitter.id === 'uploadButton') {
+                e.preventDefault();
+                setTimeout(function() {
+                    uploadForm.submit();
+                }, 4000);
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

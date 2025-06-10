@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block title %}Regulatory Heat Maps - Analysis Results{% endblock %}
+
+{% block extra_head %}
+<style>
+    .heatmap-container {
+        margin-bottom: 30px;
+    }
+    
+    .timeline-container {
+        margin-top: 30px;
+    }
+    
+    .timeline-item {
+        padding: 15px;
+        border-left: 4px solid #dee2e6;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 3px solid #007bff;
+        left: -10px;
+        top: 15px;
+    }
+    
+    .timeline-item.high-priority {
+        border-left-color: #dc3545;
+    }
+    
+    .timeline-item.high-priority:before {
+        border-color: #dc3545;
+    }
+    
+    .timeline-item.medium-priority {
+        border-left-color: #ffc107;
+    }
+    
+    .timeline-item.medium-priority:before {
+        border-color: #ffc107;
+    }
+    
+    .timeline-item.low-priority {
+        border-left-color: #28a745;
+    }
+    
+    .timeline-item.low-priority:before {
+        border-color: #28a745;
+    }
+    
+    .heat-table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Regulatory Heat Maps: {{ learning_data.title }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('regulatory_analysis.generate_report', learning_data_id=learning_data.id) }}" class="btn btn-sm btn-success">
+                    <i data-feather="file-text"></i> Generate Report
+                </a>
+                <a href="{{ url_for('regulatory_analysis.analysis_results', learning_data_id=learning_data.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i data-feather="arrow-left"></i> Back to Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <!-- Regulatory Framework Heatmap -->
+            <div class="card heatmap-container">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Regulatory Framework Coverage</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="regulatoryFrameworkChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <!-- Issue Categories Heatmap -->
+            <div class="card heatmap-container">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Issue Categories</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="issueCategoriesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <!-- Consolidated Heat Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Heat Map Table</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered heat-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Documentation</th>
+                                    <th>Training</th>
+                                    <th>Safety</th>
+                                    <th>Compliance</th>
+                                    <th>Governance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sample data - In production, this would be populated dynamically -->
+                                <tr>
+                                    <th>CQC</th>
+                                    <td style="background-color: rgba(255, 99, 132, 0.8);">0.92</td>
+                                    <td style="background-color: rgba(255, 99, 132, 0.7);">0.85</td>
+                                    <td style="background-color: rgba(255, 99, 132, 0.9);">0.95</td>
+                                    <td style="background-color: rgba(255, 99, 132, 0.8);">0.88</td>
+                                    <td style="background-color: rgba(255, 99, 132, 0.7);">0.78</td>
+                                </tr>
+                                <tr>
+                                    <th>RIDDOR</th>
+                                    <td style="background-color: rgba(54, 162, 235, 0.6);">0.65</td>
+                                    <td style="background-color: rgba(54, 162, 235, 0.4);">0.45</td>
+                                    <td style="background-color: rgba(54, 162, 235, 0.9);">0.92</td>
+                                    <td style="background-color: rgba(54, 162, 235, 0.7);">0.75</td>
+                                    <td style="background-color: rgba(54, 162, 235, 0.3);">0.35</td>
+                                </tr>
+                                <tr>
+                                    <th>Fire Safety</th>
+                                    <td style="background-color: rgba(255, 206, 86, 0.4);">0.42</td>
+                                    <td style="background-color: rgba(255, 206, 86, 0.6);">0.68</td>
+                                    <td style="background-color: rgba(255, 206, 86, 0.9);">0.95</td>
+                                    <td style="background-color: rgba(255, 206, 86, 0.5);">0.52</td>
+                                    <td style="background-color: rgba(255, 206, 86, 0.3);">0.32</td>
+                                </tr>
+                                <tr>
+                                    <th>Financial</th>
+                                    <td style="background-color: rgba(75, 192, 192, 0.8);">0.82</td>
+                                    <td style="background-color: rgba(75, 192, 192, 0.3);">0.32</td>
+                                    <td style="background-color: rgba(75, 192, 192, 0.2);">0.22</td>
+                                    <td style="background-color: rgba(75, 192, 192, 0.9);">0.95</td>
+                                    <td style="background-color: rgba(75, 192, 192, 0.9);">0.96</td>
+                                </tr>
+                                <tr>
+                                    <th>Business</th>
+                                    <td style="background-color: rgba(153, 102, 255, 0.7);">0.78</td>
+                                    <td style="background-color: rgba(153, 102, 255, 0.6);">0.62</td>
+                                    <td style="background-color: rgba(153, 102, 255, 0.5);">0.55</td>
+                                    <td style="background-color: rgba(153, 102, 255, 0.8);">0.85</td>
+                                    <td style="background-color: rgba(153, 102, 255, 0.9);">0.98</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-center">
+                        <div class="d-flex align-items-center me-4">
+                            <div style="width: 20px; height: 20px; background-color: rgba(255, 0, 0, 0.8); margin-right: 5px;"></div>
+                            <span>High (0.8-1.0)</span>
+                        </div>
+                        <div class="d-flex align-items-center me-4">
+                            <div style="width: 20px; height: 20px; background-color: rgba(255, 165, 0, 0.8); margin-right: 5px;"></div>
+                            <span>Medium (0.5-0.79)</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 20px; height: 20px; background-color: rgba(255, 255, 0, 0.8); margin-right: 5px;"></div>
+                            <span>Low (0-0.49)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Timeline -->
+            <div class="card timeline-container">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Regulatory Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Sample data - In production, this would be populated dynamically -->
+                        <div class="timeline-item high-priority">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">30 June 2025</h5>
+                                <span class="badge bg-danger">High Priority</span>
+                            </div>
+                            <p class="mb-1">"All staff must complete the training program no later than 30 June 2025."</p>
+                        </div>
+                        
+                        <div class="timeline-item medium-priority">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">14 August 2025</h5>
+                                <span class="badge bg-warning text-dark">Medium Priority</span>
+                            </div>
+                            <p class="mb-1">"The governance framework should be implemented within 3 months of this report (by 14 August 2025)."</p>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">Every 6 weeks</h5>
+                                <span class="badge bg-primary">Recurring</span>
+                            </div>
+                            <p class="mb-1">"Equipment should be checked and maintained every 6 weeks to ensure proper functioning."</p>
+                        </div>
+                        
+                        <div class="timeline-item low-priority">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">1 December 2025</h5>
+                                <span class="badge bg-success">Low Priority</span>
+                            </div>
+                            <p class="mb-1">"Annual policy review to be completed by 1 December 2025."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Regulatory Framework Chart
+        const regulatoryFrameworkCtx = document.getElementById('regulatoryFrameworkChart').getContext('2d');
+        const regulatoryFrameworkChart = new Chart(regulatoryFrameworkCtx, {
+            type: 'radar',
+            data: {
+                labels: ['CQC', 'RIDDOR', 'Fire Safety', 'Financial', 'Business Governance'],
+                datasets: [{
+                    label: 'Coverage Score',
+                    data: [0.88, 0.62, 0.58, 0.65, 0.76],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 1
+                    }
+                }
+            }
+        });
+        
+        // Issue Categories Chart
+        const issueCategoriesCtx = document.getElementById('issueCategoriesChart').getContext('2d');
+        const issueCategoriesChart = new Chart(issueCategoriesCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['Documentation', 'Training', 'Safety', 'Compliance', 'Governance'],
+                datasets: [{
+                    label: 'Issue Score',
+                    data: [0.85, 0.65, 0.92, 0.78, 0.56],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        suggestedMin: 0,
+                        suggestedMax: 1
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

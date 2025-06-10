@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Document Validation - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Document Validation</h1>
+        <div>
+            <button id="runValidationBtn" class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> Validate All Documents
+            </button>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Document Validation Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p>This tool validates document integrity to ensure Word documents can be opened, viewed, and edited properly. The validation process includes:</p>
+                    <ul>
+                        <li>Checking document structure integrity</li>
+                        <li>Validating all document elements</li>
+                        <li>Ensuring tables, paragraphs, and text elements are accessible</li>
+                        <li>Testing document content parsing</li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> The validation process may take several minutes depending on the number of documents to check.
+                    </div>
+                    
+                    {% if validation_summary %}
+                    <div class="mt-4">
+                        <h5>Validation Summary</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-0">{{ validation_summary.total }}</h3>
+                                        <p class="mb-0">Total Documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card {{ 'bg-success text-white' if validation_summary.valid == validation_summary.total else 'bg-light' }}">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-0">{{ validation_summary.valid }}</h3>
+                                        <p class="mb-0">Valid Documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card {{ 'bg-danger text-white' if validation_summary.invalid > 0 else 'bg-light' }}">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-0">{{ validation_summary.invalid }}</h3>
+                                        <p class="mb-0">Invalid Documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card {{ 'bg-warning' if validation_summary.warnings > 0 else 'bg-light' }}">
+                                    <div class="card-body text-center">
+                                        <h3 class="mb-0">{{ validation_summary.warnings }}</h3>
+                                        <p class="mb-0">Warnings</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Upload Document for Validation</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('dashboard.validate_documents') }}">
+                <div class="mb-3">
+                    <label for="document" class="form-label">Select Word Document (DOCX)</label>
+                    <input type="file" class="form-control" id="document" name="document" accept=".docx" required>
+                    <div class="form-text">Upload a Word document to validate its structure and content.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Validate Document</button>
+            </form>
+        </div>
+    </div>
+
+    {% if validation_results %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Document Validation Results</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                            <th>Structure</th>
+                            <th>Content</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in validation_results %}
+                        <tr class="{{ 'table-danger' if not result.is_valid else 'table-warning' if result.warnings else '' }}">
+                            <td>{{ result.filename }}</td>
+                            <td>{{ result.file_size|filesizeformat }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if result.is_valid else 'danger' }}">
+                                    {{ 'Valid' if result.is_valid else 'Invalid' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if result.structure_valid else 'danger' }}">
+                                    {{ 'Valid' if result.structure_valid else 'Invalid' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if result.content_valid else 'danger' }}">
+                                    {{ 'Valid' if result.content_valid else 'Invalid' }}
+                                </span>
+                            </td>
+                            <td>{{ result.message }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No validation results found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if validation_details %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Document Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h6>Document Information</h6>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th style="width: 200px;">Filename</th>
+                            <td>{{ validation_details.filename }}</td>
+                        </tr>
+                        <tr>
+                            <th>File Size</th>
+                            <td>{{ validation_details.file_size|filesizeformat }}</td>
+                        </tr>
+                        <tr>
+                            <th>Author</th>
+                            <td>{{ validation_details.author or 'Unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created</th>
+                            <td>{{ validation_details.created or 'Unknown' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Modified</th>
+                            <td>{{ validation_details.modified or 'Unknown' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-4">
+                <h6>Document Structure</h6>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th style="width: 200px;">Paragraphs</th>
+                            <td>{{ validation_details.paragraphs }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tables</th>
+                            <td>{{ validation_details.tables }}</td>
+                        </tr>
+                        <tr>
+                            <th>Sections</th>
+                            <td>{{ validation_details.sections }}</td>
+                        </tr>
+                        <tr>
+                            <th>Images</th>
+                            <td>{{ validation_details.images }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {% if validation_details.issues %}
+            <div class="mb-4">
+                <h6>Issues Found</h6>
+                <div class="list-group">
+                    {% for issue in validation_details.issues %}
+                    <div class="list-group-item list-group-item-{{ 'danger' if issue.severity == 'error' else 'warning' }}">
+                        <h6 class="mb-1">{{ issue.title }}</h6>
+                        <p class="mb-1">{{ issue.description }}</p>
+                        {% if issue.location %}
+                        <small>Location: {{ issue.location }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const runValidationBtn = document.getElementById('runValidationBtn');
+        
+        if (runValidationBtn) {
+            runValidationBtn.addEventListener('click', function() {
+                // Show spinner
+                const originalText = runValidationBtn.innerHTML;
+                runValidationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...';
+                runValidationBtn.disabled = true;
+                
+                // Call API to run validation
+                fetch('{{ url_for("dashboard.validate_all_documents") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Document validation completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error validating documents: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error validating documents:', error);
+                    alert('Error validating documents. Please try again later.');
+                })
+                .finally(() => {
+                    // Restore button
+                    runValidationBtn.innerHTML = originalText;
+                    runValidationBtn.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,720 @@
+{% extends 'base.html' %}
+
+{% block title %}Regulatory Reports - Cathena Policy Management System{% endblock %}
+
+{% block extra_head %}
+<style>
+    .heatmap {
+        width: 100%;
+        height: 300px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    /* Force explicit display to prevent flickering */
+    .step-section {
+        display: none !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        z-index: -999 !important;
+        pointer-events: none !important;
+    }
+    
+    .step-section.active {
+        display: block !important;
+        opacity: 1 !important;
+        position: static !important;
+        z-index: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    /* Completely fixed dimensions to eliminate reflow and layout shifts */
+    .modal-dialog.modal-xl .modal-body {
+        height: 550px;
+        max-height: 550px;
+        overflow-y: auto;
+    }
+    
+    /* Complete lockdown of any transitions or animations */
+    *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -o-transition: none !important;
+    }
+    
+    /* Prevent any repaints that might cause flickering */
+    html, body {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+    
+    /* Fixed-layout form elements */
+    .form-control, .form-select {
+        height: 38px;
+    }
+    
+    textarea.form-control {
+        height: 100px; 
+    }
+    
+    /* Disable all hover interactions */
+    .modal-content * {
+        pointer-events: auto;
+    }
+    
+    /* Force static rendering and no composite layers */
+    .modal * {
+        transform: none !important;
+        will-change: auto !important;
+        backface-visibility: visible !important;
+        perspective: none !important;
+    }
+    
+    /* Ensure no repainting on hover */
+    .btn:hover {
+        background-color: inherit;
+        color: inherit;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Regulatory Reports & Action Plans</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Regulatory Compliance Heat Map</h5>
+                    <p class="card-text">Generate comprehensive reports and track action plans using regulatory frameworks including CQC, Fire Act, Accounting, RIDDOR, and Employment Law.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>CQC Regulation</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Assigned To</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Update medication management policy</td>
+                                    <td>Regulation 12: Safe care and treatment</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>2025-05-20</td>
+                                    <td>Clinical Lead</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                        <button class="btn btn-sm btn-success">Complete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Staff training on safeguarding</td>
+                                    <td>Regulation 13: Safeguarding</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>2025-05-10</td>
+                                    <td>Training Manager</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                        <button class="btn btn-sm btn-secondary">Archive</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Review staffing levels</td>
+                                    <td>Regulation 18: Staffing</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>2025-05-25</td>
+                                    <td>HR Manager</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                        <button class="btn btn-sm btn-success">Complete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Update premises maintenance schedule</td>
+                                    <td>Regulation 15: Premises and equipment</td>
+                                    <td><span class="badge bg-info">Low</span></td>
+                                    <td><span class="badge bg-secondary">Not Started</span></td>
+                                    <td>2025-06-01</td>
+                                    <td>Facilities Manager</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Review complaints procedure</td>
+                                    <td>Regulation 16: Complaints</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-secondary">Not Started</span></td>
+                                    <td>2025-05-28</td>
+                                    <td>Quality Manager</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="alert alert-info mb-3">
+                            <i class="feather" data-feather="info"></i> 
+                            This section allows you to generate comprehensive regulatory reports with built-in action plan tracking. Add input data through the wizard to create a regulatory compliance assessment.
+                        </div>
+                        <a href="/action-plans/step1" class="btn btn-success me-2">
+                            <i class="bi bi-check2-circle"></i> Create Action Plan (Page-by-Page)
+                        </a>
+                        <button class="btn btn-primary" id="addActionPlanBtn" data-bs-toggle="modal" data-bs-target="#addActionPlanModal">Start Regulatory Assessment</button>
+                        <button class="btn btn-secondary" id="generateReportBtn" data-bs-toggle="modal" data-bs-target="#generateReportModal">Generate Heat Map Report</button>
+                    </div>
+                    
+                    <!-- Add New Action Plan Modal -->
+                    <div class="modal fade" id="addActionPlanModal" tabindex="-1" aria-labelledby="addActionPlanModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addActionPlanModalLabel">Regulatory Compliance Assessment Wizard</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="actionPlanForm">
+                                        <!-- Step progress indicator -->
+                                        <div class="mb-4">
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Step 1 of 5</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Step 1: Inspection Requirements -->
+                                        <div class="step-section active" id="step1">
+                                            <h5>Step 1: Upload Inspection Requirements</h5>
+                                            <p>Upload requirements from CQC or Local Authority inspections/reports.</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="inspectionSource" class="form-label">Inspection Source</label>
+                                                <select class="form-select" id="inspectionSource">
+                                                    <option selected>Select source...</option>
+                                                    <option value="CQC">Care Quality Commission (CQC)</option>
+                                                    <option value="LA">Local Authority</option>
+                                                    <option value="Internal">Internal Audit</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="inspectionDate" class="form-label">Inspection Date</label>
+                                                <input type="date" class="form-control" id="inspectionDate">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="inspectionFiles" class="form-label">Upload Inspection Files</label>
+                                                <input class="form-control" type="file" id="inspectionFiles" multiple>
+                                                <small class="form-text text-muted">Accepted formats: PDF, DOC, DOCX, XLS, XLSX</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="inspectionNotes" class="form-label">Notes</label>
+                                                <textarea class="form-control" id="inspectionNotes" rows="3" placeholder="Enter any additional details about the inspection..."></textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-end">
+                                                <button type="button" class="btn btn-primary" data-action="next" data-current-step="1" data-next-step="2">Next</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Step 2: Evidence Files -->
+                                        <div class="step-section" id="step2">
+                                            <h5>Step 2: Upload Evidence Files or Trackers</h5>
+                                            <p>Upload any files or trackers to be used as evidence.</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="evidenceType" class="form-label">Evidence Type</label>
+                                                <select class="form-select" id="evidenceType">
+                                                    <option selected>Select type...</option>
+                                                    <option value="Tracker">Tracker Document</option>
+                                                    <option value="Audit">Audit Record</option>
+                                                    <option value="Photo">Photographic Evidence</option>
+                                                    <option value="Written">Written Evidence</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="evidenceFiles" class="form-label">Upload Evidence Files</label>
+                                                <input class="form-control" type="file" id="evidenceFiles" multiple>
+                                                <small class="form-text text-muted">Accepted formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="evidenceDescription" class="form-label">Evidence Description</label>
+                                                <textarea class="form-control" id="evidenceDescription" rows="3" placeholder="Describe the evidence being provided..."></textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary" data-action="prev" data-current-step="2" data-prev-step="1">Previous</button>
+                                                <button type="button" class="btn btn-primary" data-action="next" data-current-step="2" data-next-step="3">Next</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Step 3: Past Reports -->
+                                        <div class="step-section" id="step3">
+                                            <h5>Step 3: Upload Past Reports (Optional)</h5>
+                                            <p>Upload any past reports produced by the company to establish report writing style.</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="reportType" class="form-label">Report Type</label>
+                                                <select class="form-select" id="reportType">
+                                                    <option selected>Select type...</option>
+                                                    <option value="Compliance">Compliance Report</option>
+                                                    <option value="Quality">Quality Assurance Report</option>
+                                                    <option value="Annual">Annual Review</option>
+                                                    <option value="Inspection">Inspection Response</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="pastReportFiles" class="form-label">Upload Report Files</label>
+                                                <input class="form-control" type="file" id="pastReportFiles" multiple>
+                                                <small class="form-text text-muted">Accepted formats: PDF, DOC, DOCX</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="reportNotes" class="form-label">Report Notes</label>
+                                                <textarea class="form-control" id="reportNotes" rows="3" placeholder="Enter any additional information about these reports..."></textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary" data-action="prev" data-current-step="3" data-prev-step="2">Previous</button>
+                                                <button type="button" class="btn btn-primary" data-action="next" data-current-step="3" data-next-step="4">Next</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Step 4: Surveys & Reviews -->
+                                        <div class="step-section" id="step4">
+                                            <h5>Step 4: Upload Surveys & Reviews</h5>
+                                            <p>Upload any surveys or reviews conducted by the company (e.g., Fire Door surveys).</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="surveyType" class="form-label">Survey/Review Type</label>
+                                                <select class="form-select" id="surveyType">
+                                                    <option selected>Select type...</option>
+                                                    <option value="Fire">Fire Safety Survey</option>
+                                                    <option value="Health">Health & Safety Review</option>
+                                                    <option value="Resident">Resident Satisfaction Survey</option>
+                                                    <option value="Staff">Staff Feedback Survey</option>
+                                                    <option value="Facility">Facility Assessment</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="surveyDate" class="form-label">Survey/Review Date</label>
+                                                <input type="date" class="form-control" id="surveyDate">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="surveyFiles" class="form-label">Upload Survey/Review Files</label>
+                                                <input class="form-control" type="file" id="surveyFiles" multiple>
+                                                <small class="form-text text-muted">Accepted formats: PDF, DOC, DOCX, XLS, XLSX</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="surveyNotes" class="form-label">Survey/Review Notes</label>
+                                                <textarea class="form-control" id="surveyNotes" rows="3" placeholder="Enter any additional information about these surveys or reviews..."></textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary" data-action="prev" data-current-step="4" data-prev-step="3">Previous</button>
+                                                <button type="button" class="btn btn-primary" data-action="next" data-current-step="4" data-next-step="5">Next</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Step 5: Audits -->
+                                        <div class="step-section" id="step5">
+                                            <h5>Step 5: Upload Audits</h5>
+                                            <p>Upload any audits conducted by the company (Medicine Management, Infection Control, etc.).</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="auditType" class="form-label">Audit Type</label>
+                                                <select class="form-select" id="auditType">
+                                                    <option selected>Select type...</option>
+                                                    <option value="Medicine">Medicine Management Audit</option>
+                                                    <option value="Infection">Infection Control Audit</option>
+                                                    <option value="Competency">Care Worker Competency Assessment</option>
+                                                    <option value="Internal">Care Home Internal Audit</option>
+                                                    <option value="RCA">Root Cause Analysis</option>
+                                                    <option value="Satisfaction">Resident Satisfaction Survey</option>
+                                                    <option value="CarePlan">Weekly Care Plan Audit</option>
+                                                    <option value="Accident">Weekly Accident Audit</option>
+                                                    <option value="Pest">Pest Control Checks</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="auditDate" class="form-label">Audit Date</label>
+                                                <input type="date" class="form-control" id="auditDate">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="auditFiles" class="form-label">Upload Audit Files</label>
+                                                <input class="form-control" type="file" id="auditFiles" multiple>
+                                                <small class="form-text text-muted">Accepted formats: PDF, DOC, DOCX, XLS, XLSX</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="auditNotes" class="form-label">Audit Notes</label>
+                                                <textarea class="form-control" id="auditNotes" rows="3" placeholder="Enter any additional information about these audits..."></textarea>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary" data-action="prev" data-current-step="5" data-prev-step="4">Previous</button>
+                                                <button type="button" class="btn btn-primary" id="submitActionPlan">Submit</button>
+                                            </div>
+                                        </div>
+                                        
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Report Modal -->
+                    <div class="modal fade" id="generateReportModal" tabindex="-1" aria-labelledby="generateReportModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="generateReportModalLabel">Generate Heat Map Report</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="generateReportForm">
+                                        <div class="mb-3">
+                                            <label for="reportTitle" class="form-label">Report Title</label>
+                                            <input type="text" class="form-control" id="reportTitle" placeholder="Enter report title...">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="reportDate" class="form-label">Report Date</label>
+                                            <input type="date" class="form-control" id="reportDate">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="reportFormat" class="form-label">Report Format</label>
+                                            <select class="form-select" id="reportFormat">
+                                                <option selected>Choose format...</option>
+                                                <option value="pdf">PDF</option>
+                                                <option value="word">Word Document</option>
+                                                <option value="excel">Excel Spreadsheet</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Regulatory Metrics to Include</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeCQC" checked>
+                                                <label class="form-check-label" for="includeCQC">
+                                                    CQC Regulations
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeFireAct" checked>
+                                                <label class="form-check-label" for="includeFireAct">
+                                                    Fire Act Regulations
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeAccounting" checked>
+                                                <label class="form-check-label" for="includeAccounting">
+                                                    Accounting Regulations
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeRIDDOR" checked>
+                                                <label class="form-check-label" for="includeRIDDOR">
+                                                    RIDDOR (Reporting of Injuries, Diseases and Dangerous Occurrences Regulations)
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeEmploymentLaw" checked>
+                                                <label class="form-check-label" for="includeEmploymentLaw">
+                                                    Employment Law
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Report Content</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeHeatMap" checked>
+                                                <label class="form-check-label" for="includeHeatMap">
+                                                    Include Heat Map Action Plan Tracker
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeExplanation" checked>
+                                                <label class="form-check-label" for="includeExplanation">
+                                                    Include Comprehensive Explanation
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeEvidence" checked>
+                                                <label class="form-check-label" for="includeEvidence">
+                                                    Include Evidence Summary
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeAppendices" checked>
+                                                <label class="form-check-label" for="includeAppendices">
+                                                    Include Appendices with Raw Data
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeCompliance" checked>
+                                                <label class="form-check-label" for="includeCompliance">
+                                                    Include Regulatory Compliance Matrix
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="generateReportSubmit">Generate Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Priority Heat Map</h5>
+                    <div class="heatmap-container" style="height: 300px; background-color: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-muted">Heat map visualization will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Status Summary</h5>
+                    <div class="chart-container" style="height: 300px; background-color: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-muted">Status chart will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/wizard.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Action Plans page loaded');
+        
+        // Initialize all modals explicitly
+        var addActionPlanModal = new bootstrap.Modal(document.getElementById('addActionPlanModal'));
+        var generateReportModal = new bootstrap.Modal(document.getElementById('generateReportModal'));
+        
+        // Add event listener for Add Action Plan button
+        document.getElementById('addActionPlanBtn').addEventListener('click', function() {
+            // Reset wizard state before showing
+            resetWizard();
+            addActionPlanModal.show();
+        });
+        
+        // Improved function to reset wizard to initial state
+        function resetWizard() {
+            // First create a fresh clone of the form to avoid any lingering state
+            const originalForm = document.getElementById('actionPlanForm');
+            const clone = originalForm.cloneNode(true);
+            originalForm.parentNode.replaceChild(clone, originalForm);
+            
+            // Re-add event listeners to the cloned form
+            document.getElementById('submitActionPlan').addEventListener('click', function(e) {
+                e.preventDefault();
+                const modal = document.getElementById('addActionPlanModal');
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                alert('Action plan data has been submitted successfully! A new action plan will be created with the uploaded files and information.');
+                modalInstance.hide();
+                
+                const tableBody = document.querySelector('.table tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>New action plan from inspection</td>
+                    <td>Regulation: Various requirements</td>
+                    <td><span class="badge bg-danger">High</span></td>
+                    <td><span class="badge bg-secondary">Not Started</span></td>
+                    <td>${new Date().toISOString().split('T')[0]}</td>
+                    <td>Assigned User</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary">Edit</button>
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </td>
+                `;
+                tableBody.prepend(newRow);
+            });
+            
+            // Reset progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = '20%';
+            progressBar.setAttribute('aria-valuenow', 20);
+            progressBar.textContent = 'Step 1 of 5';
+            
+            // Hide all steps immediately using direct style manipulation
+            document.querySelectorAll('.step-section').forEach(function(step) {
+                step.style.display = 'none';
+                step.classList.remove('active');
+            });
+            
+            // Show first step immediately using direct style manipulation
+            const firstStep = document.getElementById('step1');
+            if (firstStep) {
+                firstStep.style.display = 'block';
+                firstStep.classList.add('active');
+            }
+        }
+        
+        // Add event listener for Generate Report button
+        document.getElementById('generateReportBtn').addEventListener('click', function() {
+            generateReportModal.show();
+        });
+        
+        // Complete rewrite of step navigation functions to eliminate flickering
+        window.nextStep = function(currentStep, nextStep) {
+            // Hide current step first (immediately)
+            document.getElementById('step' + currentStep).style.display = 'none';
+            
+            // Then update progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = (nextStep * 20) + '%';
+            progressBar.setAttribute('aria-valuenow', nextStep * 20);
+            progressBar.textContent = 'Step ' + nextStep + ' of 5';
+            
+            // Then show next step (immediately)
+            document.getElementById('step' + nextStep).style.display = 'block';
+            
+            // Remove/add active classes (for any additional styling)
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + nextStep).classList.add('active');
+        };
+        
+        // Separate implementation for previous step (no dependencies on nextStep)
+        window.prevStep = function(currentStep, prevStep) {
+            // Hide current step first (immediately)
+            document.getElementById('step' + currentStep).style.display = 'none';
+            
+            // Then update progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = (prevStep * 20) + '%';
+            progressBar.setAttribute('aria-valuenow', prevStep * 20);
+            progressBar.textContent = 'Step ' + prevStep + ' of 5';
+            
+            // Then show previous step (immediately)
+            document.getElementById('step' + prevStep).style.display = 'block';
+            
+            // Remove/add active classes (for any additional styling)
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + prevStep).classList.add('active');
+        };
+        
+        // Handle form submission
+        document.getElementById('submitActionPlan').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Simulate form submission
+            const modal = document.getElementById('addActionPlanModal');
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            
+            // Show success message
+            alert('Action plan data has been submitted successfully! A new action plan will be created with the uploaded files and information.');
+            
+            // Close the modal
+            modalInstance.hide();
+            
+            // In a real implementation, we would submit the form data via AJAX
+            // and then add a new row to the action plans table
+            const tableBody = document.querySelector('.table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>New action plan from ${document.getElementById('inspectionSource').value} inspection</td>
+                <td>Regulation ${Math.floor(Math.random() * 20) + 1}: Various requirements</td>
+                <td><span class="badge bg-danger">High</span></td>
+                <td><span class="badge bg-secondary">Not Started</span></td>
+                <td>${new Date().toISOString().split('T')[0]}</td>
+                <td>Assigned User</td>
+                <td>
+                    <button class="btn btn-sm btn-primary">Edit</button>
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </td>
+            `;
+            tableBody.prepend(newRow);
+        });
+        
+        // Handle report generation
+        document.getElementById('generateReportSubmit').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get selected regulatory metrics
+            const selectedMetrics = [];
+            if (document.getElementById('includeCQC').checked) selectedMetrics.push('CQC Regulations');
+            if (document.getElementById('includeFireAct').checked) selectedMetrics.push('Fire Act');
+            if (document.getElementById('includeAccounting').checked) selectedMetrics.push('Accounting Regulations');
+            if (document.getElementById('includeRIDDOR').checked) selectedMetrics.push('RIDDOR');
+            if (document.getElementById('includeEmploymentLaw').checked) selectedMetrics.push('Employment Law');
+            
+            // Get report content settings
+            const includeHeatMap = document.getElementById('includeHeatMap').checked;
+            const includeExplanation = document.getElementById('includeExplanation').checked;
+            const includeEvidence = document.getElementById('includeEvidence').checked;
+            const includeAppendices = document.getElementById('includeAppendices').checked;
+            const includeCompliance = document.getElementById('includeCompliance').checked;
+            
+            // Get report format
+            const reportFormat = document.getElementById('reportFormat').value;
+            
+            // Simulate report generation
+            const modal = document.getElementById('generateReportModal');
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            
+            // Show success message with details
+            const metricsList = selectedMetrics.join(', ');
+            alert(`Heat Map Action Plan Report is being generated with the following metrics: ${metricsList}\n\nThe report will include ${includeHeatMap ? 'Heat Map, ' : ''}${includeCompliance ? 'Regulatory Compliance Matrix, ' : ''}${includeExplanation ? 'Comprehensive Explanation, ' : ''}${includeEvidence ? 'Evidence Summary, ' : ''}${includeAppendices ? 'Raw Data Appendices' : ''}\n\nIt will be available for download shortly in ${reportFormat.toUpperCase()} format.`);
+            
+            // Close the modal
+            modalInstance.hide();
+        });
+    });
+</script>
+{% endblock %}

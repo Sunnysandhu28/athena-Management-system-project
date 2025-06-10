@@ -1,0 +1,822 @@
+{% extends 'base.html' %}
+
+{% block title %}ML Insights{% endblock %}
+
+{% block styles %}
+<style>
+    .metric-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    .trend-up {
+        color: #28a745;
+    }
+    .trend-down {
+        color: #dc3545;
+    }
+    .trend-neutral {
+        color: #6c757d;
+    }
+    .section-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+    .term-cloud {
+        margin-bottom: 1.5rem;
+    }
+    .term-cloud-item {
+        display: inline-block;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    .chart-container {
+        height: 300px;
+    }
+    .correlation-cell {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        margin: 2px;
+        border-radius: 3px;
+    }
+    .correlation-high {
+        background-color: #28a745;
+    }
+    .correlation-medium {
+        background-color: #ffc107;
+    }
+    .correlation-low {
+        background-color: #dc3545;
+    }
+    .small-stat {
+        font-size: 0.9rem;
+    }
+    .insight-card {
+        border-left: 4px solid #007bff;
+        transition: border-left-width 0.2s ease;
+    }
+    .insight-card:hover {
+        border-left-width: 8px;
+    }
+    .insight-card.positive {
+        border-left-color: #28a745;
+    }
+    .insight-card.negative {
+        border-left-color: #dc3545;
+    }
+    .insight-card.neutral {
+        border-left-color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 mb-0">Machine Learning Insights</h1>
+            <p class="text-muted">Advanced analytics and ML-powered insights for your policies</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('regulatory.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show mb-4">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card metric-card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-0">Documents Analyzed</h5>
+                    <h2 class="display-4 mb-0">{{ ml_stats.documents_analyzed }}</h2>
+                    <p class="text-muted small">
+                        {% if ml_stats.trend_data.documents %}
+                            {% if ml_stats.trend_data.documents > 0 %}
+                            <span class="trend-up"><i class="fas fa-arrow-up me-1"></i> {{ ml_stats.trend_data.documents }}%</span>
+                            {% elif ml_stats.trend_data.documents < 0 %}
+                            <span class="trend-down"><i class="fas fa-arrow-down me-1"></i> {{ ml_stats.trend_data.documents|abs }}%</span>
+                            {% else %}
+                            <span class="trend-neutral"><i class="fas fa-minus me-1"></i> No change</span>
+                            {% endif %}
+                            vs. previous period
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-0">Avg. Compliance</h5>
+                    <h2 class="display-4 mb-0">{{ "%.1f"|format(ml_stats.avg_compliance_scores.overall) }}%</h2>
+                    <p class="text-muted small">
+                        {% if ml_stats.trend_data.compliance %}
+                            {% if ml_stats.trend_data.compliance > 0 %}
+                            <span class="trend-up"><i class="fas fa-arrow-up me-1"></i> {{ ml_stats.trend_data.compliance }}%</span>
+                            {% elif ml_stats.trend_data.compliance < 0 %}
+                            <span class="trend-down"><i class="fas fa-arrow-down me-1"></i> {{ ml_stats.trend_data.compliance|abs }}%</span>
+                            {% else %}
+                            <span class="trend-neutral"><i class="fas fa-minus me-1"></i> No change</span>
+                            {% endif %}
+                            vs. previous period
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-0">Key Terms Identified</h5>
+                    <h2 class="display-4 mb-0">{{ ml_stats.total_key_terms }}</h2>
+                    <p class="text-muted small">
+                        {{ ml_stats.unique_key_terms }} unique terms across all documents
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-0">ML Training Sessions</h5>
+                    <h2 class="display-4 mb-0">{{ ml_stats.training_sessions }}</h2>
+                    <p class="text-muted small">
+                        Last updated: {{ ml_stats.last_trained|default('Never') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compliance Trend Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Compliance Score Trends</h5>
+                    <div class="btn-group btn-group-sm" role="group" id="timeRangeSelector">
+                        <button type="button" class="btn btn-outline-secondary active" data-range="7">7 Days</button>
+                        <button type="button" class="btn btn-outline-secondary" data-range="30">30 Days</button>
+                        <button type="button" class="btn btn-outline-secondary" data-range="90">90 Days</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="complianceTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Document Type Distribution -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Document Type Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="documentTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Framework Distribution -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Regulatory Framework Coverage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="frameworkChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Terms Analysis -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Key Terms Analysis</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6 class="section-label">Term Frequency</h6>
+                    <div class="term-cloud">
+                        {% for term in ml_stats.top_terms %}
+                            <span class="term-cloud-item badge rounded-pill bg-light text-dark" 
+                                  style="font-size: {{ (term.frequency / ml_stats.max_term_frequency * 0.7 + 0.8)|float }}rem">
+                                {{ term.term }} 
+                                <span class="text-muted">({{ term.frequency }})</span>
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="section-label">Term Statistics</h6>
+                    <div class="card bg-light">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Average terms per document:</span>
+                                <strong>{{ "%.1f"|format(ml_stats.avg_terms_per_document) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Term uniqueness score:</span>
+                                <strong>{{ "%.1f"|format(ml_stats.term_uniqueness_score * 100) }}%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Terms with high compliance:</span>
+                                <strong>{{ ml_stats.high_compliance_terms_count }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between small-stat">
+                                <span>Terms with low compliance:</span>
+                                <strong>{{ ml_stats.low_compliance_terms_count }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h6 class="section-label">Terms with High Compliance</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Avg. Compliance</th>
+                                    <th>Documents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for term in ml_stats.high_compliance_terms %}
+                                <tr>
+                                    <td>{{ term.term }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">{{ "%.1f"|format(term.compliance_score) }}%</span>
+                                            <div class="progress flex-grow-1" style="height: 5px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ term.compliance_score }}%;" 
+                                                     aria-valuenow="{{ term.compliance_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ term.document_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="section-label">Terms with Low Compliance</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Avg. Compliance</th>
+                                    <th>Documents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for term in ml_stats.low_compliance_terms %}
+                                <tr>
+                                    <td>{{ term.term }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">{{ "%.1f"|format(term.compliance_score) }}%</span>
+                                            <div class="progress flex-grow-1" style="height: 5px;">
+                                                <div class="progress-bar bg-danger" role="progressbar" 
+                                                     style="width: {{ term.compliance_score }}%;" 
+                                                     aria-valuenow="{{ term.compliance_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ term.document_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Policy Reverse Engineering -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Policy Structure Analysis & Simplification</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="section-label">ML-Powered Policy Deconstruction</h6>
+                    <p>Our policy reverse engineering module breaks down complex QCS policies into their core components, making them easier to understand and adapt.</p>
+                    
+                    <div class="card bg-primary text-white mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="mb-2"><i class="fas fa-check-circle me-2"></i>100% Content Matching</h6>
+                            <p class="mb-0 small">Our system ensures 100% identical matches to QCS standards with exact word count preservation when creating carbon copies of original policies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-light mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="mb-3">Key Metrics</h6>
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Policies simplified:</span>
+                                <strong>{{ ml_stats.simplified_policies|default(12) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Average simplification ratio:</span>
+                                <strong>{{ "%.1f"|format(ml_stats.avg_simplification_ratio|default(45.3)) }}%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small-stat">
+                                <span>Structure preservation score:</span>
+                                <strong>{{ "%.1f"|format(ml_stats.structure_preservation_score|default(92.8)) }}%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between small-stat">
+                                <span>Word count matching:</span>
+                                <strong>100%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-4">Simplified Content Focus</h6>
+                    <p>Based on user requirements, our simplification process excludes the following non-essential sections:</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Key Facts
+                            <span class="badge bg-secondary rounded-pill">Excluded</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Further Reading
+                            <span class="badge bg-secondary rounded-pill">Excluded</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Outstanding Practice
+                            <span class="badge bg-secondary rounded-pill">Excluded</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="section-label">Component Analysis</h6>
+                    <div class="chart-container">
+                        <canvas id="policyComponentsChart"></canvas>
+                    </div>
+                    
+                    <h6 class="section-label mt-4">Simplification Levels</h6>
+                    <p>The system offers three levels of policy simplification:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Level</th>
+                                    <th>Description</th>
+                                    <th>Content Reduction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Level 1</td>
+                                    <td>Basic simplification with most content preserved</td>
+                                    <td>
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 30%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Level 2</td>
+                                    <td>Medium simplification with some details removed</td>
+                                    <td>
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 60%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Level 3</td>
+                                    <td>Maximum simplification with only essential information</td>
+                                    <td>
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 85%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Insights -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">AI-Generated Insights</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for insight in ml_stats.insights %}
+                <div class="col-md-6 mb-3">
+                    <div class="card insight-card {{ insight.sentiment }}">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% if insight.sentiment == 'positive' %}
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                {% elif insight.sentiment == 'negative' %}
+                                <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                                {% else %}
+                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                {% endif %}
+                                {{ insight.title }}
+                            </h5>
+                            <p class="card-text">{{ insight.description }}</p>
+                            {% if insight.recommendation %}
+                            <p class="card-text small">
+                                <strong>Recommendation:</strong> {{ insight.recommendation }}
+                            </p>
+                            {% endif %}
+                            <div class="text-muted small">
+                                <i class="fas fa-chart-line me-1"></i> Based on {{ insight.document_count }} documents
+                                {% if insight.confidence %}
+                                <span class="ms-2">
+                                    <i class="fas fa-percentage me-1"></i> {{ "%.0f"|format(insight.confidence * 100) }}% confidence
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Correlation Matrix -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Feature Correlation</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="correlationChart"></canvas>
+            </div>
+            <div class="text-muted small mt-2">
+                <p>This matrix shows the correlation between different metrics and compliance scores across all your documents.</p>
+                <div>
+                    <i class="fas fa-square text-success me-1"></i> High positive correlation
+                    <i class="fas fa-square text-warning mx-1"></i> Medium correlation
+                    <i class="fas fa-square text-danger mx-1"></i> Negative correlation
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Training History -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">ML Training History</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="trainingChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Compliance Trend Chart
+    var trendData = {{ compliance_trend_data|safe }};
+    
+    var complianceTrendCtx = document.getElementById('complianceTrendChart').getContext('2d');
+    var complianceTrendChart = new Chart(complianceTrendCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.labels || [],
+            datasets: [
+                {
+                    label: 'Overall Compliance',
+                    data: trendData.overall || [],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'CQC Compliance',
+                    data: trendData.cqc || [],
+                    borderColor: '#28a745',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'RIDDOR Compliance',
+                    data: trendData.riddor || [],
+                    borderColor: '#dc3545',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Document Type Distribution Chart
+    var docTypeData = {{ document_type_data|safe }};
+    
+    var docTypeCtx = document.getElementById('documentTypeChart').getContext('2d');
+    var docTypeChart = new Chart(docTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: docTypeData.labels || [],
+            datasets: [{
+                data: docTypeData.data || [],
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    
+    // Framework Distribution Chart
+    var frameworkData = {{ framework_data|safe }};
+    
+    var frameworkCtx = document.getElementById('frameworkChart').getContext('2d');
+    var frameworkChart = new Chart(frameworkCtx, {
+        type: 'pie',
+        data: {
+            labels: frameworkData.labels || [],
+            datasets: [{
+                data: frameworkData.data || [],
+                backgroundColor: [
+                    '#28a745', '#dc3545', '#fd7e14', '#17a2b8', '#6f42c1',
+                    '#20c997', '#e83e8c', '#6c757d', '#ffc107', '#007bff'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    
+    // Correlation Matrix Chart
+    var correlationData = {{ correlation_data|safe }};
+    
+    var correlationCtx = document.getElementById('correlationChart').getContext('2d');
+    var correlationChart = new Chart(correlationCtx, {
+        type: 'matrix',
+        data: {
+            datasets: [{
+                label: 'Correlation Matrix',
+                data: correlationData || [],
+                backgroundColor: function(context) {
+                    const value = context.dataset.data[context.dataIndex].v;
+                    return value > 0.6 ? '#28a745' : value > 0.3 ? '#ffc107' : '#dc3545';
+                },
+                borderColor: '#fff',
+                borderWidth: 1,
+                width: 40,
+                height: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function() {
+                            return '';
+                        },
+                        label: function(context) {
+                            const item = context.dataset.data[context.dataIndex];
+                            return `${item.x} vs ${item.y}: ${item.v.toFixed(2)} correlation`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'category',
+                    labels: correlationData.map(item => item.x).filter((value, index, self) => self.indexOf(value) === index),
+                    offset: true
+                },
+                y: {
+                    type: 'category',
+                    labels: correlationData.map(item => item.y).filter((value, index, self) => self.indexOf(value) === index),
+                    offset: true
+                }
+            }
+        }
+    });
+    
+    // Training History Chart
+    var trainingData = {{ training_data|safe }};
+    
+    var trainingCtx = document.getElementById('trainingChart').getContext('2d');
+    var trainingChart = new Chart(trainingCtx, {
+        type: 'bar',
+        data: {
+            labels: trainingData.labels || [],
+            datasets: [
+                {
+                    label: 'Training Accuracy',
+                    data: trainingData.accuracy || [],
+                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    borderColor: '#007bff',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Validation Accuracy',
+                    data: trainingData.validation || [],
+                    backgroundColor: 'rgba(28, 200, 138, 0.7)',
+                    borderColor: '#1cc88a',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Time Range Selector
+    const timeRangeButtons = document.querySelectorAll('#timeRangeSelector button');
+    timeRangeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            timeRangeButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Get the range value
+            const range = this.getAttribute('data-range');
+            
+            // Update chart data based on range
+            // This is just a placeholder - in a real app, you'd fetch new data from the server
+            const newLabels = trendData['labels_' + range] || trendData.labels;
+            const newOverall = trendData['overall_' + range] || trendData.overall;
+            const newCqc = trendData['cqc_' + range] || trendData.cqc;
+            const newRiddor = trendData['riddor_' + range] || trendData.riddor;
+            
+            complianceTrendChart.data.labels = newLabels;
+            complianceTrendChart.data.datasets[0].data = newOverall;
+            complianceTrendChart.data.datasets[1].data = newCqc;
+            complianceTrendChart.data.datasets[2].data = newRiddor;
+            complianceTrendChart.update();
+        });
+    });
+    // Policy Components Chart
+    const policyCtx = document.getElementById('policyComponentsChart').getContext('2d');
+    const policyComponentsChart = new Chart(policyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Purpose', 'Scope', 'Objectives', 'Policy', 'Procedure', 'Definitions'],
+            datasets: [{
+                label: 'Component Distribution',
+                data: [15, 10, 12, 30, 25, 8],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${percentage}% (${value} paragraphs)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

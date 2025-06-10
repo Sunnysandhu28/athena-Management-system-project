@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ policy_code }} - Cathena Policy Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .policy-title {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .review-sheet {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        .policy-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+        .policy-section h2 {
+            color: #3c5a99;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        .navigation-menu {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            position: sticky;
+            top: 20px;
+        }
+        .section-link {
+            display: block;
+            padding: 5px 0;
+            color: #495057;
+            text-decoration: none;
+        }
+        .section-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .back-button {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Back Button -->
+        <div class="back-button">
+            <a href="/policy-repository" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Policy Repository
+            </a>
+        </div>
+
+        <div class="row">
+            <!-- Navigation Menu -->
+            <div class="col-lg-3">
+                <div class="navigation-menu">
+                    <h6><i class="fas fa-list me-2"></i>Policy Sections</h6>
+                    <a href="#review-sheet" class="section-link">Review Sheet</a>
+                    <a href="#section-1" class="section-link">1. Purpose</a>
+                    <a href="#section-2" class="section-link">2. Scope</a>
+                    <a href="#section-3" class="section-link">3. Objectives</a>
+                    <a href="#section-4" class="section-link">4. Policy</a>
+                    <a href="#section-5" class="section-link">5. Procedure</a>
+                    <a href="#section-6" class="section-link">6. Definitions</a>
+                    <a href="#section-7" class="section-link">7. Key Facts - Professionals</a>
+                    <a href="#section-8" class="section-link">8. Key Facts - People Affected</a>
+                </div>
+            </div>
+
+            <!-- Policy Content -->
+            <div class="col-lg-9">
+                <!-- Policy Header -->
+                <div class="alert alert-success">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-check-circle me-2"></i>Authentic QCS Policy</h6>
+                            <p class="mb-0">Policy Code: {{ policy_code }} | Format: Complete 8-Section Structure</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-success">Active</span>
+                            <span class="badge bg-info">QCS Compliant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policy Content -->
+                <div class="policy-content">
+                    {{ policy_content|safe }}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 text-center">
+                    <a href="/policy-repository" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Repository
+                    </a>
+                    <button class="btn btn-outline-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>
+                        Print Policy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.section-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

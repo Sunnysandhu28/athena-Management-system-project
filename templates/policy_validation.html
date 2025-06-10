@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Validation Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Policy Validation Status</h1>
+            <div class="alert alert-info">
+                <p><strong>AI Policy Validation System</strong></p>
+                <p>This page shows the validation status of AI-generated policies against QCS standards.</p>
+            </div>
+        </div>
+    </div>
+
+    {% if policies %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Policy Validation Results</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Word Count</th>
+                                <th>Issues</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for policy in policies %}
+                            <tr>
+                                <td>{{ policy.code }}</td>
+                                <td>{{ policy.title }}</td>
+                                <td>
+                                    {% if policy.is_valid %}
+                                    <span class="badge bg-success">Valid</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Needs Review</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ policy.word_count }}</td>
+                                <td>{{ policy.issue_count }}</td>
+                                <td>
+                                    <a href="/policy/{{ policy.id }}" class="btn btn-sm btn-primary">View</a>
+                                    <a href="/policy/validate/{{ policy.id }}" class="btn btn-sm btn-info">Validate</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <p>No policies have been validated yet.</p>
+                    <a href="/process_templates" class="btn btn-primary">Process Templates</a>
+                    <a href="/generate_policies" class="btn btn-success">Generate Policies</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Template Statistics</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Templates Available:</strong> {{ template_count }}</p>
+                    <p><strong>Average Word Count:</strong> {{ avg_word_count }}</p>
+                    <a href="/process_templates" class="btn btn-primary">Process More Templates</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Validation Controls</h4>
+                </div>
+                <div class="card-body">
+                    <p>Use these controls to manage policy validation:</p>
+                    <a href="/validate_all_policies" class="btn btn-success mb-2">Validate All Policies</a>
+                    <a href="/regenerate_invalid" class="btn btn-warning mb-2">Regenerate Invalid Policies</a>
+                    <a href="/view_policies" class="btn btn-secondary">Back to Policies</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

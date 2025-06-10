@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Policy Processing - Cathena Policy System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Batch Policy Processing</h1>
+    
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Batch Processing</li>
+        </ol>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Notification area for real-time updates -->
+    <div id="notification-area" class="mb-4"></div>
+    
+    <ul class="nav nav-tabs mb-4" id="batchTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="download-tab" data-bs-toggle="tab" data-bs-target="#download" type="button" role="tab" aria-controls="download" aria-selected="true">Policy Download</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="false">Batch by Category</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#status" type="button" role="tab" aria-controls="status" aria-selected="false">Processing Status</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">Reports</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="batchTabsContent">
+        <!-- Download Tab -->
+        <div class="tab-pane fade show active" id="download" role="tabpanel" aria-labelledby="download-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Policy Download</h5>
+                </div>
+                <div class="card-body">
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">Download Status</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Total Policies Downloaded:</strong> {{ download_status.get('total_downloaded', 0) }}</p>
+                                    <p><strong>Categories Downloaded:</strong> {{ download_status.get('categories_downloaded', {})|length }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Failed Downloads:</strong> {{ download_status.get('failed_downloads', [])|length }}</p>
+                                    <p><strong>Last Updated:</strong> {{ download_status.get('last_updated', 'Never') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('batch_processing.batch_download') }}" method="post">
+                        <div class="mb-3">
+                            <label for="max-policies" class="form-label">Maximum Policies to Download:</label>
+                            <input type="number" id="max-policies" name="max_policies" class="form-control" value="400" min="1" max="1000">
+                        </div>
+                        
+                        <!-- QCS Credentials Section - Only required if env variables are not set -->
+                        {% if status_message and 'saved QCS session cookies' in status_message %}
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-check-circle"></i> Using stored QCS credentials from environment variables. 
+                            You can still override them below if needed.
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="qcs-username" class="form-label">QCS Username: (Optional - Override stored credentials)</label>
+                            <input type="text" id="qcs-username" name="qcs_username" class="form-control">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="qcs-password" class="form-label">QCS Password: (Optional - Override stored credentials)</label>
+                            <input type="password" id="qcs-password" name="qcs_password" class="form-control">
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <label for="qcs-username" class="form-label">QCS Username:</label>
+                            <input type="text" id="qcs-username" name="qcs_username" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="qcs-password" class="form-label">QCS Password:</label>
+                            <input type="password" id="qcs-password" name="qcs_password" class="form-control" required>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-primary">Start Download</button>
+                        {% if download_status.get('failed_downloads', [])|length > 0 %}
+                            <button type="submit" name="action" value="retry-failed" class="btn btn-warning">Retry Failed Downloads</button>
+                        {% endif %}
+                    </form>
+
+                    {% if download_status.get('categories_downloaded', {}) %}
+                        <h5 class="mt-4">Downloaded Categories</h5>
+                        <div class="list-group">
+                            {% for category, cat_status in download_status.get('categories_downloaded', {}).items() %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ category }}</h6>
+                                        <small class="text-muted">{{ cat_status.get('downloaded', 0) }} policies</small>
+                                    </div>
+                                    {% if cat_status.get('completed', False) %}
+                                        <span class="badge bg-success rounded-pill">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning rounded-pill">In Progress</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Batch Processing by Category</h5>
+                </div>
+                <div class="card-body">
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">Batch Processing Status</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Total Policies Replicated:</strong> {{ batch_status.get('total_replicated', 0) }}</p>
+                                    <p><strong>Categories Processed:</strong> {{ batch_status.get('categories_processed', {})|length }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Completed Batches:</strong> {{ batch_status.get('completed_batches', [])|length }}</p>
+                                    <p><strong>Failed Replications:</strong> {{ batch_status.get('failed_replications', [])|length }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if categories %}
+                        <form action="{{ url_for('batch_processing.batch_replicate') }}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Select Categories to Process:</label>
+                                <div class="mb-2">
+                                    <button type="button" class="btn btn-sm btn-success" onclick="selectAllCategories(true)">Select All</button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="selectAllCategories(false)">Deselect All</button>
+                                    <span class="ms-2">Selected: <span id="selected-categories-count">0</span> categories</span>
+                                </div>
+                                
+                                <div class="list-group mb-3">
+                                    {% for category in categories %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input category-checkbox" type="checkbox" id="category-{{ loop.index }}" name="categories" value="{{ category }}" onchange="updateSelectedCount()">
+                                                <label class="form-check-label" for="category-{{ loop.index }}">
+                                                    {{ category }}
+                                                    {% if category_counts.get(category) %}
+                                                        <span class="text-muted">({{ category_counts.get(category) }} policies)</span>
+                                                    {% endif %}
+                                                </label>
+                                            </div>
+                                            
+                                            {% if batch_status.get('categories_processed', {}).get(category, {}).get('completed', False) %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif batch_status.get('categories_processed', {}).get(category, {}).get('replicated', 0) > 0 %}
+                                                <span class="badge bg-info">
+                                                    {{ batch_status.get('categories_processed', {}).get(category, {}).get('replicated', 0) }}/
+                                                    {{ batch_status.get('categories_processed', {}).get(category, {}).get('total', 0) }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="max-workers" class="form-label">Maximum Worker Threads:</label>
+                                    <input type="number" id="max-workers" name="max_workers" class="form-control" value="4" min="1" max="16">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="limit" class="form-label">Limit Policies per Category (Optional):</label>
+                                    <input type="number" id="limit" name="limit" class="form-control" min="1">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="use-ai" name="use_ai" {% if ai_available %}checked{% else %}disabled{% endif %}>
+                                <label class="form-check-label" for="use-ai">
+                                    Use AI Analysis {% if not ai_available %}(Not Available){% endif %}
+                                </label>
+                                {% if ai_info %}
+                                    <small class="form-text text-muted d-block">{{ ai_info|replace('\n', '<br>')|safe }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="start-batch-btn" disabled>Start Batch Processing</button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No categories available for batch processing. Please download policies first.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Tab -->
+        <div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Batch Processing Status</h5>
+                    <div>
+                        <form action="{{ url_for('batch_processing.batch_rebuild_index') }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-primary btn-sm">Rebuild Policy Index</button>
+                        </form>
+                        <form action="{{ url_for('batch_processing.batch_generate_report') }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-info btn-sm">Generate New Report</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Real-time status monitoring container -->
+                    <div id="batch-status-container" 
+                         data-processing="{{ 'true' if is_processing else 'false' }}"
+                         class="mb-4">
+                        {% if is_processing %}
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Processing...</span>
+                                    </div>
+                                    <div>
+                                        <strong>Processing in progress:</strong> <span id="current-activity">{{ current_activity }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if batch_status.get('categories_processed', {}) %}
+                        <h5>Category Status</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Total Policies</th>
+                                        <th>Replicated</th>
+                                        <th>Failed</th>
+                                        <th>Progress</th>
+                                        <th>Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category, cat_status in batch_status.get('categories_processed', {}).items() %}
+                                        <tr>
+                                            <td>{{ category }}</td>
+                                            <td>{{ cat_status.get('total', 0) }}</td>
+                                            <td>{{ cat_status.get('replicated', 0) }}</td>
+                                            <td>{{ cat_status.get('failed', 0) }}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    {% set progress = (cat_status.get('replicated', 0) / cat_status.get('total', 1) * 100)|int %}
+                                                    <div class="progress-bar {% if cat_status.get('completed', False) %}bg-success{% endif %}" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
+                                                </div>
+                                            </td>
+                                            <td>{{ cat_status.get('last_updated', '') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if batch_status.get('completed_batches', []) %}
+                            <h5 class="mt-4">Completed Batches</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Total</th>
+                                            <th>Successful</th>
+                                            <th>Failed</th>
+                                            <th>Processing Time</th>
+                                            <th>Completion Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for batch in batch_status.get('completed_batches', []) %}
+                                            <tr>
+                                                <td>{{ batch.get('category', '') }}</td>
+                                                <td>{{ batch.get('total', 0) }}</td>
+                                                <td>{{ batch.get('successful', 0) }}</td>
+                                                <td>{{ batch.get('failed', 0) }}</td>
+                                                <td>{{ batch.get('processing_time', 0)|round(2) }} seconds</td>
+                                                <td>{{ batch.get('completion_time', '') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                        
+                        {% if batch_status.get('failed_replications', []) %}
+                            <h5 class="mt-4">Failed Replications</h5>
+                            <div class="list-group">
+                                {% for failure in batch_status.get('failed_replications', []) %}
+                                    <div class="list-group-item">
+                                        <h6 class="mb-1">{{ failure.get('policy_id', '') }} - {{ failure.get('title', 'Unknown') }}</h6>
+                                        <p class="mb-1"><strong>Category:</strong> {{ failure.get('category', 'Unknown') }}</p>
+                                        <p class="mb-1"><strong>Error:</strong> {{ failure.get('error', 'Unknown error') }}</p>
+                                        <small class="text-muted">{{ failure.get('time', '') }}</small>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No batch processing has been performed yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Batch Processing Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if latest_report %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">Latest Report ({{ latest_report.get('generated_at', '') }})</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-subtitle mb-2 text-muted">Policies Replicated</h6>
+                                                <h3>{{ latest_report.get('total_policies_replicated', 0) }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-subtitle mb-2 text-muted">Categories Processed</h6>
+                                                <h3>{{ latest_report.get('categories_processed', 0) }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-subtitle mb-2 text-muted">Completed Batches</h6>
+                                                <h3>{{ latest_report.get('completed_batches', 0) }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-subtitle mb-2 text-muted">Failed Replications</h6>
+                                                <h3>{{ latest_report.get('failed_replications', 0) }}</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if latest_report.get('ai_analysis_stats') %}
+                                    <h5>AI Analysis Statistics</h5>
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <div class="progress" style="height: 25px;">
+                                                {% set ai_percentage = latest_report.get('ai_analysis_stats', {}).get('ai_analysis_percentage', 0) %}
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ai_percentage }}%;" aria-valuenow="{{ ai_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                    {{ latest_report.get('ai_analysis_stats', {}).get('ai_analyzed_policies', 0) }} AI-analyzed ({{ ai_percentage }}%)
+                                                </div>
+                                                <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ 100 - ai_percentage }}%;" aria-valuenow="{{ 100 - ai_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                    {{ latest_report.get('ai_analysis_stats', {}).get('pattern_analyzed_policies', 0) }} Pattern-analyzed ({{ (100 - ai_percentage)|round(2) }}%)
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-subtitle mb-2 text-muted">Total Policies</h6>
+                                                    <h3>{{ latest_report.get('ai_analysis_stats', {}).get('total_policies', 0) }}</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if latest_report.get('category_summary') %}
+                                    <h5>Category Summary</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Total</th>
+                                                    <th>Replicated</th>
+                                                    <th>Failed</th>
+                                                    <th>AI Analysis</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for cat in latest_report.get('category_summary', []) %}
+                                                    <tr>
+                                                        <td>{{ cat.get('category', '') }}</td>
+                                                        <td>{{ cat.get('total', 0) }}</td>
+                                                        <td>{{ cat.get('replicated', 0) }}</td>
+                                                        <td>{{ cat.get('failed', 0) }}</td>
+                                                        <td>
+                                                            {% if cat.get('ai_analysis') %}
+                                                                <div class="progress" style="height: 20px;">
+                                                                    {% set cat_ai_percentage = cat.get('ai_analysis', {}).get('ai_percentage', 0) %}
+                                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ cat_ai_percentage }}%;" aria-valuenow="{{ cat_ai_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                                        {{ cat_ai_percentage }}% AI
+                                                                    </div>
+                                                                </div>
+                                                                <small>
+                                                                    {{ cat.get('ai_analysis', {}).get('ai_analyzed', 0) }} AI, 
+                                                                    {{ cat.get('ai_analysis', {}).get('pattern_analyzed', 0) }} Pattern
+                                                                </small>
+                                                            {% else %}
+                                                                <span class="text-muted">No AI analysis data</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if report_files %}
+                        <h5>Available Reports</h5>
+                        <div class="list-group">
+                            {% for report_file in report_files %}
+                                <a href="{{ url_for('batch_processing.batch_report', filename=report_file) }}" class="list-group-item list-group-item-action" target="_blank">
+                                    {{ report_file }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No batch reports available yet. Generate a report to see detailed statistics.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function selectAllCategories(selectAll) {
+        document.querySelectorAll('.category-checkbox').forEach(function(checkbox) {
+            checkbox.checked = selectAll;
+        });
+        updateSelectedCount();
+    }
+    
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.category-checkbox:checked').length;
+        document.getElementById('selected-categories-count').textContent = count;
+        
+        // Enable/disable the start button based on selection
+        const startButton = document.getElementById('start-batch-btn');
+        startButton.disabled = count === 0;
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the count
+        updateSelectedCount();
+    });
+</script>
+{% endblock %}

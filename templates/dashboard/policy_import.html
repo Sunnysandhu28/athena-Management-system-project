@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Import Management{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">QCS Policy Import</h1>
+        <div>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Import Status Card -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Import Status</h5>
+                </div>
+                <div class="card-body">
+                    {% if import_stats %}
+                    <div class="mb-3">
+                        <div class="alert alert-{{ 'success' if import_stats.success else 'danger' }}" role="alert">
+                            <h5>{{ 'Import Completed' if import_stats.success else 'Import Failed' }}</h5>
+                            {% if import_stats.message %}
+                            <p>{{ import_stats.message }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Total Policies Found</th>
+                                    <td>{{ import_stats.total }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Downloaded</th>
+                                    <td>{{ import_stats.downloaded }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Imported to Database</th>
+                                    <td>{{ import_stats.imported }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Errors</th>
+                                    <td>{{ import_stats.errors|length }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if import_stats.errors %}
+                    <div class="mt-3">
+                        <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails" aria-expanded="false" aria-controls="errorDetails">
+                            Show Error Details
+                        </button>
+                        
+                        <div class="collapse mt-2" id="errorDetails">
+                            <div class="card card-body bg-light">
+                                <h6>Errors:</h6>
+                                <ul class="small">
+                                    {% for error in import_stats.errors[:10] %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                    
+                                    {% if import_stats.errors|length > 10 %}
+                                    <li>... and {{ import_stats.errors|length - 10 }} more errors.</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="alert alert-info" role="alert">
+                        No import has been performed yet. Use the form to start an import.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Import Form Card -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Start Import</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Simple standard HTML form without Flask-WTF -->
+                    <form action="/dashboard/import-qcs-policies" method="POST" id="importForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        
+                        <div class="mb-3">
+                            <label for="limit" class="form-label">Maximum Policies to Import</label>
+                            <input type="number" class="form-control" id="limit" name="limit" placeholder="Leave blank for all policies">
+                            <div class="form-text">Limit the number of policies to import (optional)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="downloadDir" class="form-label">Download Directory</label>
+                            <input type="text" class="form-control" id="downloadDir" name="download_dir" value="downloaded_policies">
+                            <div class="form-text">Directory where policy files will be saved</div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="overwrite" name="overwrite" value="true">
+                            <label class="form-check-label" for="overwrite">
+                                Overwrite existing policies
+                            </label>
+                            <div class="form-text">If checked, will update existing policies with the same name</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="startImportBtn">
+                                <i class="fas fa-download me-2"></i> Start Import
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Policy Database Stats -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Policy Database Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Policies</h5>
+                            <p class="display-4">{{ policy_stats.total }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Policies</h5>
+                            <p class="display-4">{{ policy_stats.active }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Categories</h5>
+                            <p class="display-4">{{ policy_stats.categories }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">QCS Policies</h5>
+                            <p class="display-4">{{ policy_stats.qcs }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Policies by Status</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Count</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for status in policy_stats.by_status %}
+                                        <tr>
+                                            <td>{{ status.name }}</td>
+                                            <td>{{ status.count }}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" style="width: {{ status.percentage }}%;"
+                                                         aria-valuenow="{{ status.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                        {{ status.percentage }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Top Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Count</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in policy_stats.top_categories %}
+                                        <tr>
+                                            <td>{{ category.name }}</td>
+                                            <td>{{ category.count }}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ category.percentage }}%;"
+                                                         aria-valuenow="{{ category.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                        {{ category.percentage }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const importForm = document.getElementById('importForm');
+        const startImportBtn = document.getElementById('startImportBtn');
+        
+        if (importForm) {
+            importForm.addEventListener('submit', function() {
+                // Show spinner
+                startImportBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importing...';
+                startImportBtn.disabled = true;
+            });
+        }
+    });
+</script>
+{% endblock %}

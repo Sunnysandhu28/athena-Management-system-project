@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            background-color: #3c5a99;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .search-box button:hover {
+            background-color: #324b80;
+        }
+        .policy-list {
+            list-style: none;
+            padding: 0;
+        }
+        .policy-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        .policy-item:hover {
+            background-color: #f9f9f9;
+        }
+        .policy-title {
+            margin: 0 0 10px 0;
+            color: #3c5a99;
+        }
+        .policy-code {
+            font-family: monospace;
+            background-color: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #555;
+        }
+        .policy-category {
+            display: inline-block;
+            margin-left: 10px;
+            background-color: #e9eef8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #3c5a99;
+        }
+        .policy-meta {
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .policy-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #5c7cb8;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .policy-link:hover {
+            background-color: #4a69a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Policy Finder</h1>
+        
+        <div class="search-box">
+            <input type="text" id="policy-search" placeholder="Search for a policy by code or title...">
+            <button id="search-button">Search</button>
+        </div>
+        
+        <ul class="policy-list">
+            <li class="policy-item">
+                <h3 class="policy-title">
+                    <span class="policy-code">CP02</span>
+                    Discharge Pack Policy and Procedure
+                    <span class="policy-category">Care Management</span>
+                </h3>
+                <div class="policy-meta">Last updated: May 21, 2025</div>
+                <a href="/policy/view/CP02" class="policy-link">View Policy</a>
+            </li>
+            
+            <li class="policy-item">
+                <h3 class="policy-title">
+                    <span class="policy-code">ME02</span>
+                    Legionella Policy and Procedure
+                    <span class="policy-category">Maintenance and Environment</span>
+                </h3>
+                <div class="policy-meta">Last updated: February 13, 2025</div>
+                <a href="/policy/view/ME02" class="policy-link">View Policy</a>
+            </li>
+            
+            <li class="policy-item">
+                <h3 class="policy-title">
+                    <span class="policy-code">AD01</span>
+                    Data Protection Policy
+                    <span class="policy-category">Administration</span>
+                </h3>
+                <div class="policy-meta">Last updated: May 15, 2025</div>
+                <a href="/policy/view/AD01" class="policy-link">View Policy</a>
+            </li>
+            
+            <li class="policy-item">
+                <h3 class="policy-title">
+                    <span class="policy-code">CM01</span>
+                    Person-Centered Care Policy
+                    <span class="policy-category">Care Management</span>
+                </h3>
+                <div class="policy-meta">Last updated: May 18, 2025</div>
+                <a href="/policy/view/CM01" class="policy-link">View Policy</a>
+            </li>
+        </ul>
+    </div>
+    
+    <script>
+        document.getElementById('search-button').addEventListener('click', function() {
+            const searchText = document.getElementById('policy-search').value.toLowerCase();
+            const policyItems = document.querySelectorAll('.policy-item');
+            
+            policyItems.forEach(function(item) {
+                const title = item.querySelector('.policy-title').textContent.toLowerCase();
+                if (title.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        document.getElementById('policy-search').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('search-button').click();
+            }
+        });
+    </script>
+</body>
+</html>

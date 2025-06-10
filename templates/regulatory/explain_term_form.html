@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Explain Regulatory Term{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Explain Regulatory Term</h1>
+            <p class="lead">Get comprehensive explanations for regulatory terminology with context-specific details.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Enter Term Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('regulatory.explain_term') }}">
+                        <div class="mb-3">
+                            <label for="term" class="form-label">Regulatory Term <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="term" name="term" value="{{ term }}" required 
+                                placeholder="Enter the regulatory term to explain (e.g., 'Data Controller', 'Risk Assessment')">
+                            <div class="form-text">Enter the specific regulatory term you need explained</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="framework" class="form-label">Regulatory Framework</label>
+                            <select class="form-select" id="framework" name="framework">
+                                <option value="" {% if not framework %}selected{% endif %}>All Frameworks</option>
+                                {% for fw in regulatory_frameworks %}
+                                <option value="{{ fw }}" {% if framework == fw %}selected{% endif %}>{{ fw }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select a specific regulatory framework for context (optional)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="document_id" class="form-label">Document Context</label>
+                            <select class="form-select" id="document_id" name="document_id">
+                                <option value="">No Document Context</option>
+                                {% for doc in documents %}
+                                <option value="{{ doc.id }}">{{ doc.title or doc.original_filename or 'Document #' + doc.id|string }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Add context from an existing document (optional)</div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{{ url_for('regulatory.index') }}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Explain Term
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Tips</h5>
+                </div>
+                <div class="card-body">
+                    <h6>For best results:</h6>
+                    <ul>
+                        <li>Be specific with the term you want explained</li>
+                        <li>Select a regulatory framework if you need context-specific explanations</li>
+                        <li>Add document context if you need explanations related to a specific document</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Example terms:</h6>
+                    <div class="list-group">
+                        <a href="{{ url_for('regulatory.explain_term', term='Data Controller', framework='GDPR') }}" class="list-group-item list-group-item-action">
+                            Data Controller (GDPR)
+                        </a>
+                        <a href="{{ url_for('regulatory.explain_term', term='Risk Assessment', framework='Health and Safety') }}" class="list-group-item list-group-item-action">
+                            Risk Assessment (Health and Safety)
+                        </a>
+                        <a href="{{ url_for('regulatory.explain_term', term='Reasonable Adjustments', framework='Equality Act 2010') }}" class="list-group-item list-group-item-action">
+                            Reasonable Adjustments (Equality Act)
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('regulatory.analyze_document') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt me-1"></i> Analyze Document
+                        </a>
+                        <a href="{{ url_for('regulatory.ml_insights') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line me-1"></i> ML Insights
+                        </a>
+                        <a href="{{ url_for('regulatory.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

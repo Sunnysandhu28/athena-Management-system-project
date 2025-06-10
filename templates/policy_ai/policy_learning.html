@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Learning System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Policy Learning System</h1>
+            <p class="lead">This system collects and analyzes policy data from QCS and CQC to improve policy generation.</p>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Learning Status</h4>
+                </div>
+                <div class="card-body">
+                    {% if learning_summary %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h5>Sites Analyzed</h5>
+                                <ul>
+                                    {% for site in learning_summary.sites_analyzed %}
+                                        <li>{{ site }}</li>
+                                    {% else %}
+                                        <li>No sites analyzed yet</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Pattern Statistics</h5>
+                                <ul>
+                                    <li>Sections: {{ learning_summary.total_patterns.sections }}</li>
+                                    <li>Formatting: {{ learning_summary.total_patterns.formatting }}</li>
+                                    <li>References: {{ learning_summary.total_patterns.references }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Terminology</h5>
+                                <ul>
+                                    <li>Terms: {{ learning_summary.total_terminology.terms }}</li>
+                                    <li>Abbreviations: {{ learning_summary.total_terminology.abbreviations }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5>Templates</h5>
+                                <ul>
+                                    <li>Policy Structures: {{ learning_summary.total_templates.policy_structures }}</li>
+                                    <li>Section Templates: {{ learning_summary.total_templates.section_templates }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Last Updated</h5>
+                                <p>{{ learning_summary.last_updated }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No learning data available yet. Start by crawling QCS or CQC sites, then build a policy corpus.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <form method="post">
+                        <input type="hidden" name="analyze_data" value="1">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-brain mr-1"></i> Analyze Policy Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Task Status Cards -->
+            <div class="row">
+                <!-- Crawl Task Status -->
+                {% if crawl_task %}
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header {% if crawl_task.status == 'completed' %}bg-success{% elif crawl_task.status == 'error' %}bg-danger{% else %}bg-warning{% endif %} text-white">
+                                <h5>Site Crawl - {{ crawl_task.site }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Status:</strong> {{ crawl_task.status }}</p>
+                                <p><strong>Started:</strong> {{ crawl_task.started_at }}</p>
+                                {% if crawl_task.completed_at %}
+                                    <p><strong>Completed:</strong> {{ crawl_task.completed_at }}</p>
+                                {% endif %}
+                                {% if crawl_task.page_count %}
+                                    <p><strong>Pages Crawled:</strong> {{ crawl_task.page_count }}</p>
+                                {% endif %}
+                                {% if crawl_task.policy_count %}
+                                    <p><strong>Policies Found:</strong> {{ crawl_task.policy_count }}</p>
+                                {% endif %}
+                                {% if crawl_task.error %}
+                                    <div class="alert alert-danger">
+                                        Error: {{ crawl_task.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Corpus Task Status -->
+                {% if corpus_task %}
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header {% if corpus_task.status == 'completed' %}bg-success{% elif corpus_task.status == 'error' %}bg-danger{% else %}bg-warning{% endif %} text-white">
+                                <h5>Corpus Build - {{ corpus_task.site }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Status:</strong> {{ corpus_task.status }}</p>
+                                <p><strong>Started:</strong> {{ corpus_task.started_at }}</p>
+                                {% if corpus_task.completed_at %}
+                                    <p><strong>Completed:</strong> {{ corpus_task.completed_at }}</p>
+                                {% endif %}
+                                {% if corpus_task.max_policies %}
+                                    <p><strong>Max Policies:</strong> {{ corpus_task.max_policies }}</p>
+                                {% endif %}
+                                {% if corpus_task.policy_count %}
+                                    <p><strong>Policies Processed:</strong> {{ corpus_task.policy_count }}</p>
+                                {% endif %}
+                                {% if corpus_task.error %}
+                                    <div class="alert alert-danger">
+                                        Error: {{ corpus_task.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Learning Task Status -->
+                {% if learning_task %}
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header {% if learning_task.status == 'completed' %}bg-success{% elif learning_task.status == 'error' %}bg-danger{% else %}bg-warning{% endif %} text-white">
+                                <h5>Learning Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Status:</strong> {{ learning_task.status }}</p>
+                                <p><strong>Started:</strong> {{ learning_task.started_at }}</p>
+                                {% if learning_task.completed_at %}
+                                    <p><strong>Completed:</strong> {{ learning_task.completed_at }}</p>
+                                {% endif %}
+                                {% if learning_task.error %}
+                                    <div class="alert alert-danger">
+                                        Error: {{ learning_task.error }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5>QCS Site Crawling</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Crawl the QCS website to extract policy metadata and build a site map.</p>
+                            <a href="{{ url_for('policy_ai.crawl_qcs_site') }}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-spider mr-1"></i> Crawl QCS Site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5>CQC Site Crawling</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Crawl the CQC website to extract resource metadata and build a site map.</p>
+                            <a href="{{ url_for('policy_ai.crawl_cqc_site') }}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-spider mr-1"></i> Crawl CQC Site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5>Policy Generation</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Generate new policies using AI and learned patterns from QCS and CQC.</p>
+                            <a href="{{ url_for('policy_ai.generate_policy_route') }}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-file-alt mr-1"></i> Generate Policy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Corpus Building Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4>Build Policy Corpus</h4>
+                </div>
+                <div class="card-body">
+                    <p>After crawling a site, build a policy corpus to extract detailed content for learning.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('policy_ai.build_corpus', site_type='qcs') }}" class="btn btn-outline-secondary btn-block mb-2">
+                                <i class="fas fa-database mr-1"></i> Build QCS Corpus
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('policy_ai.build_corpus', site_type='cqc') }}" class="btn btn-outline-secondary btn-block mb-2">
+                                <i class="fas fa-database mr-1"></i> Build CQC Corpus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Refresh the page every 30 seconds while tasks are running
+    $(document).ready(function() {
+        {% if crawl_task and crawl_task.status == 'running' or corpus_task and corpus_task.status == 'running' or learning_task and learning_task.status == 'running' %}
+            setTimeout(function() {
+                location.reload();
+            }, 30000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

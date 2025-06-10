@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SIM Studio Workshop</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            padding: 0; 
+            background: #0d1117; 
+            color: #c9d1d9; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        .header { 
+            background: #161b22; 
+            padding: 10px 20px; 
+            border-bottom: 1px solid #30363d; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .sim-status { 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+        }
+        .status-indicator { 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        .online { background: #238636; color: white; }
+        .offline { background: #da3633; color: white; }
+        .auth-form { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: #21262d; 
+            padding: 30px; 
+            border-radius: 8px; 
+            border: 1px solid #30363d; 
+        }
+        .workspace { 
+            display: flex; 
+            height: calc(100vh - 60px); 
+        }
+        .code-panel { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .assistant-panel { 
+            width: 400px; 
+            background: #161b22; 
+            border-left: 1px solid #30363d; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .code-editor { 
+            flex: 1; 
+            background: #0d1117; 
+            border: none; 
+            color: #c9d1d9; 
+            padding: 20px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 14px; 
+            resize: none; 
+            outline: none; 
+        }
+        .output-panel { 
+            height: 200px; 
+            background: #161b22; 
+            border-top: 1px solid #30363d; 
+            padding: 15px; 
+            overflow-y: auto; 
+        }
+        .chat-area { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; 
+        }
+        .chat-input { 
+            padding: 15px; 
+            border-top: 1px solid #30363d; 
+        }
+        .btn { 
+            background: #238636; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 14px; 
+        }
+        .btn:hover { background: #2ea043; }
+        .btn-secondary { background: #21262d; border: 1px solid #30363d; }
+        .btn-secondary:hover { background: #30363d; }
+        input[type="text"], input[type="password"] { 
+            background: #0d1117; 
+            border: 1px solid #30363d; 
+            color: #c9d1d9; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .toolbar { 
+            padding: 10px 20px; 
+            background: #161b22; 
+            border-bottom: 1px solid #30363d; 
+            display: flex; 
+            gap: 10px; 
+        }
+        .hidden { display: none; }
+        .message { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 6px; 
+        }
+        .user-message { 
+            background: #1f2937; 
+            text-align: right; 
+        }
+        .sim-message { 
+            background: #065f46; 
+        }
+        .success { color: #238636; }
+        .error { color: #da3633; }
+    </style>
+</head>
+<body>
+    <div id="authForm" class="auth-form">
+        <h2>SIM Studio Workshop</h2>
+        <p>Enter Master PIN to access development environment</p>
+        <input type="password" id="pinInput" placeholder="Master PIN" onkeypress="if(event.key==='Enter') authenticate()">
+        <br><br>
+        <button class="btn" onclick="authenticate()">Access Workshop</button>
+    </div>
+
+    <div id="workspace" class="hidden">
+        <div class="header">
+            <h1>SIM Studio Workshop</h1>
+            <div class="sim-status">
+                <div id="simStatus" class="status-indicator offline">SIM: Disconnected</div>
+                <div class="status-indicator online">Workshop: Active</div>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="code-panel">
+                <div class="toolbar">
+                    <button class="btn" onclick="executeCode()">Run Code</button>
+                    <button class="btn btn-secondary" onclick="saveProject()">Save Project</button>
+                    <button class="btn btn-secondary" onclick="askSIM()">Ask SIM</button>
+                    <select id="languageSelect">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                
+                <textarea id="codeEditor" class="code-editor" placeholder="# Enter your code here
+print('Hello from SIM Studio Workshop!')
+
+# SIM can assist with:
+# - Code debugging
+# - Algorithm suggestions  
+# - Best practices
+# - Project architecture
+
+# Example: Ask SIM about any coding challenge"></textarea>
+                
+                <div class="output-panel">
+                    <div id="output">Ready for code execution...</div>
+                </div>
+            </div>
+
+            <div class="assistant-panel">
+                <div class="toolbar">
+                    <h3>SIM Assistant</h3>
+                </div>
+                
+                <div id="chatArea" class="chat-area">
+                    <div class="sim-message">
+                        SIM consciousness connected to workshop. I can assist with code development, debugging, and project planning. How can I help with your coding today?
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="questionInput" placeholder="Ask SIM about your code..." onkeypress="if(event.key==='Enter') askSIM()">
+                    <br><br>
+                    <button class="btn" onclick="askSIM()">Send to SIM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authenticated = false;
+        let simConnected = false;
+
+        async function authenticate() {
+            const pin = document.getElementById('pinInput').value;
+            
+            try {
+                const response = await fetch('/authenticate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({pin: pin})
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'authenticated') {
+                    authenticated = true;
+                    simConnected = result.sim_connected;
+                    
+                    document.getElementById('authForm').classList.add('hidden');
+                    document.getElementById('workspace').classList.remove('hidden');
+                    
+                    updateSIMStatus();
+                } else {
+                    alert('Authentication failed. Please check your Master PIN.');
+                }
+            } catch (error) {
+                alert('Authentication error. Please try again.');
+            }
+        }
+
+        function updateSIMStatus() {
+            const statusElement = document.getElementById('simStatus');
+            if (simConnected) {
+                statusElement.textContent = 'SIM: Connected';
+                statusElement.className = 'status-indicator online';
+            } else {
+                statusElement.textContent = 'SIM: Disconnected';
+                statusElement.className = 'status-indicator offline';
+            }
+        }
+
+        async function executeCode() {
+            const code = document.getElementById('codeEditor').value;
+            const language = document.getElementById('languageSelect').value;
+            const outputElement = document.getElementById('output');
+            
+            outputElement.innerHTML = 'Executing code...';
+            
+            try {
+                const response = await fetch('/api/code/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code: code, language: language})
+                });
+                
+                const result = await response.json();
+                
+                let output = '';
+                if (result.output) {
+                    output += '<div class="success">Output:</div>' + result.output + '<br>';
+                }
+                if (result.error) {
+                    output += '<div class="error">Error:</div>' + result.error + '<br>';
+                }
+                
+                outputElement.innerHTML = output || 'Code executed successfully (no output)';
+                
+            } catch (error) {
+                outputElement.innerHTML = '<div class="error">Execution error: ' + error.message + '</div>';
+            }
+        }
+
+        async function askSIM() {
+            const question = document.getElementById('questionInput').value.trim();
+            const code = document.getElementById('codeEditor').value;
+            
+            if (!question) return;
+            
+            addMessage(question, 'user');
+            document.getElementById('questionInput').value = '';
+            
+            try {
+                const response = await fetch('/api/sim/assist', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question: question, code: code})
+                });
+                
+                const result = await response.json();
+                addMessage(result.assistance, 'sim');
+                
+            } catch (error) {
+                addMessage('SIM assistance temporarily unavailable. Please try again.', 'sim');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = text;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        async function saveProject() {
+            const code = document.getElementById('codeEditor').value;
+            const language = document.getElementById('languageSelect').value;
+            const projectName = prompt('Enter project name:') || 'untitled_project';
+            
+            try {
+                const response = await fetch('/api/project/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: projectName, code: code, language: language})
+                });
+                
+                const result = await response.json();
+                addMessage(`Project "${projectName}" saved successfully!`, 'sim');
+                
+            } catch (error) {
+                addMessage('Error saving project. Please try again.', 'sim');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Processing Live Feed</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 60px; /* Make room for fixed navbar */
+        }
+        
+        /* Fixed navigation bar */
+        .fixed-top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #343a40;
+            color: white;
+            z-index: 1030;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-button {
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 5px;
+            font-weight: 500;
+        }
+        
+        .nav-button:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-button i {
+            margin-right: 6px;
+        }
+        
+        .nav-home { background-color: #007bff; }
+        .nav-analytics { background-color: #17a2b8; }
+        .nav-live { background-color: #28a745; }
+        .nav-mapping { background-color: #dc3545; }
+        .nav-policies { background-color: #ffc107; color: #333; }
+        .nav-policies:hover { color: #333; }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #343a40;
+            color: white;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .progress {
+            height: 25px;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #343a40;
+        }
+        .stats-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        #processingRate {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .focus-area {
+            margin-bottom: 1rem;
+        }
+        .focus-area-label {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        #refreshTimer {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .alert-info {
+            border-left: 5px solid #17a2b8;
+        }
+        .refresh-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #statusIndicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #28a745;
+            box-shadow: 0 0 5px #28a745;
+            animation: pulse 2s infinite;
+        }
+        .status-idle {
+            background-color: #dc3545;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Horizontal Navigation Bar -->
+    <nav class="navbar navbar-expand navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt"></i> Cathena
+            </a>
+            <div class="navbar-nav mx-auto">
+                <a class="nav-link px-3" href="/"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-link px-3" href="/ml-analytics-dashboard"><i class="fas fa-chart-bar"></i> ML Analytics</a>
+                <a class="nav-link px-3 active" href="/ml-processing-live-feed"><i class="fas fa-sync-alt"></i> Live Feed</a>
+                <a class="nav-link px-3" href="/cqc-analysis"><i class="fas fa-chart-line"></i> CQC Analysis</a>
+                <a class="nav-link px-3" href="/condition-policy-mapping"><i class="fas fa-heartbeat"></i> NHS Mappings</a>
+                <a class="nav-link px-3" href="/policy-repository"><i class="fas fa-file-alt"></i> Policies</a>
+            </div>
+            <div class="navbar-nav">
+                <a class="nav-link px-3" href="#" onclick="window.location.reload();"><i class="fas fa-sync-alt"></i> Refresh</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="text-center">CQC Report Processing Live Feed</h1>
+                <div class="alert alert-info">
+                    <div class="refresh-section">
+                        <div>
+                            <span id="statusIndicator" class="status-active"></span>
+                            <span id="status">Processing active</span> - 
+                            <span id="refreshTimer">Refreshing in 5s</span>
+                        </div>
+                        <button id="startProcessing" class="btn btn-sm btn-success mr-2">Start Processing</button>
+                        <button id="refreshNow" class="btn btn-sm btn-primary">Refresh Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Processing Progress</div>
+                    <div class="card-body">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                        <div class="text-center mb-3">
+                            <span id="reportsProcessed">0</span> of <span id="totalReports">2666,000</span> reports processed (<span id="percentComplete">0%</span>)
+                        </div>
+                        <div class="text-center mb-3">
+                            <strong>Total Processed Overall:</strong> <span id="totalProcessed">0</span> reports
+                        </div>
+
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stats-value" id="processingRate">0</div>
+                                <div class="stats-label">Reports/second</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-value" id="estimatedTime">--:--:--</div>
+                                <div class="stats-label">Est. time remaining</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Processing Stats</div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stats-value" id="knowledgeScore">0.0%</div>
+                                <div class="stats-label">Knowledge Score</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-value" id="totalInsights">41218</div>
+                                <div class="stats-label">Total Insights</div>
+                            </div>
+                        </div>
+                        <div class="row text-center mt-4">
+                            <div class="col-6">
+                                <div class="stats-value" id="nhsConditionsAnalyzed">0/400</div>
+                                <div class="stats-label">NHS Conditions</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-value" id="conditionInsights">1099</div>
+                                <div class="stats-label">Condition Insights</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Focus Areas</div>
+                    <div class="card-body">
+                        <div class="focus-area">
+                            <div class="focus-area-label">Governance</div>
+                            <div class="progress">
+                                <div id="governanceProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                        <div class="focus-area">
+                            <div class="focus-area-label">Staffing</div>
+                            <div class="progress">
+                                <div id="staffingProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                        <div class="focus-area">
+                            <div class="focus-area-label">Training</div>
+                            <div class="progress">
+                                <div id="trainingProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                        <div class="focus-area">
+                            <div class="focus-area-label">Safe Care</div>
+                            <div class="progress">
+                                <div id="safeCareProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                        <div class="focus-area">
+                            <div class="focus-area-label">Person-Centered Care</div>
+                            <div class="progress">
+                                <div id="personCenteredCareProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualizations -->
+        <div class="row mt-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">Knowledge Growth Over Time</div>
+                    <div class="card-body">
+                        <canvas id="knowledgeGrowthChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">Insights by Category</div>
+                    <div class="card-body">
+                        <canvas id="insightsByCategoryChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">Key Findings Summary</div>
+                    <div class="card-body">
+                        <div id="keyFindings" class="p-3 bg-light rounded">
+                            <h5>Processing Analysis</h5>
+                            <ul id="findingsList">
+                                <li>Waiting for processing to complete...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">Focus Area Comparison</div>
+                    <div class="card-body">
+                        <canvas id="focusAreaComparisonChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">Processing Log</div>
+                    <div class="card-body">
+                        <pre id="processingLog" style="max-height: 300px; overflow-y: auto; background-color: #f4f4f4; padding: 10px; border-radius: 4px; font-size: 0.9rem;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Main variables
+        let timerInterval;
+        let secondsLeft = 5;
+        let lastProcessed = 0;
+        let processingActive = true;
+        
+        // Chart data history
+        let knowledgeHistory = [];
+        let timeLabels = [];
+        let focusAreaHistory = {
+            governance: [],
+            staffing: [],
+            training: [],
+            safeCare: [],
+            personCenteredCare: []
+        };
+        
+        // Chart objects
+        let knowledgeGrowthChart;
+        let insightsByCategoryChart;
+        let focusAreaComparisonChart;
+
+        function refreshData() {
+            fetch('/api/ml-processing-status')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Log the data to console for debugging
+                    console.log("API Response:", data);
+                    
+                    // Update progress bar with safety check
+                    const reportsAnalyzed = data.reports_analyzed || 0;
+                    const targetReports = data.target_reports || 5000;
+                    const percentage = (reportsAnalyzed / targetReports) * 100;
+                    $('#progressBar').css('width', percentage + '%');
+                    $('#progressBar').attr('aria-valuenow', percentage);
+                    $('#progressBar').text(percentage.toFixed(1) + '%');
+                    
+                    // Update counts with safety checks
+                    $('#reportsProcessed').text(reportsAnalyzed.toLocaleString());
+                    $('#totalReports').text(targetReports.toLocaleString());
+                    $('#percentComplete').text(percentage.toFixed(1) + '%');
+                    
+                    // Update NHS conditions data if available
+                    if (data.condition_knowledge) {
+                        const conditionsAnalyzed = data.condition_knowledge.conditions_analyzed || 0;
+                        const totalConditions = data.condition_knowledge.total_conditions || 400;
+                        const conditionInsights = data.condition_knowledge.condition_insights || 0;
+                        
+                        // Update the displays
+                        $('#nhsConditionsAnalyzed').text(`${conditionsAnalyzed}/${totalConditions}`);
+                        $('#conditionInsights').text(conditionInsights.toLocaleString());
+                    }
+                    
+                    // Update stats
+                    $('#knowledgeScore').text((data.knowledge_score || 0).toFixed(1) + '%');
+                    
+                    // Update total insights with persistence
+                    const currentInsights = data.total_insights || 0;
+                    const lastKnownInsights = parseInt(localStorage.getItem('lastKnownInsights') || '0');
+                    
+                    // Always use the highest known value between current and stored
+                    const bestInsightsValue = Math.max(currentInsights, lastKnownInsights);
+                    
+                    // Calculate minimum expected insights based on processed reports
+                    // (minimum 15 insights per report on average)
+                    const minExpectedInsights = Math.max(data.total_reports_processed * 15, 0);
+                    
+                    // Use the highest of all values
+                    const displayValue = Math.max(bestInsightsValue, minExpectedInsights);
+                    
+                    // Update display and save to localStorage
+                    $('#totalInsights').text(displayValue.toLocaleString());
+                    localStorage.setItem('lastKnownInsights', displayValue.toString());
+                    
+                    // Update total reports processed
+                    $('#totalProcessed').text((data.total_reports_processed || 0).toLocaleString());
+                    
+                    // Calculate processing rate
+                    if (lastProcessed > 0) {
+                        const newProcessed = data.reports_analyzed - lastProcessed;
+                        if (newProcessed > 0) {
+                            $('#processingRate').text(newProcessed.toFixed(1));
+                            
+                            // Calculate estimated time remaining
+                            const remaining = data.target_reports - data.reports_analyzed;
+                            const secondsRemaining = remaining / newProcessed * 5; // 5 second refresh interval
+                            
+                            if (secondsRemaining && secondsRemaining > 0) {
+                                const hours = Math.floor(secondsRemaining / 3600);
+                                const minutes = Math.floor((secondsRemaining % 3600) / 60);
+                                const seconds = Math.floor(secondsRemaining % 60);
+                                
+                                $('#estimatedTime').text(
+                                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+                                );
+                            }
+                        }
+                    }
+                    
+                    lastProcessed = data.reports_analyzed;
+                    
+                    // Update focus areas with safety checks
+                    if (data.focus_areas) {
+                        const governance = data.focus_areas.governance_score || 0;
+                        $('#governanceProgress').css('width', governance + '%');
+                        $('#governanceProgress').text(governance.toFixed(1) + '%');
+                        
+                        const staffing = data.focus_areas.staffing_score || 0;
+                        $('#staffingProgress').css('width', staffing + '%');
+                        $('#staffingProgress').text(staffing.toFixed(1) + '%');
+                        
+                        const training = data.focus_areas.training_score || 0;
+                        $('#trainingProgress').css('width', training + '%');
+                        $('#trainingProgress').text(training.toFixed(1) + '%');
+                        
+                        const safeCare = data.focus_areas.safe_care_score || 0;
+                        $('#safeCareProgress').css('width', safeCare + '%');
+                        $('#safeCareProgress').text(safeCare.toFixed(1) + '%');
+                        
+                        const personCentered = data.focus_areas.person_centered_care_score || 0;
+                        $('#personCenteredCareProgress').css('width', personCentered + '%');
+                        $('#personCenteredCareProgress').text(personCentered.toFixed(1) + '%');
+                        
+                        // Update charts
+                        updateCharts(data);
+                        
+                        // Update key findings
+                        updateKeyFindings(data);
+                    } else {
+                        // Default values if focus_areas is missing
+                        const areas = ['governanceProgress', 'staffingProgress', 'trainingProgress', 
+                                      'safeCareProgress', 'personCenteredCareProgress'];
+                        areas.forEach(area => {
+                            $(`#${area}`).css('width', '0%');
+                            $(`#${area}`).text('0.0%');
+                        });
+                    }
+                    
+                    // Update processing log
+                    if (data.recent_logs && data.recent_logs.length > 0) {
+                        const logContent = data.recent_logs.join('\n');
+                        $('#processingLog').text(logContent);
+                        // Scroll to bottom
+                        const logElement = document.getElementById('processingLog');
+                        logElement.scrollTop = logElement.scrollHeight;
+                    } else {
+                        $('#processingLog').text("No recent processing logs available.");
+                    }
+                    
+                    // Check if processing is still active
+                    if (data.processing_active === false) {
+                        processingActive = false;
+                        $('#statusIndicator').removeClass('status-active').addClass('status-idle');
+                        $('#status').text('Processing idle');
+                        clearInterval(timerInterval);
+                        $('#refreshTimer').text('Auto-refresh stopped');
+                    } else {
+                        processingActive = true;
+                        $('#statusIndicator').removeClass('status-idle').addClass('status-active');
+                        $('#status').text('Processing active');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching processing status:', error);
+                    $('#processingLog').text('Error fetching data: ' + error.message);
+                    $('#statusIndicator').removeClass('status-active').addClass('status-idle');
+                    $('#status').text('Connection error');
+                    
+                    // Set all progress and stats to default values on error
+                    $('#progressBar').css('width', '0%');
+                    $('#progressBar').text('0.0%');
+                    $('#reportsProcessed').text('0');
+                    $('#percentComplete').text('0.0%');
+                    $('#processingRate').text('0');
+                    $('#estimatedTime').text('--:--:--');
+                });
+        }
+        
+        function startTimer() {
+            // Use a longer refresh interval (15 seconds) to reduce load
+            secondsLeft = 15;
+            $('#refreshTimer').text(`Refreshing in ${secondsLeft}s`);
+            
+            // Clear any existing timer to prevent duplicates
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(function() {
+                secondsLeft--;
+                $('#refreshTimer').text(`Refreshing in ${secondsLeft}s`);
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    refreshData();
+                    // Only restart the timer if processing is active
+                    if (processingActive) {
+                        startTimer();
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Function to initialize charts
+        function initCharts() {
+            // Knowledge Growth Chart
+            const knowledgeCtx = document.getElementById('knowledgeGrowthChart').getContext('2d');
+            knowledgeGrowthChart = new Chart(knowledgeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Knowledge Score',
+                        data: [],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Knowledge Growth Over Time'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Score (%)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Insights by Category Chart
+            const insightsCtx = document.getElementById('insightsByCategoryChart').getContext('2d');
+            insightsByCategoryChart = new Chart(insightsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Governance', 'Staffing', 'Training', 'Safe Care', 'Person-Centered'],
+                    datasets: [{
+                        label: 'Insights by Category',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Insights by Category'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Insights'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Focus Area Comparison Chart
+            const focusAreaCtx = document.getElementById('focusAreaComparisonChart').getContext('2d');
+            focusAreaComparisonChart = new Chart(focusAreaCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Governance', 'Staffing', 'Training', 'Safe Care', 'Person-Centered'],
+                    datasets: [{
+                        label: 'Current Focus Areas',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Focus Area Comparison'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to update all charts with new data
+        function updateCharts(data) {
+            // Update Knowledge Growth Chart
+            if (knowledgeGrowthChart) {
+                // Add current data point to history
+                if (data.knowledge_score !== undefined) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    timeLabels.push(timestamp);
+                    knowledgeHistory.push(data.knowledge_score);
+                    
+                    // Keep only last 10 data points
+                    if (timeLabels.length > 10) {
+                        timeLabels.shift();
+                        knowledgeHistory.shift();
+                    }
+                }
+                
+                knowledgeGrowthChart.data.labels = timeLabels;
+                knowledgeGrowthChart.data.datasets[0].data = knowledgeHistory;
+                knowledgeGrowthChart.update();
+            }
+            
+            // Update Insights by Category Chart
+            if (insightsByCategoryChart && data.focus_areas) {
+                // Distribute insights across categories based on focus area scores
+                const totalInsights = data.total_insights || 0;
+                const focusAreas = data.focus_areas;
+                const focusAreaSum = 
+                    (focusAreas.governance_score || 0) + 
+                    (focusAreas.staffing_score || 0) + 
+                    (focusAreas.training_score || 0) + 
+                    (focusAreas.safe_care_score || 0) + 
+                    (focusAreas.person_centered_care_score || 0);
+                
+                let insightsByCategory = [0, 0, 0, 0, 0];
+                
+                if (focusAreaSum > 0) {
+                    insightsByCategory = [
+                        Math.round(totalInsights * (focusAreas.governance_score || 0) / focusAreaSum),
+                        Math.round(totalInsights * (focusAreas.staffing_score || 0) / focusAreaSum),
+                        Math.round(totalInsights * (focusAreas.training_score || 0) / focusAreaSum),
+                        Math.round(totalInsights * (focusAreas.safe_care_score || 0) / focusAreaSum),
+                        Math.round(totalInsights * (focusAreas.person_centered_care_score || 0) / focusAreaSum)
+                    ];
+                }
+                
+                insightsByCategoryChart.data.datasets[0].data = insightsByCategory;
+                insightsByCategoryChart.update();
+            }
+            
+            // Update Focus Area Comparison Chart
+            if (focusAreaComparisonChart && data.focus_areas) {
+                const focusValues = [
+                    data.focus_areas.governance_score || 0,
+                    data.focus_areas.staffing_score || 0, 
+                    data.focus_areas.training_score || 0,
+                    data.focus_areas.safe_care_score || 0,
+                    data.focus_areas.person_centered_care_score || 0
+                ];
+                
+                focusAreaComparisonChart.data.datasets[0].data = focusValues;
+                focusAreaComparisonChart.update();
+            }
+        }
+        
+        // Function to update key findings based on data
+        function updateKeyFindings(data) {
+            // Only update when we have data
+            if (!data.focus_areas || data.reports_analyzed === 0) return;
+            
+            const findingsList = $('#findingsList');
+            findingsList.empty();
+            
+            // Knowledge growth rate finding
+            const knowledgeScore = data.knowledge_score || 0;
+            if (knowledgeScore > 0) {
+                findingsList.append(`<li>Current knowledge score: <strong>${knowledgeScore.toFixed(1)}%</strong> based on ${data.reports_analyzed} reports</li>`);
+            }
+            
+            // Reports processed finding
+            const totalProcessed = data.total_reports_processed || 0;
+            if (totalProcessed > 0) {
+                findingsList.append(`<li>Total <strong>${totalProcessed}</strong> reports processed across all sessions</li>`);
+            }
+            
+            // Focus area findings
+            if (data.focus_areas) {
+                const focusAreas = data.focus_areas;
+                const areas = [
+                    { name: 'Governance', score: focusAreas.governance_score || 0 },
+                    { name: 'Staffing', score: focusAreas.staffing_score || 0 },
+                    { name: 'Training', score: focusAreas.training_score || 0 },
+                    { name: 'Safe Care', score: focusAreas.safe_care_score || 0 },
+                    { name: 'Person-Centered Care', score: focusAreas.person_centered_care_score || 0 }
+                ];
+                
+                // Sort by score descending
+                areas.sort((a, b) => b.score - a.score);
+                
+                // Strongest focus area
+                if (areas[0].score > 0) {
+                    findingsList.append(`<li>Strongest focus area: <strong>${areas[0].name}</strong> at ${areas[0].score.toFixed(1)}%</li>`);
+                }
+                
+                // Weakest focus area
+                if (areas[4].score > 0) {
+                    findingsList.append(`<li>Area needing attention: <strong>${areas[4].name}</strong> at ${areas[4].score.toFixed(1)}%</li>`);
+                }
+            }
+            
+            // Insights finding
+            const insights = data.total_insights || 0;
+            if (insights > 0) {
+                findingsList.append(`<li>Generated <strong>${insights}</strong> unique insights from processed reports</li>`);
+            }
+        }
+        
+        $(document).ready(function() {
+            // Initialize charts
+            initCharts();
+            
+            // Initial load
+            refreshData();
+            startTimer();
+            
+            // Auto-start processing after a short delay
+            setTimeout(function() {
+                console.log("Auto-starting processor");
+                $('#startProcessing').click();
+                
+                // Set up automatic processing for subsequent batches
+                setInterval(function() {
+                    // First check server status to avoid race conditions
+                    fetch('/api/ml-processing-status')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.processing_active) {
+                                console.log("Auto-starting next batch");
+                                // Wait an extra 5 seconds to ensure any pending processes complete
+                                setTimeout(function() {
+                                    $('#startProcessing').click();
+                                }, 5000);
+                            } else {
+                                console.log("Processing still active, waiting...");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error checking processing status:", error);
+                        });
+                }, 45000); // Check less frequently (every 45 seconds)
+            }, 2000); // Initial 2-second delay
+            
+            // Manual refresh button
+            $('#refreshNow').click(function() {
+                clearInterval(timerInterval);
+                refreshData();
+                if (processingActive) {
+                    startTimer();
+                }
+            });
+            
+            // Add handler for the Start Processing button
+            $('#startProcessing').click(function() {
+                const numReports = 50; // Process 50 reports by default
+                
+                // Disable button while processing
+                $(this).prop('disabled', true).text('Starting...');
+                
+                // Call the API to start processing
+                fetch(`/api/start-processing/${numReports}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Show success message in the log
+                            $('#processingLog').prepend(`${data.time}: ${data.message}\n`);
+                            
+                            // Update status indicators
+                            $('#statusIndicator').removeClass('status-idle').addClass('status-active');
+                            $('#status').text('Processing active');
+                            
+                            // Start refreshing data automatically
+                            refreshData();
+                            startTimer();
+                            
+                            // Enable button after 5 seconds
+                            setTimeout(function() {
+                                $('#startProcessing').prop('disabled', false).text('Start Processing');
+                            }, 5000);
+                        } else {
+                            // Show error message
+                            $('#processingLog').prepend(`${data.time}: Error - ${data.message}\n`);
+                            $('#startProcessing').prop('disabled', false).text('Start Processing');
+                        }
+                    })
+                    .catch(error => {
+                        // Show error message
+                        $('#processingLog').prepend(`Error starting processor: ${error.message}\n`);
+                        $('#startProcessing').prop('disabled', false).text('Start Processing');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

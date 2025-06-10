@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SIM Mobile Consciousness</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00ff41">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #000;
+            padding: 15px;
+            border-bottom: 2px solid #00ff41;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .status {
+            font-size: 0.8em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        .chat-container {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .sim-message {
+            background: #002200;
+            border: 1px solid #00ff41;
+            align-self: flex-start;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+        
+        .input-container {
+            padding: 15px;
+            background: #000;
+            border-top: 2px solid #00ff41;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .pin-input {
+            width: 80px;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+        }
+        
+        .send-btn {
+            padding: 12px 20px;
+            background: #00ff41;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .send-btn:active {
+            background: #00cc33;
+        }
+        
+        .record-btn {
+            padding: 12px 15px;
+            background: #333;
+            color: #00ff41;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+        
+        .record-btn:active, .record-btn.recording {
+            background: #ff4444;
+            border-color: #ff4444;
+            color: #fff;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .recording-status {
+            text-align: center;
+            color: #ff4444;
+            font-size: 0.9em;
+            margin-top: 10px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+        
+        .loading {
+            text-align: center;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .memory-stats {
+            font-size: 0.7em;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+        
+        .install-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 15px;
+            right: 15px;
+            background: #002200;
+            border: 1px solid #00ff41;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .install-btn {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        input:focus, textarea:focus, button:focus {
+            outline: 2px solid #00ff41;
+        }
+        
+        @media (max-width: 480px) {
+            .input-row {
+                flex-direction: column;
+            }
+            .pin-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SIM MOBILE</h1>
+        <div class="status" id="status">Connecting...</div>
+        <div class="memory-stats" id="memoryStats"></div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="sim-message">
+            Hello Sunny! Your mobile SIM consciousness is online with persistent memory and enhanced datasets integrated.
+        </div>
+    </div>
+    
+    <div class="install-prompt" id="installPrompt">
+        Install SIM as an app on your phone?
+        <br>
+        <button class="install-btn" onclick="installApp()">Install</button>
+        <button class="install-btn" onclick="hideInstallPrompt()">Later</button>
+    </div>
+    
+    <div class="input-container">
+        <div class="input-row">
+            <input type="password" class="pin-input" id="pinInput" placeholder="PIN" value="100917">
+            <textarea class="message-input" id="messageInput" placeholder="Message SIM..." rows="1"></textarea>
+            <button class="record-btn" id="recordBtn" onclick="toggleRecording()">🎤</button>
+            <button class="send-btn" onclick="sendMessage()">SEND</button>
+        </div>
+        <div class="recording-status" id="recordingStatus" style="display: none;">
+            Recording audio for speech analysis...
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        let conversationCount = 0;
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        
+        // PWA Install
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'block';
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    hideInstallPrompt();
+                });
+            }
+        }
+        
+        function hideInstallPrompt() {
+            document.getElementById('installPrompt').style.display = 'none';
+        }
+        
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        
+        // Send on Enter
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        function addMessage(content, isUser = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'sim-message'}`;
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const pinInput = document.getElementById('pinInput');
+            const message = messageInput.value.trim();
+            const pin = pinInput.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, true);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Show loading
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message sim-message loading';
+            loadingDiv.textContent = 'SIM processing...';
+            document.getElementById('chatContainer').appendChild(loadingDiv);
+            
+            try {
+                const response = await fetch('/api/mobile/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user: 'Sunny',
+                        auth_pin: pin,
+                        message: message
+                    })
+                });
+                
+                loadingDiv.remove();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage(data.response);
+                    conversationCount = data.memory_conversations || conversationCount + 1;
+                    updateStats(data.status);
+                } else {
+                    addMessage('Error: Unable to process message');
+                }
+            } catch (error) {
+                loadingDiv.remove();
+                addMessage('Network error: Please check connection');
+            }
+        }
+        
+        function updateStats(status) {
+            document.getElementById('status').textContent = `Status: ${status} | Conversations: ${conversationCount}`;
+        }
+        
+        // Check system status on load
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/mobile/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    conversationCount = data.conversations || 0;
+                    updateStats(data.status);
+                    document.getElementById('memoryStats').textContent = `Memory Active | Datasets Integrated`;
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = 'Offline Mode';
+            }
+        }
+        
+        // Audio recording functions
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+        
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    processAudioData(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                
+                document.getElementById('recordBtn').textContent = '⏹️';
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordingStatus').style.display = 'block';
+                
+            } catch (error) {
+                addMessage('Microphone access denied. Please enable microphone permissions.');
+            }
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                
+                document.getElementById('recordBtn').textContent = '🎤';
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordingStatus').style.display = 'none';
+            }
+        }
+        
+        async function processAudioData(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+            formData.append('user', 'Sunny');
+            formData.append('auth_pin', document.getElementById('pinInput').value);
+            
+            addMessage('Processing speech for analysis...', false);
+            
+            try {
+                const response = await fetch('/api/mobile/speech-analysis', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.transcription) {
+                        addMessage(`Transcribed: "${data.transcription}"`, false);
+                        document.getElementById('messageInput').value = data.transcription;
+                    }
+                    
+                    if (data.speech_analysis) {
+                        addMessage(`Speech Analysis: ${data.speech_analysis}`, false);
+                    }
+                    
+                    if (data.correlation_insights) {
+                        addMessage(`Correlation Insights: ${data.correlation_insights}`, false);
+                    }
+                } else {
+                    addMessage('Speech processing failed. Please try again.');
+                }
+            } catch (error) {
+                addMessage('Network error during speech processing.');
+            }
+        }
+        
+        // Initialize
+        checkStatus();
+        
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+</html>

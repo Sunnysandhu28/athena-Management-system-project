@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Rewording{% endblock %}
+
+{% block styles %}
+<style>
+    .rewording-panel {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .variation-level {
+        text-align: center;
+        padding: 15px 10px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    .variation-level:hover {
+        background-color: #f8f9fc;
+    }
+    .variation-level.active {
+        border-color: #4e73df;
+        background-color: #f0f5ff;
+    }
+    .variation-icon {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #4e73df;
+    }
+    .text-comparison {
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .text-box {
+        padding: 20px;
+    }
+    .text-box-title {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        color: #4e73df;
+        font-weight: 600;
+    }
+    .divider-vertical {
+        width: 1px;
+        background-color: #e3e6f0;
+    }
+    .scope-option {
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .scope-option:hover {
+        background-color: #f8f9fc;
+    }
+    .scope-option.active {
+        border-color: #4e73df;
+        background-color: #f0f5ff;
+    }
+    .scope-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f0f5ff;
+        color: #4e73df;
+        margin-right: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-0 text-gray-800">Policy Rewording</h1>
+            <p class="text-muted">Adjust how much content should be reworded in your policies</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('policy.wizard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Wizard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body py-3">
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                <small class="text-muted">1. Select Policy</small>
+                <small class="text-primary fw-bold">2. Set Rewording Level</small>
+                <small class="text-muted">3. Apply Changes</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Panel - Variation Levels -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Selected Policy</h6>
+                </div>
+                <div class="card-body">
+                    <h5>ME02 - Legionella Policy</h5>
+                    <div>
+                        <span class="badge bg-primary">Health & Safety</span>
+                    </div>
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-exchange-alt me-1"></i> Change Policy
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-eye me-1"></i> View Original
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Variation Level</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-4">Select how much the content should differ from the original:</p>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="variation-level" data-level="1">
+                                <div class="variation-icon">
+                                    <i class="fas fa-feather"></i>
+                                </div>
+                                <h6>Level 1</h6>
+                                <p class="small text-muted mb-0">Minimal Change</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="variation-level active" data-level="2">
+                                <div class="variation-icon">
+                                    <i class="fas fa-pen"></i>
+                                </div>
+                                <h6>Level 2</h6>
+                                <p class="small text-muted mb-0">Slight Rewording</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="variation-level" data-level="3">
+                                <div class="variation-icon">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </div>
+                                <h6>Level 3</h6>
+                                <p class="small text-muted mb-0">Moderate Change</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="variation-level" data-level="4">
+                                <div class="variation-icon">
+                                    <i class="fas fa-pen-fancy"></i>
+                                </div>
+                                <h6>Level 4</h6>
+                                <p class="small text-muted mb-0">Significant Revision</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="variation-level" data-level="5">
+                                <div class="variation-icon">
+                                    <i class="fas fa-pen-nib"></i>
+                                </div>
+                                <h6>Level 5</h6>
+                                <p class="small text-muted mb-0">Complete Rewrite</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-primary mt-4">
+                        <div class="d-flex">
+                            <div>
+                                <i class="fas fa-info-circle me-2 mt-1"></i>
+                            </div>
+                            <div>
+                                <strong>Current Selection: Level 2</strong>
+                                <p class="small mb-0">Maintains core content with minor paraphrasing while preserving all technical terms and requirements.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Preview & Apply -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Preview Changes</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-comparison">
+                        <div class="row g-0">
+                            <div class="col-md-6">
+                                <div class="text-box bg-light">
+                                    <div class="text-box-title">Original Text</div>
+                                    <p>The purpose of this policy is to comply with your legal responsibilities to identify, assess, manage and control the risk of exposure to legionella.</p>
+                                    <p>Prevention of legionella within your service will reduce the risk of residents, staff and visitors experiencing ill health from inhaling water droplets containing legionella bacteria.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-box">
+                                    <div class="text-box-title">Reworded Text</div>
+                                    <p>This policy aims to ensure compliance with legal obligations to identify, evaluate, manage, and control potential exposure risks to legionella.</p>
+                                    <p>Mitigating legionella within your service will minimize health risks for residents, staff and visitors by preventing inhalation of water droplets containing legionella bacteria.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6 class="text-uppercase text-muted small mb-3">Apply Changes To:</h6>
+                        
+                        <div class="scope-option active">
+                            <div class="d-flex align-items-center">
+                                <div class="scope-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Current Policy Only</h6>
+                                    <p class="small text-muted mb-0">Apply changes only to ME02 - Legionella Policy</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="scope-option">
+                            <div class="d-flex align-items-center">
+                                <div class="scope-icon">
+                                    <i class="fas fa-folder"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Entire Category</h6>
+                                    <p class="small text-muted mb-0">Apply to all policies in Health & Safety category (12 policies)</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="scope-option">
+                            <div class="d-flex align-items-center">
+                                <div class="scope-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Custom Selection</h6>
+                                    <p class="small text-muted mb-0">Choose specific policies to apply changes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-check-circle me-1"></i> Apply Changes
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-save me-1"></i> Save as Draft
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">100% Content Matching</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-check-circle text-success" style="font-size: 24px;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">100% Content Matching Maintained</h6>
+                            <p class="small text-muted mb-0">Text is reworded while preserving all key policy requirements and regulatory compliance.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light">
+                        <div class="d-flex">
+                            <div>
+                                <i class="fas fa-lightbulb me-2 text-warning"></i>
+                            </div>
+                            <div>
+                                <p class="small mb-0">Need an exact carbon copy instead? Use the <a href="#">100% Exact Matching</a> feature for word-for-word replication.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Variation level selection
+    document.querySelectorAll('.variation-level').forEach(level => {
+        level.addEventListener('click', function() {
+            document.querySelectorAll('.variation-level').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            const levelNum = this.getAttribute('data-level');
+            
+            // Update alert text based on selected level
+            const alertBox = document.querySelector('.alert-primary');
+            const levelDescriptions = {
+                1: "Minor adjustments to formatting and sentence structure only. Content remains 99% identical.",
+                2: "Maintains core content with minor paraphrasing while preserving all technical terms and requirements.",
+                3: "Moderate rewording with simplified language while maintaining all critical information.",
+                4: "Significant rewording with reorganized structure but preserving key policy requirements.",
+                5: "Complete rewrite in plain language with simplified structure while maintaining compliance."
+            };
+            
+            const levelTitles = {
+                1: "Minimal Change",
+                2: "Slight Rewording",
+                3: "Moderate Change",
+                4: "Significant Revision",
+                5: "Complete Rewrite"
+            };
+            
+            alertBox.querySelector('strong').textContent = `Current Selection: Level ${levelNum}`;
+            alertBox.querySelector('p').textContent = levelDescriptions[levelNum];
+        });
+    });
+    
+    // Scope option selection
+    document.querySelectorAll('.scope-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.scope-option').forEach(o => o.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

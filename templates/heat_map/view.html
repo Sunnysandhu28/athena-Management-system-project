@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Heat Map: {{ report.report_title }}{% endblock %}
+
+{% block head %}
+<style>
+    .heat-map-cell {
+        width: 50px;
+        height: 50px;
+        text-align: center;
+        font-weight: bold;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .severity-0 { background-color: #28a745; } /* Green - Good */
+    .severity-1 { background-color: #a6d96a; }
+    .severity-2 { background-color: #fdae61; }
+    .severity-3 { background-color: #f46d43; }
+    .severity-4 { background-color: #d73027; } /* Red - Severe */
+    
+    .heatmap-legend {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 15px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Heat Map Analysis</h1>
+            <h5>{{ report.report_title }} <span class="badge bg-secondary">{{ report.reference }}</span></h5>
+        </div>
+        <div>
+            <a href="{{ url_for('heat_map.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Heat Maps
+            </a>
+            <a href="{{ url_for('heat_map.pdf', report_id=report.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-download"></i> Download PDF
+            </a>
+            <a href="{{ url_for('new_sample_reports.view', report_id=report.id) }}" class="btn btn-primary">
+                <i class="fas fa-file-alt"></i> View Report
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Overall Compliance Heat Map</h4>
+        </div>
+        <div class="card-body">
+            <div class="heatmap-legend">
+                <div class="legend-item">
+                    <div class="legend-color severity-0"></div>
+                    <span>Compliant</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color severity-1"></div>
+                    <span>Minor Issues</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color severity-2"></div>
+                    <span>Moderate Issues</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color severity-3"></div>
+                    <span>Major Issues</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color severity-4"></div>
+                    <span>Critical Issues</span>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Framework</th>
+                            {% for category in categories %}
+                                <th scope="col">{{ category }}</th>
+                            {% endfor %}
+                            <th scope="col">Overall</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for framework, scores in heat_map_data.items() %}
+                            <tr>
+                                <td><strong>{{ framework }}</strong></td>
+                                {% for category in categories %}
+                                    <td>
+                                        <div class="heat-map-cell severity-{{ scores[category]|default(0)|int }}">
+                                            {{ scores[category]|default(0)|int }}
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                                <td>
+                                    <div class="heat-map-cell severity-{{ scores.overall|default(0)|int }}">
+                                        {{ scores.overall|default(0)|int }}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td><strong>Overall Score</strong></td>
+                            {% for category in categories %}
+                                <td>
+                                    <div class="heat-map-cell severity-{{ overall_scores[category]|default(0)|int }}">
+                                        {{ overall_scores[category]|default(0)|int }}
+                                    </div>
+                                </td>
+                            {% endfor %}
+                            <td>
+                                <div class="heat-map-cell severity-{{ overall_scores.total|default(0)|int }}">
+                                    {{ overall_scores.total|default(0)|int }}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4>Summary</h4>
+                </div>
+                <div class="card-body">
+                    <p>{{ summary|default('This report has been analyzed across multiple regulatory frameworks to identify compliance strengths and areas for improvement.') }}</p>
+                    
+                    <h5 class="mt-4">Key Findings:</h5>
+                    <ul>
+                        {% for finding in key_findings %}
+                            <li>{{ finding }}</li>
+                        {% else %}
+                            <li>Overall compliance status: {{ overall_compliance_status }}</li>
+                            <li>Highest risk area: {{ highest_risk_area }}</li>
+                            <li>Recommended priority: {{ recommended_priority }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4>Recommendations</h4>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for recommendation in recommendations %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between mb-1">
+                                    <h5 class="mb-1">{{ recommendation.title }}</h5>
+                                    <span class="badge 
+                                        {% if recommendation.priority == 'High' %}bg-danger
+                                        {% elif recommendation.priority == 'Medium' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {{ recommendation.priority }}
+                                    </span>
+                                </div>
+                                <p class="mb-1">{{ recommendation.description }}</p>
+                                <small class="text-muted">Framework: {{ recommendation.framework }}</small>
+                            </div>
+                        {% else %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between mb-1">
+                                    <h5 class="mb-1">Address {{ highest_risk_area }} compliance issues</h5>
+                                    <span class="badge bg-danger">High</span>
+                                </div>
+                                <p class="mb-1">Focus on improving documentation and processes related to {{ highest_risk_area }}.</p>
+                                <small class="text-muted">Framework: Multiple</small>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between mb-1">
+                                    <h5 class="mb-1">Improve overall documentation</h5>
+                                    <span class="badge bg-warning">Medium</span>
+                                </div>
+                                <p class="mb-1">Ensure all policies and procedures are up-to-date and easily accessible.</p>
+                                <small class="text-muted">Framework: Multiple</small>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between mb-1">
+                                    <h5 class="mb-1">Schedule regular compliance reviews</h5>
+                                    <span class="badge bg-info">Low</span>
+                                </div>
+                                <p class="mb-1">Implement a schedule for regular compliance reviews across all frameworks.</p>
+                                <small class="text-muted">Framework: Management</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Action Plan</h4>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">Based on the heat map analysis, the following action plan is recommended:</p>
+            
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Action</th>
+                            <th scope="col">Priority</th>
+                            <th scope="col">Framework</th>
+                            <th scope="col">Suggested Timeframe</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in action_plan %}
+                            <tr>
+                                <td>{{ action.description }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if action.priority == 'High' %}bg-danger
+                                        {% elif action.priority == 'Medium' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {{ action.priority }}
+                                    </span>
+                                </td>
+                                <td>{{ action.framework }}</td>
+                                <td>{{ action.timeframe }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">Pending</span>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td>Address {{ highest_risk_area }} compliance documentation</td>
+                                <td><span class="badge bg-danger">High</span></td>
+                                <td>Multiple</td>
+                                <td>30 days</td>
+                                <td><span class="badge bg-secondary">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>Update staff training records</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                                <td>CQC</td>
+                                <td>60 days</td>
+                                <td><span class="badge bg-secondary">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>Review risk assessment procedures</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                                <td>RIDDOR</td>
+                                <td>60 days</td>
+                                <td><span class="badge bg-secondary">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>Establish regular compliance review schedule</td>
+                                <td><span class="badge bg-info">Low</span></td>
+                                <td>All</td>
+                                <td>90 days</td>
+                                <td><span class="badge bg-secondary">Pending</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                <a href="#" class="btn btn-success">
+                    <i class="fas fa-tasks"></i> Create Action Plan
+                </a>
+                <a href="{{ url_for('regulatory_analysis.analyze', report_id=report.id) }}" class="btn btn-danger">
+                    <i class="fas fa-clipboard-check"></i> Detailed Regulatory Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

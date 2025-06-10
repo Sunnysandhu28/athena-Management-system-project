@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}QCS Policy Download Results - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                        <polyline points="8 17 12 21 16 17"></polyline>
+                        <line x1="12" y1="12" x2="12" y2="21"></line>
+                        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+                    </svg>
+                    Download Results
+                </h2>
+                <div>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-light btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Back to Download
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% include 'includes/messages.html' %}
+            
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Download Complete!</h4>
+                <p>
+                    <strong>{{ stats.success }}</strong> policies were successfully downloaded.
+                    {% if stats.failed > 0 %}
+                    <strong>{{ stats.failed }}</strong> policies failed to download.
+                    {% endif %}
+                </p>
+                <hr>
+                <p class="mb-0">The policies have been saved to the QCS downloads directory and are ready for import into the system.</p>
+            </div>
+            
+            <div class="text-end mb-4">
+                <a href="{{ url_for('qcs.import_policies') }}" class="btn btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Import Policies to Database
+                </a>
+            </div>
+            
+            <h3 class="mb-3">Downloaded Policies</h3>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>URL</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in policies %}
+                        <tr>
+                            <td>{{ policy.name }}</td>
+                            <td><a href="{{ policy.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 400px;">{{ policy.url }}</a></td>
+                            <td>
+                                {% if policy.downloaded %}
+                                <span class="badge bg-success">Downloaded</span>
+                                {% else %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">Important!</h5>
+                <p>After importing, you should review the policies to ensure they've been properly categorized and formatted.</p>
+            </div>
+        </div>
+        <div class="card-footer bg-dark text-white d-flex justify-content-between">
+            <div class="small">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Download completed at {{ now() | format_datetime }}
+            </div>
+            <div>
+                <a href="{{ url_for('dashboard.policy_list') }}" class="btn btn-outline-light btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    View All Policies
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

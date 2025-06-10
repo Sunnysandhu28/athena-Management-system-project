@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+
+{% block title %}NHS Health Knowledge Enhancement{% endblock %}
+
+{% block styles %}
+<style>
+    .illness-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+        height: 100%;
+    }
+    .illness-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+    }
+    .illness-icon {
+        width: 60px;
+        height: 60px;
+        background-color: #f0f7ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        color: #4e73df;
+        font-size: 24px;
+    }
+    .related-symptoms {
+        margin-top: 15px;
+    }
+    .symptom-tag {
+        display: inline-block;
+        background-color: #f8f9fc;
+        border: 1px solid #e3e6f0;
+        border-radius: 15px;
+        padding: 3px 12px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+    .knowledge-stat {
+        text-align: center;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f8f9fc;
+    }
+    .knowledge-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #4e73df;
+        margin-bottom: 5px;
+    }
+    .knowledge-label {
+        font-size: 14px;
+        color: #5a5c69;
+    }
+    .learning-progress {
+        height: 8px;
+        border-radius: 4px;
+        margin-top: 8px;
+    }
+    .search-pills {
+        margin-bottom: 20px;
+    }
+    .search-pill {
+        display: inline-block;
+        background-color: #f0f7ff;
+        color: #4e73df;
+        border-radius: 20px;
+        padding: 5px 15px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .search-pill:hover {
+        background-color: #4e73df;
+        color: white;
+    }
+    .search-pill.active {
+        background-color: #4e73df;
+        color: white;
+    }
+    .ai-suggestion {
+        border-left: 4px solid #4e73df;
+        padding: 10px 15px;
+        background-color: #f8f9fc;
+        margin-bottom: 15px;
+        border-radius: 0 8px 8px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-0 text-gray-800">NHS Health Knowledge Enhancement</h1>
+            <p class="text-muted">ML-powered insights from NHS data to enhance policy knowledge</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('policy.wizard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Policies
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="knowledge-stat">
+                <div class="knowledge-number">3,427</div>
+                <div class="knowledge-label">Conditions Analyzed</div>
+                <div class="progress learning-progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="knowledge-stat">
+                <div class="knowledge-number">98.2%</div>
+                <div class="knowledge-label">Knowledge Accuracy</div>
+                <div class="progress learning-progress">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 98%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="knowledge-stat">
+                <div class="knowledge-number">12,853</div>
+                <div class="knowledge-label">Policy Enhancements</div>
+                <div class="progress learning-progress">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 74%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="knowledge-stat">
+                <div class="knowledge-number">427</div>
+                <div class="knowledge-label">AI Recommendations</div>
+                <div class="progress learning-progress">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 62%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Search for medical conditions, symptoms, or policy keywords...">
+                        <button class="btn btn-primary">Search</button>
+                    </div>
+                    
+                    <div class="search-pills mt-3">
+                        <div class="search-pill active">All Conditions</div>
+                        <div class="search-pill">Respiratory</div>
+                        <div class="search-pill">Cardiovascular</div>
+                        <div class="search-pill">Infectious Diseases</div>
+                        <div class="search-pill">Mental Health</div>
+                        <div class="search-pill">Neurological</div>
+                        <div class="search-pill">Chronic Conditions</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-filter me-2"></i> Advanced Filters
+                        </button>
+                        <button class="btn btn-outline-success">
+                            <i class="fas fa-robot me-2"></i> Generate Health Insights
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Enhanced Policy Suggestions -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">AI-Suggested Policy Enhancements</h6>
+            <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sync-alt me-1"></i> Refresh Suggestions
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success mb-4">
+                <div class="d-flex">
+                    <div>
+                        <i class="fas fa-robot me-3 mt-1" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading">AI Assistant</h5>
+                        <p class="mb-0">I've analyzed NHS data on common illnesses and identified several opportunities to enhance your health and safety policies with the latest medical guidance.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ai-suggestion">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0"><i class="fas fa-plus-circle text-success me-2"></i> Suggested Addition to Infection Control Policy</h6>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-1">Apply</button>
+                        <button class="btn btn-sm btn-outline-secondary">Ignore</button>
+                    </div>
+                </div>
+                <p class="small mb-0">Consider adding specific guidance on respiratory hygiene practices based on updated NHS guidelines for preventing the spread of respiratory infections in care settings.</p>
+            </div>
+            
+            <div class="ai-suggestion">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-circle text-warning me-2"></i> Outdated Information in ME02 - Legionella Policy</h6>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-1">Apply</button>
+                        <button class="btn btn-sm btn-outline-secondary">Ignore</button>
+                    </div>
+                </div>
+                <p class="small mb-0">The temperature recommendations for hot water systems have been updated in the latest NHS estates guidance. Consider updating section 5.3 to reflect the current recommendation of storing hot water at 60°C and distributing it at 55°C to minimize legionella risk.</p>
+            </div>
+            
+            <div class="ai-suggestion">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb text-info me-2"></i> Enhancement for Medication Management Policy</h6>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-1">Apply</button>
+                        <button class="btn btn-sm btn-outline-secondary">Ignore</button>
+                    </div>
+                </div>
+                <p class="small mb-0">Based on recent NHS guidance, consider adding a section on proper storage and handling of temperature-sensitive medications, especially during extreme weather conditions.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Illness Knowledge Base -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h4 class="mb-3">NHS Illness Knowledge Base</h4>
+            <p class="text-muted">Enhanced with machine learning for better policy decisions</p>
+        </div>
+        
+        <!-- Illness Cards -->
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-lungs"></i>
+                    </div>
+                    <h5 class="card-title">Respiratory Tract Infections</h5>
+                    <p class="card-text">Common infections affecting the airways, including the nose, sinuses, throat, and lungs.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Cough</span>
+                        <span class="symptom-tag">Sore Throat</span>
+                        <span class="symptom-tag">Fever</span>
+                        <span class="symptom-tag">Shortness of Breath</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h5 class="card-title">Cardiovascular Conditions</h5>
+                    <p class="card-text">Diseases affecting the heart and blood vessels, including heart attacks, strokes, and heart failure.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Chest Pain</span>
+                        <span class="symptom-tag">Shortness of Breath</span>
+                        <span class="symptom-tag">Fatigue</span>
+                        <span class="symptom-tag">Dizziness</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5 class="card-title">Neurological Disorders</h5>
+                    <p class="card-text">Conditions affecting the brain, spinal cord, and nerves, including dementia, Parkinson's, and epilepsy.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Memory Loss</span>
+                        <span class="symptom-tag">Tremors</span>
+                        <span class="symptom-tag">Seizures</span>
+                        <span class="symptom-tag">Balance Problems</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-allergies"></i>
+                    </div>
+                    <h5 class="card-title">Allergic Conditions</h5>
+                    <p class="card-text">Hypersensitivity disorders including allergic rhinitis, asthma, eczema, and food allergies.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Sneezing</span>
+                        <span class="symptom-tag">Skin Rash</span>
+                        <span class="symptom-tag">Wheezing</span>
+                        <span class="symptom-tag">Swelling</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-viruses"></i>
+                    </div>
+                    <h5 class="card-title">Infectious Diseases</h5>
+                    <p class="card-text">Communicable diseases caused by pathogens including COVID-19, influenza, and norovirus.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Fever</span>
+                        <span class="symptom-tag">Fatigue</span>
+                        <span class="symptom-tag">Body Aches</span>
+                        <span class="symptom-tag">Diarrhea</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card illness-card">
+                <div class="card-body">
+                    <div class="illness-icon">
+                        <i class="fas fa-bone"></i>
+                    </div>
+                    <h5 class="card-title">Musculoskeletal Disorders</h5>
+                    <p class="card-text">Conditions affecting muscles, bones, and joints including arthritis, osteoporosis, and back pain.</p>
+                    
+                    <div class="related-symptoms">
+                        <span class="symptom-tag">Joint Pain</span>
+                        <span class="symptom-tag">Stiffness</span>
+                        <span class="symptom-tag">Limited Movement</span>
+                        <span class="symptom-tag">Muscle Weakness</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add to Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Policy Enhancement -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary">AI Policy Enhancement Options</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoSuggestion" checked>
+                        <label class="form-check-label" for="autoSuggestion">
+                            <strong>Automatic Suggestions</strong>
+                            <p class="text-muted small mb-0">AI will proactively suggest policy enhancements based on NHS data</p>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="illnessIntegration" checked>
+                        <label class="form-check-label" for="illnessIntegration">
+                            <strong>Illness Knowledge Integration</strong>
+                            <p class="text-muted small mb-0">Automatically incorporate relevant NHS illness data into policies</p>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="alertUpdates" checked>
+                        <label class="form-check-label" for="alertUpdates">
+                            <strong>NHS Guidance Alerts</strong>
+                            <p class="text-muted small mb-0">Receive notifications when NHS guidelines change that affect policies</p>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoFormatting" checked>
+                        <label class="form-check-label" for="autoFormatting">
+                            <strong>Smart Formatting</strong>
+                            <p class="text-muted small mb-0">AI will suggest optimal formatting for health-related content</p>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="medicalReviews">
+                        <label class="form-check-label" for="medicalReviews">
+                            <strong>Medical Accuracy Reviews</strong>
+                            <p class="text-muted small mb-0">AI periodically reviews policies for medical accuracy</p>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="healthInsights">
+                        <label class="form-check-label" for="healthInsights">
+                            <strong>Health Analytics Integration</strong>
+                            <p class="text-muted small mb-0">Include relevant statistics and research in health-related policies</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="alert alert-primary">
+                <div class="d-flex">
+                    <div>
+                        <i class="fas fa-lightbulb me-3 mt-1" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading">NHS Data Enhancement</h5>
+                        <p class="mb-0">The system continuously learns from NHS clinical guidelines, public health alerts, and medical research to enhance your policies with the latest health information. All suggestions comply with NHS standards and best practices for care settings.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 mt-3">
+                <button class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Enhancement Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search pills
+    document.querySelectorAll('.search-pill').forEach(pill => {
+        pill.addEventListener('click', function() {
+            document.querySelectorAll('.search-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

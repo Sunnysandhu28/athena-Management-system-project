@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Document Compliance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Analyze Document Compliance</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Upload or select a document to analyze its compliance with regulatory frameworks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('regulatory.analyze_document') }}" enctype="multipart/form-data">
+                        <h3 class="mb-3">Document Source</h3>
+                        
+                        <ul class="nav nav-tabs mb-3" id="documentSourceTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab" aria-controls="upload" aria-selected="true">Upload File</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button" role="tab" aria-controls="database" aria-selected="false">Select from Database</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text" type="button" role="tab" aria-controls="text" aria-selected="false">Enter Text</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="documentSourceTabContent">
+                            <!-- Upload File Tab -->
+                            <div class="tab-pane fade show active" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                                <div class="mb-3">
+                                    <label for="document_file" class="form-label">Upload Document</label>
+                                    <input type="file" class="form-control" id="document_file" name="document_file">
+                                    <div class="form-text">Supported formats: .txt, .md, .html, .docx, .pdf</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="upload_document_name" class="form-label">Document Name (Optional)</label>
+                                    <input type="text" class="form-control" id="upload_document_name" name="document_name" placeholder="Enter a name for your document">
+                                </div>
+                            </div>
+                            
+                            <!-- Select from Database Tab -->
+                            <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+                                <div class="mb-3">
+                                    <label for="document_id" class="form-label">Select Document</label>
+                                    <select class="form-select" id="document_id" name="document_id">
+                                        <option value="">-- Select a document --</option>
+                                        {% for document in documents %}
+                                        <option value="{{ document.id }}">{{ document.original_filename }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Enter Text Tab -->
+                            <div class="tab-pane fade" id="text" role="tabpanel" aria-labelledby="text-tab">
+                                <div class="mb-3">
+                                    <label for="document_text" class="form-label">Document Text</label>
+                                    <textarea class="form-control" id="document_text" name="document_text" rows="10" placeholder="Enter document text here..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="text_document_name" class="form-label">Document Name</label>
+                                    <input type="text" class="form-control" id="text_document_name" name="document_name" placeholder="Enter a name for your document">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="mt-4 mb-3">Select Regulatory Frameworks</h3>
+                        <div class="mb-4">
+                            <div class="form-text mb-2">Select the regulatory frameworks to analyze the document against.</div>
+                            <div class="row">
+                                {% for framework in regulatory_frameworks %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="framework_{{ framework|lower|replace(' ', '_') }}" name="framework_{{ framework|lower|replace(' ', '_') }}">
+                                        <label class="form-check-label" for="framework_{{ framework|lower|replace(' ', '_') }}">
+                                            {{ framework }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search-plus me-2"></i> Analyze Document
+                            </button>
+                            <a href="{{ url_for('regulatory.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">What You'll Get</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle text-success fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Compliance Score</h5>
+                                <p class="mb-0">Overall and framework-specific compliance scores with strengths and gaps</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-book text-primary fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Terminology Analysis</h5>
+                                <p class="mb-0">Analysis of key regulatory terms used in your document</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-lightbulb text-warning fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Improvement Suggestions</h5>
+                                <p class="mb-0">Actionable recommendations to improve compliance</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-file-alt text-danger fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5>Comprehensive Report</h5>
+                                <p class="mb-0">Printable report with detailed analysis and recommendations</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Tips</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Select multiple frameworks for a more comprehensive analysis</li>
+                        <li>For best results, use documents with at least 500 words</li>
+                        <li>More specific policy documents will yield more accurate analyses</li>
+                        <li>Analysis typically takes 30-60 seconds depending on document length</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-select default framework if none selected
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('form').addEventListener('submit', function(event) {
+            let frameworkSelected = false;
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    frameworkSelected = true;
+                }
+            });
+            
+            if (!frameworkSelected) {
+                // Select the first framework by default
+                const firstCheckbox = document.querySelector('input[type="checkbox"]');
+                if (firstCheckbox) {
+                    firstCheckbox.checked = true;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

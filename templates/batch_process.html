@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Processing - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Policy Viewer</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Batch Processing</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Batch Policy Processing</h1>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Use this tool to replicate multiple policies at once. You can process all policies
+                        in a specific category or all policies across all categories.
+                    </p>
+                    <form method="post" action="{{ url_for('batch_process') }}">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="max_workers" class="form-label">Number of Worker Threads</label>
+                            <input type="number" class="form-control" id="max_workers" name="max_workers" value="4" min="1" max="8">
+                            <div class="form-text">Higher values can improve processing speed, but may consume more system resources.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="limit" class="form-label">Policy Limit (0 for no limit)</label>
+                            <input type="number" class="form-control" id="limit" name="limit" value="0" min="0">
+                            <div class="form-text">Use this to limit the number of policies processed in a batch.</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rebuild_index" name="rebuild_index" checked>
+                            <label class="form-check-label" for="rebuild_index">Rebuild Policy Index</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="generate_report" name="generate_report" checked>
+                            <label class="form-check-label" for="generate_report">Generate Batch Report</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-cogs"></i> Start Batch Processing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Batch Processing Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6>How Batch Processing Works:</h6>
+                    <ol>
+                        <li>Policies are processed in parallel using multiple worker threads</li>
+                        <li>Each policy is analyzed and key content is extracted</li>
+                        <li>The policies are replicated with extracted metadata</li>
+                        <li>Results are indexed for easy access</li>
+                    </ol>
+                    <hr>
+                    <h6>Tips for Batch Processing:</h6>
+                    <ul>
+                        <li>Process one category at a time for more manageable batches</li>
+                        <li>Use 4 worker threads for a balance of speed and resource usage</li>
+                        <li>Always generate reports to track processing results</li>
+                        <li>Rebuild the policy index to ensure all replicated policies are accessible</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Recent Reports</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('view_reports') }}" class="btn btn-outline-secondary btn-block">
+                        <i class="fas fa-chart-bar"></i> View All Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.title }} - Heat Map - Cathena Regulatory Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .report-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .heat-map-container {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .heat-map-image {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        .stat-card {
+            border-radius: 10px;
+            transition: transform 0.2s;
+            height: 100%;
+            margin-bottom: 1rem;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .framework-card {
+            margin-bottom: 1rem;
+        }
+        .compliance-level-0 { background-color: #d73027; color: white; }
+        .compliance-level-1 { background-color: #fc8d59; color: white; }
+        .compliance-level-2 { background-color: #fee08b; color: black; }
+        .compliance-level-3 { background-color: #d9ef8b; color: black; }
+        .compliance-level-4 { background-color: #91cf60; color: black; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cathena Regulatory Assistant</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/requirements">Requirements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/evidence">Evidence</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/heatmap/generate">Generate Heat Map</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/action-plan">Action Plan</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="report-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>{{ report.title }}</h1>
+                    <p class="lead">{{ report.description }}</p>
+                    <p class="text-muted">Generated on: {{ report.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/action-plan" class="btn btn-warning">View Action Plan</a>
+                    <a href="/dashboard" class="btn btn-secondary ms-2">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Overall Compliance</h5>
+                        <p class="stat-value">
+                            {% set overall = report.data.overall_compliance|float %}
+                            {% if overall < 1 %}
+                                <span class="text-danger">{{ "%.1f"|format(overall) }}</span>
+                            {% elif overall < 2 %}
+                                <span class="text-warning">{{ "%.1f"|format(overall) }}</span>
+                            {% elif overall < 3 %}
+                                <span class="text-info">{{ "%.1f"|format(overall) }}</span>
+                            {% else %}
+                                <span class="text-success">{{ "%.1f"|format(overall) }}</span>
+                            {% endif %}
+                        </p>
+                        <p class="card-text">out of 4.0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Frameworks</h5>
+                        <p class="stat-value">{{ report.data.frameworks|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Categories</h5>
+                        <p class="stat-value">{{ report.data.categories|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Requirements</h5>
+                        {% set req_count = 0 %}
+                        {% for framework, data in report.data.frameworks.items() %}
+                            {% set req_count = req_count + data.requirement_count %}
+                        {% endfor %}
+                        <p class="stat-value">{{ req_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heat Map Visualization -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h3>Compliance Heat Map</h3>
+            </div>
+            <div class="card-body">
+                <div class="heat-map-container">
+                    <img src="{{ url_for('main.heatmap_image', report_id=report.id) }}" class="heat-map-image" alt="Compliance Heat Map">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-center">
+                            <div class="d-flex align-items-center me-4">
+                                <div class="badge compliance-level-0 me-2">&nbsp;&nbsp;&nbsp;</div>
+                                <span>Non-Compliant (0-1)</span>
+                            </div>
+                            <div class="d-flex align-items-center me-4">
+                                <div class="badge compliance-level-1 me-2">&nbsp;&nbsp;&nbsp;</div>
+                                <span>Partially Compliant (1-2)</span>
+                            </div>
+                            <div class="d-flex align-items-center me-4">
+                                <div class="badge compliance-level-2 me-2">&nbsp;&nbsp;&nbsp;</div>
+                                <span>Moderately Compliant (2-3)</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="badge compliance-level-4 me-2">&nbsp;&nbsp;&nbsp;</div>
+                                <span>Fully Compliant (3-4)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Framework Compliance -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h3>Framework Analysis</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for framework, framework_data in report.data.frameworks.items() %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card framework-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ framework }}</h5>
+                                {% set compliance = framework_data.compliance_level|float %}
+                                <span class="badge {% if compliance < 1 %}bg-danger{% elif compliance < 2 %}bg-warning{% elif compliance < 3 %}bg-info{% else %}bg-success{% endif %}">
+                                    {{ "%.1f"|format(compliance) }}/4
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p>Requirements: {{ framework_data.requirement_count }}</p>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar
+                                        {% if compliance < 1 %}bg-danger{% elif compliance < 2 %}bg-warning{% elif compliance < 3 %}bg-info{% else %}bg-success{% endif %}"
+                                        role="progressbar" style="width: {{ (compliance / 4) * 100 }}%"
+                                        aria-valuenow="{{ compliance }}" aria-valuemin="0" aria-valuemax="4">
+                                    </div>
+                                </div>
+                                {% if framework_data.requirements %}
+                                <div class="mt-3">
+                                    <h6>Top Issues:</h6>
+                                    <ul class="list-group">
+                                        {% for req in framework_data.requirements|sort(attribute='compliance_level')|slice(0, 3) %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ req.code }}: {{ req.title }}
+                                            <span class="badge {% if req.compliance_level < 1 %}bg-danger{% elif req.compliance_level < 2 %}bg-warning{% elif req.compliance_level < 3 %}bg-info{% else %}bg-success{% endif %}">
+                                                {{ req.compliance_level }}/4
+                                            </span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Analysis -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h3>Category Analysis</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for category, category_data in report.data.categories.items() %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ category }}</h5>
+                                <p>Requirements: {{ category_data.count }}</p>
+                                {% set compliance = category_data.compliance|float %}
+                                <div class="progress mb-2">
+                                    <div class="progress-bar
+                                        {% if compliance < 1 %}bg-danger{% elif compliance < 2 %}bg-warning{% elif compliance < 3 %}bg-info{% else %}bg-success{% endif %}"
+                                        role="progressbar" style="width: {{ (compliance / 4) * 100 }}%"
+                                        aria-valuenow="{{ compliance }}" aria-valuemin="0" aria-valuemax="4">
+                                        {{ "%.1f"|format(compliance) }}/4
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Plan Summary -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h3>Action Plan Summary</h3>
+            </div>
+            <div class="card-body">
+                <p>Based on the compliance analysis, an action plan has been generated to address areas with low compliance levels.</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-danger text-white mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">High Priority</h5>
+                                {% set high_count = 0 %}
+                                {% for framework, framework_data in report.data.frameworks.items() %}
+                                    {% for req in framework_data.requirements %}
+                                        {% if req.compliance_level < 2 and req.severity >= 3 %}
+                                            {% set high_count = high_count + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                <p class="stat-value">{{ high_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-dark mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Medium Priority</h5>
+                                {% set medium_count = 0 %}
+                                {% for framework, framework_data in report.data.frameworks.items() %}
+                                    {% for req in framework_data.requirements %}
+                                        {% if req.compliance_level < 3 and req.severity >= 2 and (req.compliance_level >= 2 or req.severity < 3) %}
+                                            {% set medium_count = medium_count + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                <p class="stat-value">{{ medium_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Low Priority</h5>
+                                {% set low_count = 0 %}
+                                {% for framework, framework_data in report.data.frameworks.items() %}
+                                    {% for req in framework_data.requirements %}
+                                        {% if req.compliance_level < 4 and (req.compliance_level >= 3 or req.severity < 2) %}
+                                            {% set low_count = low_count + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                <p class="stat-value">{{ low_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/action-plan" class="btn btn-lg btn-warning">View Full Action Plan</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Cathena Regulatory Assistant</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

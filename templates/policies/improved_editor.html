@@ -1,0 +1,1837 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Format Editor{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    /* Editor layout styles */
+    .policy-editor {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        min-height: 800px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .policy-header {
+        background-color: #e9ecef;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .policy-content {
+        flex: 1;
+        padding: 20px;
+        background-color: #fff;
+        overflow-y: auto;
+    }
+    
+    .policy-footer {
+        background-color: #e9ecef;
+        padding: 10px 20px;
+        border-top: 1px solid #dee2e6;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+    
+    /* Section styles */
+    .section-wrapper {
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        position: relative;
+    }
+    
+    /* Format template styles */
+    .template-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .template-option {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px 12px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .template-option:hover {
+        border-color: #6c757d;
+        background-color: #f8f9fa;
+    }
+    
+    .template-option.active {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    
+    .preview {
+        font-size: 0.85rem;
+    }
+    
+    .preview-heading {
+        font-weight: bold;
+        padding-bottom: 2px;
+        border-bottom: 2px solid #212529;
+    }
+    
+    .preview-heading-modern {
+        font-weight: bold;
+        color: #0056b3;
+        padding: 3px;
+        background-color: #f2f7ff;
+        border-left: 3px solid #0056b3;
+    }
+    
+    .preview-heading-elegant {
+        font-weight: bold;
+        color: #343a40;
+        padding-bottom: 2px;
+        border-bottom: 1px dashed #6c757d;
+    }
+    
+    /* Content styles for highlighting */
+    .key-points-highlight {
+        background-color: #e7f5ff;
+        border-left: 3px solid #0d6efd;
+        padding: 8px 12px;
+        margin: 15px 0;
+    }
+    
+    .warnings-highlight {
+        background-color: #fff3e6;
+        border-left: 3px solid #fd7e14;
+        padding: 8px 12px;
+        margin: 15px 0;
+    }
+    
+    .notes-highlight {
+        background-color: #f8f9fa;
+        border: 1px dashed #adb5bd;
+        padding: 8px 12px;
+        margin: 15px 0;
+        font-style: italic;
+    }
+    
+    .section-wrapper.dragging {
+        opacity: 0.5;
+        border: 2px dashed #007bff;
+    }
+    
+    .section-wrapper:hover .section-actions {
+        opacity: 1;
+    }
+    
+    .section-actions {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        background-color: rgba(248, 249, 250, 0.8);
+        padding: 5px 8px;
+        border-radius: 4px;
+        z-index: 100;
+    }
+    
+    .section-actions button {
+        margin-right: 5px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .section-header {
+        padding: 12px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+        flex: 1;
+    }
+    
+    .section-number {
+        font-weight: 600;
+        color: #6c757d;
+        margin-right: 10px;
+        min-width: 40px;
+    }
+    
+    .section-body {
+        padding: 15px;
+    }
+    
+    /* Toolbar styles */
+    .editor-toolbar {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .toolbar-group {
+        display: flex;
+        margin-right: 15px;
+        border-right: 1px solid #dee2e6;
+        padding-right: 15px;
+    }
+    
+    .toolbar-group:last-child {
+        border-right: none;
+    }
+    
+    .toolbar-button {
+        background: none;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 5px 10px;
+        margin-right: 5px;
+        cursor: pointer;
+        color: #495057;
+    }
+    
+    .toolbar-button:hover {
+        background-color: #e9ecef;
+    }
+    
+    .toolbar-button.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    
+    /* Dropdown menu for toolbar */
+    .toolbar-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .toolbar-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        border-radius: 4px;
+    }
+    
+    .toolbar-dropdown-content button {
+        color: black;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: block;
+        background: none;
+        border: none;
+        text-align: left;
+        width: 100%;
+        cursor: pointer;
+    }
+    
+    .toolbar-dropdown-content button:hover {
+        background-color: #e9ecef;
+    }
+    
+    .toolbar-dropdown:hover .toolbar-dropdown-content {
+        display: block;
+    }
+    
+    /* Drag-and-drop placeholder */
+    .section-placeholder {
+        border: 2px dashed #6c757d;
+        background-color: #e9ecef;
+        height: 80px;
+        margin: 10px 0;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    /* Editable content */
+    [contenteditable="true"] {
+        outline: none;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.5);
+        min-height: 30px;
+    }
+    
+    [contenteditable="true"]:focus {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    
+    /* Helper text styling */
+    .helper-callout {
+        padding: 15px;
+        margin: 20px 0;
+        border-left: 4px solid #17a2b8;
+        background-color: #f8f9fa;
+        color: #495057;
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .helper-callout h5 {
+        color: #17a2b8;
+        margin-bottom: 10px;
+    }
+    
+    .helper-callout p {
+        margin-bottom: 5px;
+    }
+    
+    /* Empty content placeholders */
+    .empty-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 100px 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .empty-content i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        opacity: 0.6;
+    }
+    
+    /* Save status indicator */
+    .save-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-left: 10px;
+        transition: opacity 0.5s;
+    }
+    
+    .save-status.saved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .save-status.saving {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .save-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    /* Main title editing styles */
+    .policy-title {
+        position: relative;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
+    
+    .policy-title h1 {
+        outline: none;
+        margin: 0;
+        padding: 10px;
+    }
+    
+    .policy-title h1:focus {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px dashed #ced4da;
+        border-radius: 4px;
+    }
+    
+    .policy-meta {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .policy-meta-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .policy-meta-label {
+        font-weight: 600;
+        margin-right: 8px;
+        color: #495057;
+    }
+    
+    .policy-meta-value {
+        min-width: 100px;
+        padding: 5px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+    
+    /* Section numbering highlight */
+    .section-number.updated {
+        animation: highlight 2s ease-in-out;
+    }
+    
+    @keyframes highlight {
+        0% { background-color: rgba(255, 193, 7, 0.5); }
+        100% { background-color: transparent; }
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .toolbar-group {
+            margin-right: 8px;
+            padding-right: 8px;
+        }
+        
+        .toolbar-button {
+            padding: 4px 6px;
+            margin-right: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .section-actions {
+            opacity: 1;
+            position: relative;
+            right: auto;
+            top: auto;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2 class="mb-0">
+                <i class="bi bi-file-earmark-text"></i> 
+                Policy Format & Layout Editor
+            </h2>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <button id="savePolicy" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save Policy
+            </button>
+            <span id="saveStatus" class="save-status" style="opacity: 0;">Saved</span>
+        </div>
+    </div>
+    
+    <!-- Helper callout with tips -->
+    <div class="helper-callout mb-4">
+        <h5><i class="bi bi-lightbulb"></i> Policy Visual Formatter</h5>
+        <p>Select any policy as your template. You can keep it as is or enhance it to make it more visually appealing.</p>
+        <p><strong>Step 1:</strong> Choose a policy from the browser on the right.</p>
+        <p><strong>Step 2:</strong> Use the formatting tools below to enhance headings, highlight important text, and organize content.</p>
+        <p><strong>Step 3:</strong> Save your changes to apply this format across similar policies (same category).</p>
+        <div class="alert alert-info mt-2">
+            <i class="bi bi-info-circle"></i> All policy content remains unchanged - we're just making it look better!
+        </div>
+    </div>
+    
+    <!-- Visual Formatting Examples -->
+    <div class="format-examples-container mb-4">
+        <h5 class="format-examples-title"><i class="bi bi-palette"></i> Visual Formatting Examples</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Key Points</h6>
+                    <div class="key-points-highlight clickable-example" data-format="key-points">
+                        <strong>Key Point:</strong> Highlight essential information that staff need to remember.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Warnings</h6>
+                    <div class="warnings-highlight clickable-example" data-format="warning">
+                        <strong>Important:</strong> Draw attention to critical compliance requirements.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Notes</h6>
+                    <div class="notes-highlight clickable-example" data-format="note">
+                        <em>Note:</em> Add helpful context or additional information.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Boxed Content</h6>
+                    <div class="formatted-box clickable-example" data-format="box">
+                        Group related information together in a visual box.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Text Formatting</h6>
+                    <p><strong class="clickable-example" data-format="bold">Bold</strong> for emphasis</p>
+                    <p><em class="clickable-example" data-format="italic">Italic</em> for definitions</p>
+                    <p><u class="clickable-example" data-format="underline">Underline</u> for visibility</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Color Coding</h6>
+                    <p><span class="blue-text clickable-example" data-format="blue-text">Blue text</span> for links/references</p>
+                    <p><span class="red-text clickable-example" data-format="red-text">Red text</span> for warnings</p>
+                    <p><span class="green-text clickable-example" data-format="green-text">Green text</span> for positive outcomes</p>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Checklist Format</h6>
+                    <div class="clickable-example" data-format="checklist">
+                        <ul class="policy-checklist">
+                            <li>First checklist item</li>
+                            <li>Second checklist item</li>
+                            <li>Third checklist item</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Definition Format</h6>
+                    <div class="clickable-example" data-format="definition">
+                        <dl class="policy-definition">
+                            <dt>Term</dt>
+                            <dd>The definition of the term goes here with a detailed explanation.</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="example-card">
+                    <h6>Table Format</h6>
+                    <div class="clickable-example" data-format="table">
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Header 1</th>
+                                    <th>Header 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Data 1</td>
+                                    <td>Data 2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-9">
+            <!-- Policy Editor Container -->
+            <div class="policy-editor">
+                <!-- Policy Header with title and metadata -->
+                <div class="policy-header">
+                    <div class="policy-title">
+                        <h1 id="mainTitle" contenteditable="true">{% if policy %}{{ policy.title }}{% else %}New Policy{% endif %}</h1>
+                        <div class="policy-meta">
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Code:</span>
+                                <span id="policyCode" class="policy-meta-value" contenteditable="true">{% if policy %}{{ policy.code }}{% else %}Enter Code{% endif %}</span>
+                            </div>
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Category:</span>
+                                <select id="policyCategory" class="form-select policy-meta-value">
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if policy and policy.category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Version:</span>
+                                <span id="policyVersion" class="policy-meta-value" contenteditable="true">{% if policy %}{{ policy.version }}{% else %}1.0{% endif %}</span>
+                            </div>
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Date:</span>
+                                <input type="date" id="policyDate" class="form-control policy-meta-value" value="{% if policy %}{{ policy.date }}{% else %}{{ now.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                            
+                            <!-- Document Settings -->
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Code Display:</span>
+                                <select id="policyCodeDisplay" class="form-select policy-meta-value">
+                                    <option value="before_title" {% if policy and policy.code_display == 'before_title' %}selected{% endif %}>Before Title</option>
+                                    <option value="after_title" {% if policy and policy.code_display == 'after_title' %}selected{% endif %}>After Title</option>
+                                    <option value="header" {% if policy and policy.code_display == 'header' %}selected{% endif %}>In Header</option>
+                                    <option value="footer" {% if policy and policy.code_display == 'footer' %}selected{% endif %}>In Footer</option>
+                                </select>
+                            </div>
+                            
+                            <div class="policy-meta-item">
+                                <span class="policy-meta-label">Page Numbers:</span>
+                                <select id="pageNumberLocation" class="form-select policy-meta-value">
+                                    <option value="bottom_center" {% if policy and policy.page_number_location == 'bottom_center' %}selected{% endif %}>Bottom Center</option>
+                                    <option value="bottom_right" {% if policy and policy.page_number_location == 'bottom_right' %}selected{% endif %}>Bottom Right</option>
+                                    <option value="bottom_left" {% if policy and policy.page_number_location == 'bottom_left' %}selected{% endif %}>Bottom Left</option>
+                                    <option value="top_right" {% if policy and policy.page_number_location == 'top_right' %}selected{% endif %}>Top Right</option>
+                                    <option value="top_left" {% if policy and policy.page_number_location == 'top_left' %}selected{% endif %}>Top Left</option>
+                                    <option value="hidden" {% if policy and policy.page_number_location == 'hidden' %}selected{% endif %}>Hidden</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Formatting Toolbar -->
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-button" data-command="bold" title="Bold">
+                            <i class="bi bi-type-bold"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="italic" title="Italic">
+                            <i class="bi bi-type-italic"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="underline" title="Underline">
+                            <i class="bi bi-type-underline"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-button" data-command="justifyLeft" title="Align Left">
+                            <i class="bi bi-text-left"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="justifyCenter" title="Align Center">
+                            <i class="bi bi-text-center"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="justifyRight" title="Align Right">
+                            <i class="bi bi-text-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-button" data-command="insertUnorderedList" title="Bullet List">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="insertOrderedList" title="Numbered List">
+                            <i class="bi bi-list-ol"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-button format-btn" data-format="key-points" title="Highlight as Key Point">
+                            <i class="bi bi-bookmark-star"></i>
+                        </button>
+                        <button class="toolbar-button format-btn" data-format="warning" title="Mark as Important Warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </button>
+                        <button class="toolbar-button format-btn" data-format="note" title="Add as Side Note">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="toolbar-button format-btn" data-format="box" title="Add Bordered Box">
+                            <i class="bi bi-border-all"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-button" data-command="createLink" title="Insert Link">
+                            <i class="bi bi-link"></i>
+                        </button>
+                        <button class="toolbar-button" data-command="insertTable" title="Insert Table">
+                            <i class="bi bi-table"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <div class="toolbar-dropdown">
+                            <button class="toolbar-button">
+                                <i class="bi bi-palette"></i> Text Color
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="toolbar-dropdown-content">
+                                <button data-command="foreColor" data-value="#000000" style="color: #000000">Black</button>
+                                <button data-command="foreColor" data-value="#0000FF" style="color: #0000FF">Blue</button>
+                                <button data-command="foreColor" data-value="#FF0000" style="color: #FF0000">Red</button>
+                                <button data-command="foreColor" data-value="#008000" style="color: #008000">Green</button>
+                                <button data-command="foreColor" data-value="#800080" style="color: #800080">Purple</button>
+                            </div>
+                        </div>
+                        
+                        <div class="toolbar-dropdown">
+                            <button class="toolbar-button">
+                                <i class="bi bi-highlighter"></i> Highlight
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="toolbar-dropdown-content">
+                                <button data-command="hiliteColor" data-value="#FFFF00" style="background-color: #FFFF00">Yellow</button>
+                                <button data-command="hiliteColor" data-value="#00FFFF" style="background-color: #00FFFF">Cyan</button>
+                                <button data-command="hiliteColor" data-value="#FF00FF" style="background-color: #FF00FF">Magenta</button>
+                                <button data-command="hiliteColor" data-value="#90EE90" style="background-color: #90EE90">Light Green</button>
+                                <button data-command="hiliteColor" data-value="#FFA07A" style="background-color: #FFA07A">Light Salmon</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-button" data-command="auto-detect-sections" title="Auto-Detect Sections">
+                            <i class="bi bi-magic"></i> Auto-Detect Sections
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Policy Content Area with sections -->
+                <div class="policy-content" id="policyContent">
+                    <!-- Sections will be populated here with JS -->
+                    {% if policy and policy.content %}
+                        <div id="loadingContent">
+                            <div class="text-center my-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading policy content...</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty-content">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <h4>No Content Yet</h4>
+                            <p>Start by adding sections to your policy using the button below.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Policy Footer with actions -->
+                <div class="policy-footer d-flex justify-content-between align-items-center">
+                    <button id="addSection" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> Add Section
+                    </button>
+                    
+                    <div>
+                        <button id="previewPolicy" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+                        <button id="saveAndExitBtn" class="btn btn-primary">
+                            <i class="bi bi-check2-circle"></i> Save and Exit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3">
+            <!-- Sidebar with templates and additional options -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Policy Browser</h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showQCSPolicies" checked>
+                        <label class="form-check-label small" for="showQCSPolicies">QCS Policies</label>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="accordion" id="categoryAccordion">
+                        {% for category in categories %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ category.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ category.id }}" aria-expanded="false" 
+                                        aria-controls="collapse{{ category.id }}">
+                                    {{ category.name }}
+                                </button>
+                            </h2>
+                            <div id="collapse{{ category.id }}" class="accordion-collapse collapse" 
+                                 aria-labelledby="heading{{ category.id }}" data-bs-parent="#categoryAccordion">
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush category-policies" data-category-id="{{ category.id }}">
+                                        <div class="p-3 text-center">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span class="ms-2">Loading policies...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Section Templates</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <button class="list-group-item list-group-item-action section-template" data-section="Scope">
+                            <div class="fw-bold">Scope</div>
+                            <small class="text-muted">Who and what the policy applies to</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Summary">
+                            <div class="fw-bold">Summary</div>
+                            <small class="text-muted">Brief overview of policy purpose</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Policy Statement">
+                            <div class="fw-bold">Policy Statement</div>
+                            <small class="text-muted">Main policy declaration and purpose</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Procedure">
+                            <div class="fw-bold">Procedure</div>
+                            <small class="text-muted">Step-by-step process details</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Definitions">
+                            <div class="fw-bold">Definitions</div>
+                            <small class="text-muted">Key terms and their meanings</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Responsibilities">
+                            <div class="fw-bold">Responsibilities</div>
+                            <small class="text-muted">Who is responsible for what</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Legislation and Guidance">
+                            <div class="fw-bold">Legislation and Guidance</div>
+                            <small class="text-muted">Related legal requirements</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Review Process">
+                            <div class="fw-bold">Review Process</div>
+                            <small class="text-muted">How and when the policy is reviewed</small>
+                        </button>
+                        <button class="list-group-item list-group-item-action section-template" data-section="Appendices">
+                            <div class="fw-bold">Appendices</div>
+                            <small class="text-muted">Supporting documents and references</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Document Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Policy Code Display</label>
+                        <select class="form-select" id="policyCodeDisplay">
+                            <option value="before-title">Before Title</option>
+                            <option value="after-title">After Title</option>
+                            <option value="header">In Header</option>
+                            <option value="footer">In Footer</option>
+                            <option value="all">All Locations</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">Choose where to display policy codes (CM, CC, PC01)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Page Numbers</label>
+                        <select class="form-select" id="pageNumberLocation">
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="top-right">Top Right</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="none">No Page Numbers</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">Set page number position in printed/PDF documents</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Format Templates</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Quick formats you can apply to your policy</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Heading Styles</label>
+                        <div class="template-options">
+                            <button class="template-option" data-template="standard">
+                                <div class="preview">
+                                    <div class="preview-heading">Standard</div>
+                                </div>
+                            </button>
+                            <button class="template-option" data-template="modern">
+                                <div class="preview">
+                                    <div class="preview-heading-modern">Modern</div>
+                                </div>
+                            </button>
+                            <button class="template-option" data-template="elegant">
+                                <div class="preview">
+                                    <div class="preview-heading-elegant">Elegant</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Content Highlighting</label>
+                        <div class="template-options">
+                            <button class="template-option" data-highlight="key-points">
+                                <div class="preview">Key Points</div>
+                            </button>
+                            <button class="template-option" data-highlight="warnings">
+                                <div class="preview">Warnings</div>
+                            </button>
+                            <button class="template-option" data-highlight="notes">
+                                <div class="preview">Side Notes</div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button id="exportPdf" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-pdf"></i> Export as PDF
+                        </button>
+                        <button id="duplicatePolicy" class="btn btn-outline-secondary">
+                            <i class="bi bi-files"></i> Duplicate Policy
+                        </button>
+                        <button id="clearFormatting" class="btn btn-outline-secondary">
+                            <i class="bi bi-eraser"></i> Clear Formatting
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Templates -->
+<template id="sectionTemplate">
+    <div class="section-wrapper" data-section-id="">
+        <div class="section-actions">
+            <button class="btn btn-sm btn-outline-danger delete-section" title="Delete Section">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary duplicate-section" title="Duplicate Section">
+                <i class="bi bi-files"></i>
+            </button>
+            <span class="btn btn-sm btn-outline-info format-section" title="Format Options">
+                <i class="bi bi-palette"></i>
+            </span>
+        </div>
+        <div class="section-header">
+            <span class="section-number">1.0</span>
+            <h3 class="section-title" contenteditable="true">Section Title</h3>
+        </div>
+        <div class="section-body" contenteditable="true">
+            <p>Enter section content here...</p>
+        </div>
+    </div>
+</template>
+
+<!-- Pre-made section templates -->
+<template id="standardSection">
+    <div class="section-wrapper" data-section-id="">
+        <div class="section-actions">
+            <button class="btn btn-sm btn-outline-danger delete-section" title="Delete Section">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary duplicate-section" title="Duplicate Section">
+                <i class="bi bi-files"></i>
+            </button>
+            <span class="btn btn-sm btn-outline-info format-section" title="Format Options">
+                <i class="bi bi-palette"></i>
+            </span>
+        </div>
+        <div class="section-header">
+            <span class="section-number">1.0</span>
+            <h3 class="section-title" contenteditable="true">Policy Statement</h3>
+        </div>
+        <div class="section-body" contenteditable="true">
+            <p>This policy outlines our commitment to [purpose] and provides a framework for [goal].</p>
+        </div>
+    </div>
+</template>
+
+<template id="procedureSection">
+    <div class="section-wrapper" data-section-id="">
+        <div class="section-actions">
+            <button class="btn btn-sm btn-outline-danger delete-section" title="Delete Section">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary duplicate-section" title="Duplicate Section">
+                <i class="bi bi-files"></i>
+            </button>
+            <span class="btn btn-sm btn-outline-info format-section" title="Format Options">
+                <i class="bi bi-palette"></i>
+            </span>
+        </div>
+        <div class="section-header">
+            <span class="section-number">2.0</span>
+            <h3 class="section-title" contenteditable="true">Procedure</h3>
+        </div>
+        <div class="section-body" contenteditable="true">
+            <ol>
+                <li>First step in the procedure</li>
+                <li>Second step in the procedure</li>
+                <li>Third step in the procedure</li>
+            </ol>
+        </div>
+    </div>
+</template>
+
+<template id="definitionsSection">
+    <div class="section-wrapper" data-section-id="">
+        <div class="section-actions">
+            <button class="btn btn-sm btn-outline-danger delete-section" title="Delete Section">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary duplicate-section" title="Duplicate Section">
+                <i class="bi bi-files"></i>
+            </button>
+            <span class="btn btn-sm btn-outline-info format-section" title="Format Options">
+                <i class="bi bi-palette"></i>
+            </span>
+        </div>
+        <div class="section-header">
+            <span class="section-number">3.0</span>
+            <h3 class="section-title" contenteditable="true">Definitions</h3>
+        </div>
+        <div class="section-body" contenteditable="true">
+            <dl>
+                <dt>Term One</dt>
+                <dd>Definition of term one.</dd>
+                <dt>Term Two</dt>
+                <dd>Definition of term two.</dd>
+            </dl>
+        </div>
+    </div>
+</template>
+
+<!-- Modal for Preview -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Policy Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Preview content will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="printPreview">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Policy metadata
+    const policyData = {
+        id: "{{ policy_id if policy_id else '' }}",
+        title: "{% if policy %}{{ policy.title|safe }}{% else %}New Policy{% endif %}",
+        code: "{% if policy %}{{ policy.code|safe }}{% else %}{% endif %}",
+        category: "{% if policy %}{{ policy.category|safe }}{% else %}{% endif %}",
+        version: "{% if policy %}{{ policy.version|safe }}{% else %}1.0{% endif %}",
+        date: "{% if policy %}{{ policy.date|safe }}{% else %}{{ now.strftime('%Y-%m-%d') }}{% endif %}",
+        codeDisplay: "{% if policy and policy.code_display %}{{ policy.code_display }}{% else %}before-title{% endif %}",
+        pageNumbers: "{% if policy and policy.page_number_location %}{{ policy.page_number_location }}{% else %}bottom-center{% endif %}",
+        content: `{% if policy %}{{ policy.content|safe }}{% else %}{% endif %}`
+    };
+    
+    // Element references
+    const policyContent = document.getElementById('policyContent');
+    const addSectionBtn = document.getElementById('addSection');
+    const saveBtn = document.getElementById('savePolicy');
+    const saveAndExitBtn = document.getElementById('saveAndExitBtn');
+    const previewBtn = document.getElementById('previewPolicy');
+    const sectionTemplate = document.getElementById('sectionTemplate');
+    const toolbarButtons = document.querySelectorAll('.toolbar-button');
+    const saveStatus = document.getElementById('saveStatus');
+    const mainTitle = document.getElementById('mainTitle');
+    const policyCode = document.getElementById('policyCode');
+    const policyCategory = document.getElementById('policyCategory');
+    const policyVersion = document.getElementById('policyVersion');
+    const policyDate = document.getElementById('policyDate');
+    const loadingContent = document.getElementById('loadingContent');
+    const sectionTemplateButtons = document.querySelectorAll('.section-template');
+    const categoryContainers = document.querySelectorAll('.category-policies');
+    const showQCSPolicies = document.getElementById('showQCSPolicies');
+    const policyCodeDisplay = document.getElementById('policyCodeDisplay');
+    const pageNumberLocation = document.getElementById('pageNumberLocation');
+    
+    // Function to generate a unique ID for sections
+    function generateId() {
+        return 'section-' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // Initialize the editor with sections from existing content or create a default section
+    function initializeEditor() {
+        if (policyData.content) {
+            try {
+                // Try to parse the content as HTML and extract sections
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(policyData.content, 'text/html');
+                
+                // Look for headers (h1, h2, h3, h4) as potential section titles
+                const headers = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                
+                // If headers are found, create sections based on them
+                if (headers.length > 0) {
+                    let currentSection = null;
+                    let sectionNumber = 1;
+                    let sectionContent = [];
+                    
+                    Array.from(doc.body.childNodes).forEach(node => {
+                        if (node.nodeType === 1 && /^h[1-6]$/i.test(node.tagName)) {
+                            // If we have a previous section, add it to the editor
+                            if (currentSection) {
+                                addSection(currentSection.title, sectionContent.join(''), sectionNumber);
+                                sectionNumber++;
+                                sectionContent = [];
+                            }
+                            
+                            // Start a new section
+                            currentSection = {
+                                title: node.textContent
+                            };
+                        } else if (currentSection) {
+                            // Add this node to the current section content
+                            sectionContent.push(node.outerHTML || node.textContent || '');
+                        }
+                    });
+                    
+                    // Add the last section if it exists
+                    if (currentSection) {
+                        addSection(currentSection.title, sectionContent.join(''), sectionNumber);
+                    }
+                } else {
+                    // If no headers are found, create a single section with all content
+                    addSection('Policy Content', policyData.content, 1);
+                }
+            } catch (error) {
+                console.error('Error parsing policy content:', error);
+                // Fallback: create a single section with all content
+                addSection('Policy Content', policyData.content, 1);
+            }
+        } else {
+            // Create a default empty section
+            addSection('Policy Statement', '<p>Enter your policy statement here...</p>', 1);
+        }
+        
+        // Remove loading indicator if present
+        if (loadingContent) {
+            loadingContent.remove();
+        }
+        
+        // Update section numbers
+        updateSectionNumbers();
+    }
+    
+    // Add a new section to the editor
+    function addSection(title, content, number) {
+        const newSection = sectionTemplate.content.cloneNode(true);
+        const sectionWrapper = newSection.querySelector('.section-wrapper');
+        const sectionId = generateId();
+        
+        sectionWrapper.dataset.sectionId = sectionId;
+        
+        const sectionTitle = newSection.querySelector('.section-title');
+        sectionTitle.textContent = title || 'New Section';
+        
+        const sectionNumber = newSection.querySelector('.section-number');
+        sectionNumber.textContent = number + '.0';
+        
+        const sectionBody = newSection.querySelector('.section-body');
+        if (content) {
+            sectionBody.innerHTML = content;
+        }
+        
+        // Set up event listeners for the new section
+        const deleteBtn = newSection.querySelector('.delete-section');
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this section?')) {
+                sectionWrapper.remove();
+                updateSectionNumbers();
+                showSaveStatus('Changes not saved', 'saving');
+            }
+        });
+        
+        const duplicateBtn = newSection.querySelector('.duplicate-section');
+        duplicateBtn.addEventListener('click', function() {
+            const sectionIndex = Array.from(policyContent.querySelectorAll('.section-wrapper')).indexOf(sectionWrapper);
+            addSection(
+                sectionTitle.textContent + ' (Copy)',
+                sectionBody.innerHTML,
+                sectionIndex + 2
+            );
+            updateSectionNumbers();
+            showSaveStatus('Changes not saved', 'saving');
+        });
+        
+        policyContent.appendChild(newSection);
+        
+        // Make the section body editable with the toolbar
+        setupEditorEvents(sectionBody);
+        
+        return sectionWrapper;
+    }
+    
+    // Update section numbers based on their order
+    function updateSectionNumbers() {
+        const sections = policyContent.querySelectorAll('.section-wrapper');
+        sections.forEach((section, index) => {
+            const numberElement = section.querySelector('.section-number');
+            const oldNumber = numberElement.textContent;
+            const newNumber = (index + 1) + '.0';
+            
+            if (oldNumber !== newNumber) {
+                numberElement.textContent = newNumber;
+                numberElement.classList.add('updated');
+                setTimeout(() => {
+                    numberElement.classList.remove('updated');
+                }, 2000);
+            }
+        });
+    }
+    
+    // Initialize drag-and-drop for sections
+    function initializeSortable() {
+        new Sortable(policyContent, {
+            animation: 150,
+            handle: '.section-header',
+            ghostClass: 'section-placeholder',
+            onSort: function() {
+                updateSectionNumbers();
+                showSaveStatus('Changes not saved', 'saving');
+            }
+        });
+    }
+    
+    // Set up editor events for a content element
+    function setupEditorEvents(element) {
+        element.addEventListener('focus', function() {
+            // Store the current focused element globally for toolbar commands
+            window.currentEditor = this;
+        });
+        
+        element.addEventListener('blur', function() {
+            window.currentEditor = null;
+            showSaveStatus('Changes not saved', 'saving');
+        });
+        
+        element.addEventListener('input', function() {
+            showSaveStatus('Changes not saved', 'saving');
+        });
+    }
+    
+    // Execute editor commands from the toolbar
+    function execCommand(command, value = null) {
+        if (window.currentEditor) {
+            // Save selection position
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            
+            // Focus on the editor
+            window.currentEditor.focus();
+            
+            // Restore selection
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // Execute command
+            if (command === 'createLink') {
+                const url = prompt('Enter the URL for the link:', 'http://');
+                if (url) {
+                    document.execCommand(command, false, url);
+                }
+            } else if (command === 'insertTable') {
+                const rows = prompt('Enter number of rows:', '3');
+                const cols = prompt('Enter number of columns:', '3');
+                if (rows && cols) {
+                    let tableHTML = '<table class="table table-bordered"><tbody>';
+                    for (let i = 0; i < parseInt(rows); i++) {
+                        tableHTML += '<tr>';
+                        for (let j = 0; j < parseInt(cols); j++) {
+                            tableHTML += '<td>Cell</td>';
+                        }
+                        tableHTML += '</tr>';
+                    }
+                    tableHTML += '</tbody></table>';
+                    document.execCommand('insertHTML', false, tableHTML);
+                }
+            } else if (command === 'auto-detect-sections') {
+                // Call API to auto-detect sections
+                autoDetectSections();
+            } else {
+                // Standard commands
+                document.execCommand(command, false, value);
+            }
+            
+            showSaveStatus('Changes not saved', 'saving');
+        }
+    }
+    
+    // Function to detect sections in content automatically
+    function autoDetectSections() {
+        // Get the current policy content
+        const content = getPolicyContent();
+        
+        // Call the API to detect sections
+        fetch('/improved-editor/auto-detect-sections', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear existing sections
+                policyContent.innerHTML = '';
+                
+                // Create a temporary container to parse the HTML
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = data.content;
+                
+                // Find all heading elements
+                const headings = tempContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                
+                if (headings.length > 0) {
+                    let currentSection = null;
+                    let sectionContent = [];
+                    let sectionNumber = 1;
+                    
+                    // Process each element to build sections
+                    Array.from(tempContainer.childNodes).forEach(node => {
+                        if (node.nodeType === 1 && /^h[1-6]$/i.test(node.tagName)) {
+                            // If we have a previous section, add it
+                            if (currentSection) {
+                                addSection(currentSection.title, sectionContent.join(''), sectionNumber);
+                                sectionNumber++;
+                                sectionContent = [];
+                            }
+                            
+                            // Start a new section
+                            currentSection = {
+                                title: node.textContent
+                            };
+                        } else if (currentSection) {
+                            // Add node to current section content
+                            if (node.outerHTML) {
+                                sectionContent.push(node.outerHTML);
+                            } else if (node.textContent) {
+                                sectionContent.push(node.textContent);
+                            }
+                        } else {
+                            // No section yet, create a default section for content before first heading
+                            currentSection = { title: 'Introduction' };
+                            if (node.outerHTML) {
+                                sectionContent.push(node.outerHTML);
+                            } else if (node.textContent) {
+                                sectionContent.push(node.textContent);
+                            }
+                        }
+                    });
+                    
+                    // Add the final section
+                    if (currentSection) {
+                        addSection(currentSection.title, sectionContent.join(''), sectionNumber);
+                    }
+                    
+                    updateSectionNumbers();
+                    showSaveStatus('Sections detected', 'saved');
+                } else {
+                    // No headings found, just add the whole content as one section
+                    addSection('Policy Content', data.content, 1);
+                    showSaveStatus('No sections detected', 'saving');
+                }
+            } else {
+                showSaveStatus(data.message || 'Error detecting sections', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error auto-detecting sections:', error);
+            showSaveStatus('Error detecting sections', 'error');
+        });
+    }
+    
+    // Save the policy content
+    function savePolicy(exitAfterSave = false) {
+        showSaveStatus('Saving...', 'saving');
+        
+        const policyContent = getPolicyContent();
+        const policyData = {
+            id: "{{ policy_id if policy_id else '' }}",
+            title: mainTitle.textContent.trim(),
+            code: policyCode.textContent.trim(),
+            category: policyCategory.value,
+            version: policyVersion.textContent.trim(),
+            date: policyDate.value,
+            content: policyContent,
+            code_display: policyCodeDisplay.value,
+            page_number_location: pageNumberLocation.value
+        };
+        
+        fetch('/improved-editor/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(policyData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSaveStatus('Saved successfully', 'saved');
+                
+                // Update policy ID if it was newly created
+                if (data.policy_id && !policyData.id) {
+                    policyData.id = data.policy_id;
+                    
+                    // Update URL to include policy ID without reloading
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('policy_id', data.policy_id);
+                    window.history.pushState({}, '', url);
+                }
+                
+                if (exitAfterSave) {
+                    // Redirect to dashboard
+                    window.location.href = "{{ url_for('dashboard') }}";
+                }
+            } else {
+                showSaveStatus(data.message || 'Error saving', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving policy:', error);
+            showSaveStatus('Error saving policy', 'error');
+        });
+    }
+    
+    // Get the full HTML content of the policy
+    function getPolicyContent() {
+        // Create a container for the full content
+        const fullContent = document.createElement('div');
+        
+        // Get all sections and their content
+        const sections = policyContent.querySelectorAll('.section-wrapper');
+        sections.forEach((section, index) => {
+            const sectionNumber = section.querySelector('.section-number').textContent;
+            const sectionTitle = section.querySelector('.section-title').textContent;
+            const sectionContent = section.querySelector('.section-body').innerHTML;
+            
+            // Create a header with the section number and title
+            const header = document.createElement('h2');
+            header.textContent = `${sectionNumber} ${sectionTitle}`;
+            
+            // Create a div for the section body
+            const body = document.createElement('div');
+            body.classList.add('section-content');
+            body.innerHTML = sectionContent;
+            
+            // Add both to the full content
+            fullContent.appendChild(header);
+            fullContent.appendChild(body);
+        });
+        
+        return fullContent.innerHTML;
+    }
+    
+    // Show save status message
+    function showSaveStatus(message, status) {
+        saveStatus.textContent = message;
+        saveStatus.className = 'save-status ' + status;
+        saveStatus.style.opacity = 1;
+        
+        if (status === 'saved') {
+            setTimeout(() => {
+                saveStatus.style.opacity = 0;
+            }, 3000);
+        }
+    }
+    
+    // Preview the policy
+    function previewPolicy() {
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        const previewContent = document.getElementById('previewContent');
+        
+        // Create a styled version of the policy for preview
+        let previewHTML = `
+            <div class="policy-preview">
+                <h1>${mainTitle.textContent.trim()}</h1>
+                <div class="policy-meta-preview mb-4">
+                    <div><strong>Code:</strong> ${policyCode.textContent.trim()}</div>
+                    <div><strong>Category:</strong> ${policyCategory.options[policyCategory.selectedIndex].text}</div>
+                    <div><strong>Version:</strong> ${policyVersion.textContent.trim()}</div>
+                    <div><strong>Date:</strong> ${policyDate.value}</div>
+                </div>
+            </div>
+        `;
+        
+        // Add the content sections
+        previewHTML += getPolicyContent();
+        
+        previewContent.innerHTML = previewHTML;
+        previewModal.show();
+        
+        // Set up print functionality
+        document.getElementById('printPreview').addEventListener('click', function() {
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${mainTitle.textContent.trim()}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { padding: 20px; }
+                        .policy-meta-preview { 
+                            display: flex; 
+                            gap: 20px;
+                            border-bottom: 1px solid #dee2e6;
+                            padding-bottom: 15px;
+                            margin-bottom: 20px;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            @page { margin: 2cm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${previewHTML}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        });
+    }
+    
+    // Set up event listeners
+    
+    // Add new section button
+    addSectionBtn.addEventListener('click', function() {
+        const newSection = addSection('New Section', '<p>Enter content here...</p>');
+        updateSectionNumbers();
+        showSaveStatus('Changes not saved', 'saving');
+        
+        // Auto-focus on the title for immediate editing
+        setTimeout(() => {
+            newSection.querySelector('.section-title').focus();
+        }, 100);
+    });
+    
+    // Toolbar buttons
+    toolbarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.dataset.command;
+            const value = this.dataset.value;
+            execCommand(command, value);
+        });
+    });
+    
+    // Dropdown toolbar buttons
+    document.querySelectorAll('.toolbar-dropdown-content button').forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.dataset.command;
+            const value = this.dataset.value;
+            execCommand(command, value);
+        });
+    });
+    
+    // Save buttons
+    saveBtn.addEventListener('click', function() {
+        savePolicy(false);
+    });
+    
+    saveAndExitBtn.addEventListener('click', function() {
+        savePolicy(true);
+    });
+    
+    // Preview button
+    previewBtn.addEventListener('click', previewPolicy);
+    
+    // Policy metadata fields
+    [mainTitle, policyCode, policyVersion].forEach(field => {
+        field.addEventListener('input', function() {
+            showSaveStatus('Changes not saved', 'saving');
+        });
+    });
+    
+    policyCategory.addEventListener('change', function() {
+        showSaveStatus('Changes not saved', 'saving');
+    });
+    
+    policyDate.addEventListener('change', function() {
+        showSaveStatus('Changes not saved', 'saving');
+    });
+    
+    // Section template buttons
+    sectionTemplateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const sectionType = this.dataset.section;
+            let content = '<p>Enter content here...</p>';
+            
+            // Specific template content based on section type
+            if (sectionType === 'Procedure') {
+                content = `
+                    <ol>
+                        <li>First step in the procedure</li>
+                        <li>Second step in the procedure</li>
+                        <li>Third step in the procedure</li>
+                    </ol>
+                    <p>Add any notes or exceptions to the procedure here.</p>
+                `;
+            } else if (sectionType === 'Definitions') {
+                content = `
+                    <dl>
+                        <dt>Term 1</dt>
+                        <dd>Definition of term 1</dd>
+                        <dt>Term 2</dt>
+                        <dd>Definition of term 2</dd>
+                    </dl>
+                `;
+            } else if (sectionType === 'Responsibilities') {
+                content = `
+                    <h4>Manager Responsibilities</h4>
+                    <ul>
+                        <li>Responsibility 1</li>
+                        <li>Responsibility 2</li>
+                    </ul>
+                    <h4>Staff Responsibilities</h4>
+                    <ul>
+                        <li>Responsibility 1</li>
+                        <li>Responsibility 2</li>
+                    </ul>
+                `;
+            } else if (sectionType === 'Legislation and Guidance') {
+                content = `
+                    <ul>
+                        <li>Legislation 1 - Brief description of requirement</li>
+                        <li>Legislation 2 - Brief description of requirement</li>
+                        <li>Guidance Document - Brief description</li>
+                    </ul>
+                `;
+            }
+            
+            const newSection = addSection(sectionType, content);
+            updateSectionNumbers();
+            showSaveStatus('Section added', 'saving');
+        });
+    });
+    
+    // Advanced options buttons
+    document.getElementById('clearFormatting').addEventListener('click', function() {
+        if (window.currentEditor) {
+            execCommand('removeFormat');
+        } else {
+            alert('Please click inside a section content area first to select it.');
+        }
+    });
+    
+    document.getElementById('duplicatePolicy').addEventListener('click', function() {
+        if (confirm('Do you want to create a duplicate of this policy?')) {
+            // Clear the policy ID to force saving as a new policy
+            const title = mainTitle.textContent.trim() + ' (Copy)';
+            mainTitle.textContent = title;
+            
+            // Save as a new policy
+            const policyContent = getPolicyContent();
+            const policyData = {
+                title: title,
+                code: policyCode.textContent.trim() + '_COPY',
+                category: policyCategory.value,
+                version: policyVersion.textContent.trim(),
+                date: policyDate.value,
+                content: policyContent
+            };
+            
+            fetch('/improved-editor/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(policyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSaveStatus('Policy duplicated', 'saved');
+                    
+                    // Redirect to the new policy
+                    window.location.href = "/improved-editor/?policy_id=" + data.policy_id;
+                } else {
+                    showSaveStatus(data.message || 'Error duplicating', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error duplicating policy:', error);
+                showSaveStatus('Error duplicating policy', 'error');
+            });
+        }
+    });
+    
+    // Initialize the editor when the page loads
+    initializeEditor();
+    initializeSortable();
+    
+    // Set up auto-save
+    let autoSaveTimer = null;
+    const setupAutoSave = () => {
+        document.querySelectorAll('[contenteditable="true"]').forEach(element => {
+            element.addEventListener('input', function() {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    savePolicy(false);
+                }, 30000); // Auto-save after 30 seconds of inactivity
+            });
+        });
+    };
+    
+    // Load policies for a specific category
+    function loadCategoryPolicies(categoryId, container) {
+        // Show loading
+        container.innerHTML = `
+            <div class="p-3 text-center">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-2">Loading policies...</span>
+            </div>
+        `;
+        
+        // Get QCS filter value
+        const showQCS = showQCSPolicies.checked;
+        
+        // Fetch policies for this category
+        fetch(`/api/policy/category/${categoryId}?qcs=${showQCS}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.policies && data.policies.length > 0) {
+                    // Clear the container
+                    container.innerHTML = '';
+                    
+                    // Add each policy to the list
+                    data.policies.forEach(policy => {
+                        const policyItem = document.createElement('button');
+                        policyItem.className = 'list-group-item list-group-item-action';
+                        policyItem.innerHTML = `
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <div class="fw-bold">${policy.code || ''}</div>
+                                    <div>${policy.title}</div>
+                                </div>
+                                <div>
+                                    <span class="badge ${policy.is_qcs_policy ? 'bg-info' : 'bg-success'} rounded-pill">
+                                        ${policy.is_qcs_policy ? 'QCS' : 'Adapted'}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add click event to load the policy into the editor
+                        policyItem.addEventListener('click', () => {
+                            // Ask for confirmation if there are unsaved changes
+                            if (saveStatus.textContent === 'Changes not saved' && 
+                                !confirm('You have unsaved changes. Are you sure you want to load a different policy?')) {
+                                return;
+                            }
+                            
+                            // Redirect to the editor with this policy ID
+                            window.location.href = `/improved-editor/?policy_id=${policy.id}`;
+                        });
+                        
+                        container.appendChild(policyItem);
+                    });
+                } else {
+                    // No policies found
+                    container.innerHTML = `
+                        <div class="p-3 text-center text-muted">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No policies found in this category.
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading policies:', error);
+                container.innerHTML = `
+                    <div class="p-3 text-center text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error loading policies. Please try again.
+                    </div>
+                `;
+            });
+    }
+    
+    // Set up category accordion functionality
+    document.querySelectorAll('.accordion-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // When a category is expanded, load its policies
+            const categoryId = this.closest('.accordion-item').querySelector('.category-policies').dataset.categoryId;
+            const container = this.closest('.accordion-item').querySelector('.category-policies');
+            
+            // Only load if not already loaded (check for loading spinner)
+            if (container.querySelector('.spinner-border')) {
+                loadCategoryPolicies(categoryId, container);
+            }
+        });
+    });
+    
+    // Set up QCS filter toggle
+    showQCSPolicies.addEventListener('change', function() {
+        // Reload all visible categories
+        document.querySelectorAll('.accordion-collapse.show').forEach(collapse => {
+            const categoryId = collapse.querySelector('.category-policies').dataset.categoryId;
+            const container = collapse.querySelector('.category-policies');
+            loadCategoryPolicies(categoryId, container);
+        });
+    });
+    
+    // Call this after editor is initialized
+    setupAutoSave();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview Policy Format{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .preview-frame {
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: white;
+        font-family: Arial, sans-serif;
+    }
+    
+    .preview-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .preview-title {
+        text-align: center;
+        color: #0066cc;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .preview-subtitle {
+        text-align: center;
+        color: #444;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .preview-facility {
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .preview-address {
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 20px;
+    }
+    
+    .preview-divider {
+        border-bottom: 1px solid #0066cc;
+        margin: 15px 0;
+    }
+    
+    .preview-section {
+        margin-bottom: 15px;
+    }
+    
+    .preview-section-title {
+        color: #0066cc;
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 10px;
+        padding: 5px 0;
+    }
+    
+    .preview-content {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    
+    .preview-review-sheet {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        font-size: 12px;
+    }
+    
+    .preview-review-title {
+        font-weight: bold;
+        color: #0066cc;
+        margin-bottom: 5px;
+    }
+    
+    .preview-review-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+    
+    .preview-review-table th, .preview-review-table td {
+        border: 1px solid #ddd;
+        padding: 4px 8px;
+        text-align: left;
+    }
+    
+    .preview-footer {
+        margin-top: 30px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+        font-size: 10px;
+        color: #666;
+    }
+    
+    .preview-footer .copyright {
+        margin-bottom: 5px;
+        font-style: italic;
+    }
+    
+    .preview-footer .metadata {
+        text-align: left;
+        font-size: 10px;
+    }
+    
+    .preview-footer .page-number {
+        text-align: right;
+        font-size: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">QCS Policy Format Preview</h3>
+                <a href="{{ url_for('policy.batch_format_care_management') }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Batch Format
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info mb-4">
+                <h5><i class="fas fa-info-circle"></i> About This Preview</h5>
+                <p>This preview shows how your formatted policies will look with QCS styling applied. The actual document will be in DOCX format and will match the QCS PDF formatting requirements.</p>
+            </div>
+            
+            {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                </div>
+            {% endif %}
+            
+            {% if policy %}
+                <div class="mb-4">
+                    <h5>Selected Sample Policy:</h5>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2">{{ policy.reference_code }}</span> 
+                        <strong>{{ policy.title }}</strong>
+                    </div>
+                </div>
+                
+                <div class="preview-frame">
+                    <div class="preview-header">
+                        <div class="preview-title">
+                            {% if policy.reference_code %}
+                                {% if policy.reference_code.startswith('CM') %}
+                                    CC{{ policy.reference_code[2:] }} - {{ policy.title.split('-', 1)[1].strip() if '-' in policy.title else policy.title }}
+                                {% else %}
+                                    {{ policy.reference_code }} - {{ policy.title.split('-', 1)[1].strip() if '-' in policy.title else policy.title }}
+                                {% endif %}
+                            {% else %}
+                                {{ policy.title }}
+                            {% endif %}
+                        </div>
+                        <div class="preview-subtitle">Care Management - Care Practice</div>
+                        <div class="preview-facility">Quenby Rest Home</div>
+                        <div class="preview-address">Brightlingsea Road Thorrington Colchester Essex CO7 8JH</div>
+                    </div>
+                    
+                    <div class="preview-review-sheet">
+                        <div class="preview-review-title">Review Sheet</div>
+                        <table class="preview-review-table">
+                            <tr>
+                                <th>Last Reviewed</th>
+                                <th>Last Amended</th>
+                                <th>This policy will be reviewed as needs require or at the following interval:</th>
+                            </tr>
+                            <tr>
+                                <td>{{ today_formatted }}</td>
+                                <td>{{ today_formatted }}</td>
+                                <td>Annual</td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px;">
+                            <strong>Business Impact:</strong> <span style="margin-left: 10px;">MEDIUM</span>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <strong>Reason for this Review:</strong> <span style="margin-left: 10px;">Scheduled review</span>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <strong>Changes Made:</strong> <span style="margin-left: 10px;">Yes</span>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <strong>Summary:</strong>
+                            <div style="margin-top: 5px;">This policy provides guidance for staff to support Residents with diabetes and those at risk of developing diabetes.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-divider"></div>
+                    
+                    <div class="preview-section">
+                        <div class="preview-section-title">1. Purpose</div>
+                        <div class="preview-content">
+                            <p>1.1 To effectively support Residents who have diabetes to maintain good health and be as independent as possible with managing their own long-term condition.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <div class="preview-section-title">Policy Statement</div>
+                        <div class="preview-content">
+                            {{ policy_content | safe }}
+                        </div>
+                    </div>
+                    
+                    <div class="preview-divider"></div>
+                    
+                    <div class="preview-footer">
+                        <div class="row">
+                            <div class="col-12 copyright">
+                                This policy is Copyright © Quality Compliance Systems Ltd. {{ today_formatted | date:'%Y' }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-8 metadata">
+                                Last Reviewed: {{ today_formatted }}. Version number: 30.04.25-02.43.14
+                            </div>
+                            <div class="col-4 page-number text-end">
+                                Page 1/41
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-check-circle"></i> Format Details</h5>
+                    <p>This preview matches the QCS styling requirements with:</p>
+                    <ul>
+                        <li>Blue title and section headings</li>
+                        <li>Policy code extracted from the title</li>
+                        <li>QCS copyright in the footer</li>
+                        <li>Version information and page numbering</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('policy.batch_format_care_management') }}" class="btn btn-primary">
+                        <i class="fas fa-file-medical"></i> Continue to Batch Format
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No sample policy available for preview.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+
+{% block title %}Regulatory Action Plan{% endblock %}
+
+{% block head %}
+<style>
+    .action-item {
+        border-left: 4px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .action-item:hover {
+        background-color: rgba(0,0,0,0.03);
+    }
+    
+    .action-item.high {
+        border-left-color: #dc3545;
+    }
+    
+    .action-item.medium {
+        border-left-color: #ffc107;
+    }
+    
+    .action-item.low {
+        border-left-color: #0dcaf0;
+    }
+    
+    .action-status-badge {
+        width: 120px;
+    }
+    
+    .kanban-column {
+        min-height: 500px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Regulatory Action Plan</h1>
+            <p class="lead">Consolidated plan of prioritized actions required to address compliance gaps.</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{{ url_for('regulatory_demo.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+                <button type="button" class="btn btn-primary" id="printActionPlan">
+                    <i class="fas fa-print me-2"></i> Print
+                </button>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fas fa-file-export me-2"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Action Plan Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="display-5 fw-bold text-danger">{{ not_started|length }}</div>
+                            <div>Not Started</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-5 fw-bold text-warning">{{ in_progress|length }}</div>
+                            <div>In Progress</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-5 fw-bold text-success">{{ completed|length }}</div>
+                            <div>Completed</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Priority Distribution</h6>
+                    <canvas id="priorityDistributionChart" width="100%" height="150"></canvas>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Framework Distribution</h6>
+                    <canvas id="frameworkDistributionChart" width="100%" height="150"></canvas>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Filter Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Priority</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="filterHighPriority" checked>
+                                <label class="form-check-label" for="filterHighPriority">
+                                    High Priority
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="filterMediumPriority" checked>
+                                <label class="form-check-label" for="filterMediumPriority">
+                                    Medium Priority
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="filterLowPriority" checked>
+                                <label class="form-check-label" for="filterLowPriority">
+                                    Low Priority
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Framework</label>
+                            <select class="form-select" id="filterFramework">
+                                <option value="all">All Frameworks</option>
+                                <option value="CQC">CQC</option>
+                                <option value="RIDDOR">RIDDOR</option>
+                                <option value="Fire Safety">Fire Safety</option>
+                                <option value="Financial/Accounting">Financial/Accounting</option>
+                                <option value="Business Governance">Business Governance</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Date Range</label>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">From</span>
+                                <input type="date" class="form-control" id="filterDateFrom">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text">To</span>
+                                <input type="date" class="form-control" id="filterDateTo">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="actionPlanTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active text-dark" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-view" type="button" role="tab" aria-controls="list-view" aria-selected="true">
+                                <i class="fas fa-list me-2"></i> List View
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="kanban-tab" data-bs-toggle="tab" data-bs-target="#kanban-view" type="button" role="tab" aria-controls="kanban-view" aria-selected="false">
+                                <i class="fas fa-columns me-2"></i> Kanban View
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-dark" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-view" type="button" role="tab" aria-controls="timeline-view" aria-selected="false">
+                                <i class="fas fa-calendar-alt me-2"></i> Timeline View
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-0">
+                    <div class="tab-content" id="actionPlanTabContent">
+                        <!-- List View -->
+                        <div class="tab-pane fade show active" id="list-view" role="tabpanel" aria-labelledby="list-tab">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 40%">Action Item</th>
+                                            <th style="width: 15%">Priority</th>
+                                            <th style="width: 15%">Framework</th>
+                                            <th style="width: 15%">Due Date</th>
+                                            <th style="width: 15%">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for action in not_started + in_progress + completed %}
+                                        <tr class="action-item {{ action.priority.lower() }}">
+                                            <td>
+                                                <div>{{ action.description }}</div>
+                                                <small class="text-muted">From: {{ action.report_title }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                                    {{ action.priority }}
+                                                </span>
+                                            </td>
+                                            <td>{{ action.framework }}</td>
+                                            <td>{{ action.due_date_obj.strftime('%d %b %Y') }}</td>
+                                            <td>
+                                                <span class="badge {{ 'bg-success' if action.status == 'Completed' else 'bg-warning text-dark' if action.status == 'In Progress' else 'bg-secondary' }}">
+                                                    {{ action.status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Kanban View -->
+                        <div class="tab-pane fade" id="kanban-view" role="tabpanel" aria-labelledby="kanban-tab">
+                            <div class="p-3">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h5 class="mb-0">Not Started ({{ not_started|length }})</h5>
+                                            </div>
+                                            <div class="card-body p-2 kanban-column">
+                                                {% for action in not_started %}
+                                                <div class="card mb-2 action-item {{ action.priority.lower() }}">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                                                {{ action.priority }}
+                                                            </span>
+                                                            <small class="text-muted">{{ action.framework }}</small>
+                                                        </div>
+                                                        <p class="card-text mt-2 mb-2">{{ action.description }}</p>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">Due: {{ action.due_date_obj.strftime('%d %b %Y') }}</small>
+                                                            <button class="btn btn-sm btn-outline-primary action-start-btn">
+                                                                <i class="fas fa-play"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-header bg-warning text-dark">
+                                                <h5 class="mb-0">In Progress ({{ in_progress|length }})</h5>
+                                            </div>
+                                            <div class="card-body p-2 kanban-column">
+                                                {% for action in in_progress %}
+                                                <div class="card mb-2 action-item {{ action.priority.lower() }}">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                                                {{ action.priority }}
+                                                            </span>
+                                                            <small class="text-muted">{{ action.framework }}</small>
+                                                        </div>
+                                                        <p class="card-text mt-2 mb-2">{{ action.description }}</p>
+                                                        <div class="progress mb-2" style="height: 5px;">
+                                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">Due: {{ action.due_date_obj.strftime('%d %b %Y') }}</small>
+                                                            <button class="btn btn-sm btn-outline-success action-complete-btn">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-header bg-success text-white">
+                                                <h5 class="mb-0">Completed ({{ completed|length }})</h5>
+                                            </div>
+                                            <div class="card-body p-2 kanban-column">
+                                                {% for action in completed %}
+                                                <div class="card mb-2 action-item {{ action.priority.lower() }}">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                                                {{ action.priority }}
+                                                            </span>
+                                                            <small class="text-muted">{{ action.framework }}</small>
+                                                        </div>
+                                                        <p class="card-text mt-2 mb-2">{{ action.description }}</p>
+                                                        <div class="progress mb-2" style="height: 5px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">Completed</small>
+                                                            <button class="btn btn-sm btn-outline-secondary action-archive-btn">
+                                                                <i class="fas fa-archive"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Timeline View -->
+                        <div class="tab-pane fade" id="timeline-view" role="tabpanel" aria-labelledby="timeline-tab">
+                            <div class="p-4">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5 class="mb-4">Action Plan Timeline</h5>
+                                        
+                                        <!-- Timeline UI -->
+                                        <div class="timeline">
+                                            {% set all_actions = not_started + in_progress + completed %}
+                                            {% set actions_by_month = {} %}
+                                            
+                                            {% for action in all_actions %}
+                                                {% set month_key = action.due_date_obj.strftime('%Y-%m') %}
+                                                {% if month_key not in actions_by_month %}
+                                                    {% set _ = actions_by_month.update({month_key: []}) %}
+                                                {% endif %}
+                                                {% set _ = actions_by_month[month_key].append(action) %}
+                                            {% endfor %}
+                                            
+                                            {% for month_key in actions_by_month|sort %}
+                                                {% set month_actions = actions_by_month[month_key] %}
+                                                {% set month_display = month_actions[0].due_date_obj.strftime('%B %Y') %}
+                                                
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-info text-white">
+                                                        <h6 class="mb-0">{{ month_display }}</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="list-group">
+                                                            {% for action in month_actions|sort(attribute='due_date_obj') %}
+                                                                <div class="list-group-item list-group-item-action action-item {{ action.priority.lower() }}">
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <div>
+                                                                            <h6 class="mb-1">{{ action.description }}</h6>
+                                                                            <small>Framework: {{ action.framework }}</small>
+                                                                        </div>
+                                                                        <div class="text-end">
+                                                                            <div>
+                                                                                <span class="badge {{ 'bg-danger' if action.priority == 'High' else 'bg-warning text-dark' if action.priority == 'Medium' else 'bg-info' }}">
+                                                                                    {{ action.priority }}
+                                                                                </span>
+                                                                                <span class="badge {{ 'bg-success' if action.status == 'Completed' else 'bg-warning text-dark' if action.status == 'In Progress' else 'bg-secondary' }}">
+                                                                                    {{ action.status }}
+                                                                                </span>
+                                                                            </div>
+                                                                            <small class="text-muted">Due: {{ action.due_date_obj.strftime('%d %b %Y') }}</small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActionItemModal">
+                        <i class="fas fa-plus me-2"></i> Add Action Item
+                    </button>
+                    <button class="btn btn-success ms-2" id="batchUpdateBtn">
+                        <i class="fas fa-edit me-2"></i> Batch Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Action Item Modal -->
+<div class="modal fade" id="addActionItemModal" tabindex="-1" aria-labelledby="addActionItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addActionItemModalLabel">Add Action Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addActionItemForm">
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">Priority</label>
+                        <select class="form-select" id="priority" required>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="framework" class="form-label">Framework</label>
+                        <select class="form-select" id="framework" required>
+                            <option value="CQC">CQC</option>
+                            <option value="RIDDOR">RIDDOR</option>
+                            <option value="Fire Safety">Fire Safety</option>
+                            <option value="Financial/Accounting">Financial/Accounting</option>
+                            <option value="Business Governance">Business Governance</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dueDate" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="dueDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignedTo" class="form-label">Assigned To</label>
+                        <input type="text" class="form-control" id="assignedTo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="relatedReport" class="form-label">Related Report</label>
+                        <select class="form-select" id="relatedReport">
+                            <option value="">None</option>
+                            {% for action in not_started + in_progress + completed %}
+                            <option value="{{ action.report_id }}">{{ action.report_title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addActionItemForm" class="btn btn-primary">Add Action Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Export Action Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="exportFormat" class="form-label">Export Format</label>
+                    <select class="form-select" id="exportFormat">
+                        <option value="pdf">PDF Report</option>
+                        <option value="excel">Excel Spreadsheet</option>
+                        <option value="csv">CSV File</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="exportContent" class="form-label">Content to Include</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="includeNotStarted" checked>
+                        <label class="form-check-label" for="includeNotStarted">
+                            Not Started Items
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="includeInProgress" checked>
+                        <label class="form-check-label" for="includeInProgress">
+                            In Progress Items
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="includeCompleted" checked>
+                        <label class="form-check-label" for="includeCompleted">
+                            Completed Items
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="includeCharts" checked>
+                        <label class="form-check-label" for="includeCharts">
+                            Statistics and Charts
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="exportTitle" class="form-label">Export Title</label>
+                    <input type="text" class="form-control" id="exportTitle" value="Regulatory Action Plan">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmExport">Export</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Priority Distribution Chart
+        const priorityDistributionCtx = document.getElementById('priorityDistributionChart').getContext('2d');
+        new Chart(priorityDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High', 'Medium', 'Low'],
+                datasets: [{
+                    data: [
+                        {{ (not_started + in_progress + completed)|selectattr('priority', 'equalto', 'High')|list|length }},
+                        {{ (not_started + in_progress + completed)|selectattr('priority', 'equalto', 'Medium')|list|length }},
+                        {{ (not_started + in_progress + completed)|selectattr('priority', 'equalto', 'Low')|list|length }}
+                    ],
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.8)',  // Danger red
+                        'rgba(255, 193, 7, 0.8)',  // Warning yellow
+                        'rgba(23, 162, 184, 0.8)'  // Info blue
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Framework Distribution Chart
+        const frameworkDistributionCtx = document.getElementById('frameworkDistributionChart').getContext('2d');
+        
+        // Count actions by framework
+        const frameworks = ['CQC', 'RIDDOR', 'Fire Safety', 'Financial/Accounting', 'Business Governance'];
+        const frameworkCounts = frameworks.map(framework => {
+            return {{ not_started + in_progress + completed }}.filter(item => item.framework === framework).length;
+        });
+        
+        new Chart(frameworkDistributionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CQC', 'RIDDOR', 'Fire', 'Financial', 'Governance'],
+                datasets: [{
+                    label: 'Actions',
+                    data: frameworkCounts,
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',   // Success green
+                        'rgba(0, 123, 255, 0.8)',   // Primary blue
+                        'rgba(255, 193, 7, 0.8)',   // Warning yellow
+                        'rgba(111, 66, 193, 0.8)',  // Purple
+                        'rgba(23, 162, 184, 0.8)'   // Info blue
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Print Action Plan Button
+        document.getElementById('printActionPlan').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Confirm Export Button
+        document.getElementById('confirmExport').addEventListener('click', function() {
+            const format = document.getElementById('exportFormat').value;
+            const title = document.getElementById('exportTitle').value;
+            
+            // In a real app, this would trigger an actual export
+            alert(`Action plan "${title}" will be exported as ${format.toUpperCase()}.`);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+            modal.hide();
+        });
+        
+        // Action buttons in Kanban view
+        document.querySelectorAll('.action-start-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Action status updated to "In Progress"');
+            });
+        });
+        
+        document.querySelectorAll('.action-complete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Action status updated to "Completed"');
+            });
+        });
+        
+        document.querySelectorAll('.action-archive-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Action archived');
+            });
+        });
+        
+        // Add Action Item Form
+        document.getElementById('addActionItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // In a real app, this would add the action item to the database
+            alert('Action item added successfully.');
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addActionItemModal'));
+            modal.hide();
+        });
+        
+        // Batch Update Button
+        document.getElementById('batchUpdateBtn').addEventListener('click', function() {
+            alert('Batch update functionality would open here, allowing multiple actions to be updated at once.');
+        });
+        
+        // Filter Form
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // In a real app, this would filter the action items
+            alert('Filters applied.');
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

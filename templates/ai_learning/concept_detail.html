@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Concept: {{ concept.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_learning.index') }}">AI Learning</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_learning.view_concepts') }}">Concepts</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ concept.name }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-4">{{ concept.name }}</h1>
+            <div class="mt-2 mb-4">
+                <span class="badge bg-secondary me-2">{{ concept.concept_type }}</span>
+                <span class="badge bg-info me-2">Importance: {{ (concept.importance_score * 100)|int }}%</span>
+                <span class="badge bg-dark">Created: {{ concept.format_created_date() }}</span>
+            </div>
+            <p class="lead">
+                {{ concept.description }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-list"></i> Requirements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if requirements %}
+                        <div class="list-group">
+                            {% for req in requirements %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between mb-2">
+                                        <span>
+                                            {% if req.is_mandatory %}
+                                                <span class="badge bg-danger">Mandatory</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Optional</span>
+                                            {% endif %}
+                                            <span class="badge bg-info ms-1">Difficulty: {{ req.compliance_difficulty }}/10</span>
+                                        </span>
+                                        <small class="text-muted">{{ req.format_created_date() }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ req.text }}</p>
+                                    {% if req.source_text %}
+                                        <small class="text-muted">
+                                            <em>Source:</em> "{{ req.source_text }}"
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No requirements found for this concept.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('ai_learning.generate_policy') }}?concept_ids={{ concept.id }}" class="btn btn-warning">
+                            <i class="fas fa-file-alt"></i> Generate Policy
+                        </a>
+                        
+                        <a href="{{ url_for('ai_learning.search_regulations') }}" class="btn btn-info">
+                            <i class="fas fa-search"></i> Find Similar Regulations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sitemap"></i> Related Regulations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if regulations %}
+                        <div class="list-group">
+                            {% for regulation in regulations %}
+                                <a href="{{ url_for('view_regulation', regulation_id=regulation.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ regulation.title }}</h6>
+                                        {% if regulation.code %}
+                                            <span class="badge bg-primary">{{ regulation.code }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ regulation.regulation_type }}</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No related regulations found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

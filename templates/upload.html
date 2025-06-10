@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Dataset Upload</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input[type="password"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        input[type="file"] {
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .status.success {
+            background: rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+        
+        .status.error {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .back-link a:hover {
+            opacity: 1;
+        }
+        
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>SIM Dataset Integration</h1>
+        
+        <div class="info">
+            Upload datasets to enhance SIM's foundational knowledge. All files are analyzed for patterns and integrated into the neural backbone system.
+        </div>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="auth_pin">Authentication PIN:</label>
+                <input type="password" id="auth_pin" name="auth_pin" placeholder="Enter PIN" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="file">Select Dataset File:</label>
+                <input type="file" id="file" name="file" accept=".txt,.json,.csv,.md,.py,.js,.html,.xml,.docx,.pdf" required>
+            </div>
+            
+            <button type="submit" class="upload-btn" id="uploadBtn">
+                Upload & Integrate Dataset
+            </button>
+        </form>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="back-link">
+            <a href="/">← Back to SIM Interface</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const authPin = document.getElementById('auth_pin').value;
+            const file = document.getElementById('file').files[0];
+            
+            if (!authPin || !file) {
+                showStatus('Please provide both PIN and file', 'error');
+                return;
+            }
+            
+            formData.append('auth_pin', authPin);
+            formData.append('file', file);
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading & Analyzing...';
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus(result.message, 'success');
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    showStatus(result.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                showStatus('Network error: ' + error.message, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload & Integrate Dataset';
+            }
+        });
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

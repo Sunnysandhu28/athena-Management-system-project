@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Validation Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Policy Validation Results</h1>
+            
+            <div class="alert {% if validation_results.is_valid %}alert-success{% else %}alert-warning{% endif %}">
+                <h4 class="alert-heading">
+                    {% if validation_results.is_valid %}
+                    <i class="fas fa-check-circle"></i> Policy Validation Passed
+                    {% else %}
+                    <i class="fas fa-exclamation-triangle"></i> Policy Validation Has Issues
+                    {% endif %}
+                </h4>
+                <p>
+                    <strong>Policy:</strong> {{ policy_data.title }} 
+                    {% if policy_data.code or policy_data.reference_code %}
+                    ({{ policy_data.code or policy_data.reference_code }})
+                    {% endif %}
+                </p>
+                <p>
+                    <strong>Word Count:</strong> {{ validation_results.metrics.word_count }}
+                    <strong>Sections:</strong> {{ validation_results.metrics.section_count }}
+                    <strong>Validation Time:</strong> {{ validation_results.metrics.validation_time_ms }}ms
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if validation_results.issues %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">Issues ({{ validation_results.issues|length }})</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for issue in validation_results.issues %}
+                        <li class="list-group-item list-group-item-danger">{{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if validation_results.suggestions %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">Suggestions ({{ validation_results.suggestions|length }})</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for suggestion in validation_results.suggestions %}
+                        <li class="list-group-item list-group-item-warning">{{ suggestion }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Neural Validation</h4>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Status:</strong> 
+                        {% if validation_results.neural_validation.is_valid %}
+                        <span class="badge bg-success">Valid</span>
+                        {% else %}
+                        <span class="badge bg-warning">Needs Improvement</span>
+                        {% endif %}
+                    </p>
+                    
+                    {% if validation_results.neural_validation.section_analysis %}
+                    <h5>Section Analysis</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Section</th>
+                                <th>Word Count</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for section_name, section_data in validation_results.neural_validation.section_analysis.items() %}
+                            <tr>
+                                <td>{{ section_name }}</td>
+                                <td>{{ section_data.word_count }}</td>
+                                <td>
+                                    {% if section_data.is_valid %}
+                                    <span class="badge bg-success">Valid</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Issues</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Regulatory Validation</h4>
+                </div>
+                <div class="card-body">
+                    {% if validation_results.regulatory_validation %}
+                    <p>
+                        <strong>Policy Type:</strong> {{ validation_results.regulatory_validation.policy_type }}<br>
+                        <strong>Status:</strong> 
+                        {% if validation_results.regulatory_validation.is_valid %}
+                        <span class="badge bg-success">Valid</span>
+                        {% else %}
+                        <span class="badge bg-warning">Needs Improvement</span>
+                        {% endif %}
+                    </p>
+                    
+                    {% if validation_results.regulatory_validation.missing_sections %}
+                    <h5>Missing Sections</h5>
+                    <ul class="list-group">
+                        {% for section in validation_results.regulatory_validation.missing_sections %}
+                        <li class="list-group-item list-group-item-warning">{{ section }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    
+                    {% if validation_results.regulatory_validation.missing_elements %}
+                    <h5 class="mt-3">Missing Elements</h5>
+                    <ul class="list-group">
+                        {% for element in validation_results.regulatory_validation.missing_elements %}
+                        <li class="list-group-item list-group-item-warning">{{ element }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% else %}
+                    <p>No regulatory validation performed.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Clinical Validation</h4>
+                </div>
+                <div class="card-body">
+                    {% if validation_results.clinical_validation %}
+                    <p>
+                        <strong>Status:</strong> 
+                        {% if validation_results.clinical_validation.is_valid %}
+                        <span class="badge bg-success">Valid</span>
+                        {% else %}
+                        <span class="badge bg-warning">Needs Improvement</span>
+                        {% endif %}
+                    </p>
+                    
+                    {% if validation_results.clinical_validation.conditions %}
+                    <h5>Identified Clinical Conditions</h5>
+                    <ul class="list-group">
+                        {% for condition in validation_results.clinical_validation.conditions %}
+                        <li class="list-group-item">
+                            <strong>{{ condition.name }}</strong><br>
+                            {{ condition.summary }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% elif validation_results.clinical_validation.message %}
+                    <p>{{ validation_results.clinical_validation.message }}</p>
+                    {% endif %}
+                    
+                    {% if validation_results.clinical_validation.recommendations %}
+                    <h5 class="mt-3">Clinical Recommendations</h5>
+                    <ul class="list-group">
+                        {% for recommendation in validation_results.clinical_validation.recommendations %}
+                        <li class="list-group-item">{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% else %}
+                    <p>No clinical validation performed.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if policy_data.improvement_suggestions %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">Prioritized Improvement Plan</h4>
+                </div>
+                <div class="card-body">
+                    {% set prioritized_actions = policy_data.improvement_suggestions.prioritized_actions %}
+                    {% if prioritized_actions %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Action</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in prioritized_actions %}
+                            <tr>
+                                <td>
+                                    {% if action.priority == "high" %}
+                                    <span class="badge bg-danger">High</span>
+                                    {% elif action.priority == "medium" %}
+                                    <span class="badge bg-warning">Medium</span>
+                                    {% else %}
+                                    <span class="badge bg-info">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ action.action }}</td>
+                                <td>{{ action.source|capitalize }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No prioritized actions available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4 mb-5">
+        <div class="col-md-12 text-center">
+            <a href="/policy/{{ policy_data.id }}" class="btn btn-primary mr-2">View Policy</a>
+            {% if not validation_results.is_valid %}
+            <a href="/policy/edit/{{ policy_data.id }}" class="btn btn-warning">Edit Policy</a>
+            {% endif %}
+            <a href="/policies" class="btn btn-secondary">Back to Policies</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

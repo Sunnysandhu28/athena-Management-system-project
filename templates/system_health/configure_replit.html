@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Replit Integration{% endblock %}
+
+{% block styles %}
+<style>
+    .token-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .instruction-step {
+        margin-bottom: 15px;
+        padding-left: 20px;
+        position: relative;
+    }
+    
+    .instruction-step:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    
+    .token-form {
+        margin-top: 30px;
+        border-top: 1px solid #eee;
+        padding-top: 30px;
+    }
+    
+    .token-input {
+        font-family: monospace;
+    }
+    
+    .code-block {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        margin: 15px 0;
+        overflow-x: auto;
+    }
+    
+    .status-box {
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .status-connected {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    
+    .status-disconnected {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Configure Replit Integration</h1>
+    
+    {% if replit_status.token_configured %}
+    <div class="status-box status-connected">
+        <h4 class="mb-2"><i class="fas fa-check-circle"></i> Replit Integration Active</h4>
+        <p class="mb-0">Your Replit token is configured and integration is active. System health monitoring and crash detection are fully operational.</p>
+    </div>
+    {% else %}
+    <div class="status-box status-disconnected">
+        <h4 class="mb-2"><i class="fas fa-exclamation-triangle"></i> Replit Integration Not Configured</h4>
+        <p class="mb-0">Replit integration is not active. System health monitoring and crash prevention features may be limited.</p>
+    </div>
+    {% endif %}
+    
+    <div class="card token-card">
+        <h3>How to Set Up Your Replit Token</h3>
+        <p>Follow these steps to generate and configure your Replit token:</p>
+        
+        <div class="instruction-step">
+            <strong>1. Log into your Replit account</strong>
+            <p>Make sure you are logged into the Replit account that contains your project.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>2. Access the Replit dashboard</strong>
+            <p>Go to the Replit dashboard at <a href="https://replit.com/~" target="_blank">https://replit.com/~</a>.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>3. Open your account settings</strong>
+            <p>Click on your profile picture in the top right corner and select "Account" from the sidebar menu.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>4. Navigate to "Account Secrets"</strong>
+            <p>In the right sidebar, look for and click on "Account Secrets" under the account options.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>5. Generate a new API token</strong>
+            <p>Click on "Add a new secret", use "REPLIT_TOKEN" as the key name, and create a secure token value for this project.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>6. Copy your token</strong>
+            <p>Copy the generated token to your clipboard. <strong>Important:</strong> This token will only be shown once, so make sure to save it securely.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>7. Add the token to your project</strong>
+            <p>Enter your token in the form below or add it to your environment variables using the Replit Secrets panel.</p>
+        </div>
+        
+        <div class="token-form">
+            <h4 class="mb-3">Enter Your Replit Token</h4>
+            <form method="POST" action="{{ url_for('system_health.configure_replit') }}">
+                <div class="form-group">
+                    <label for="replit_token">Replit Token:</label>
+                    <input type="text" class="form-control token-input" id="replit_token" name="replit_token" placeholder="Enter your Replit token here" required>
+                    <small class="form-text text-muted">Your token will be stored securely in your environment variables.</small>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Token</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card token-card">
+        <h3>Alternative Method: Using Replit Secrets</h3>
+        <p>You can also set up your Replit token using the built-in Secrets manager:</p>
+        
+        <div class="instruction-step">
+            <strong>1. Open your Replit project</strong>
+            <p>Navigate to your Cathena Policy System project in Replit.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>2. Open the Secrets tool</strong>
+            <p>Click on "Tools" in the left sidebar, then select "Secrets" from the dropdown menu.</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>3. Add your token as a secret</strong>
+            <p>Click on "New Secret", then enter <code>REPLIT_TOKEN</code> for the key and paste your API token for the value. Then click "Add Secret".</p>
+        </div>
+        
+        <div class="instruction-step">
+            <strong>4. Restart your Replit</strong>
+            <p>After adding the secret, restart your Replit to apply the changes.</p>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('system_health.communications') }}" class="btn btn-secondary">Back to Communications Hub</a>
+    </div>
+</div>
+{% endblock %}

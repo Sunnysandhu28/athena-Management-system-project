@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Repository - Your Authentic Policies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .policy-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        .policy-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .policy-code {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .category-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .category-section {
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-file-medical"></i> Cathena Policy System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+                <a class="nav-link" href="/policies">All Policies</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-folder-open text-primary"></i> 
+                    Policy Repository
+                </h1>
+                <p class="lead text-muted">Access and manage your organization's authentic policies</p>
+                
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Success!</strong> Your {{ total_policies }} authentic policies are now properly organized and accessible.
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search policies by name, code, or content...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="Healthcare">Healthcare Policies</option>
+                    <option value="Clinical Care">Clinical Care</option>
+                    <option value="Health & Safety">Health & Safety</option>
+                    <option value="Medication">Medication Management</option>
+                    <option value="Care Planning">Care Planning</option>
+                    <option value="Information Governance">Information Governance</option>
+                    <option value="Human Resources">Human Resources</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- YOUR AUTHENTIC POLICIES -->
+        {% if policies %}
+            {% for category, category_policies in policies.items() %}
+                {% if category_policies %}
+                <div class="category-section">
+                    <h3 class="text-primary mb-3">
+                        <i class="fas fa-folder"></i> {{ category }}
+                        <span class="badge bg-secondary">{{ category_policies|length }} policies</span>
+                    </h3>
+                    
+                    <div class="row">
+                        {% for policy in category_policies %}
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="policy-card" data-category="{{ category }}">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="policy-code">{{ policy.code }}</span>
+                                    <span class="category-badge">{{ category }}</span>
+                                </div>
+                                
+                                <h5 class="card-title text-dark">{{ policy.title }}</h5>
+                                
+                                <p class="text-muted small mb-3">
+                                    Status: <span class="text-success">Active</span> |
+                                    Words: {{ (policy.content|length / 5)|round|int if policy.content else 0 }}
+                                </p>
+                                
+                                <div class="d-flex gap-2">
+                                    <a href="/policy/{{ policy.code }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> View Policy
+                                    </a>
+                                    <a href="/policy/{{ policy.code }}/download" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>No policies found.</strong> Please check your policy data configuration.
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const policyCards = document.querySelectorAll('.policy-card');
+            
+            policyCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Category filter
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            const selectedCategory = this.value;
+            const policyCards = document.querySelectorAll('.policy-card');
+            
+            policyCards.forEach(card => {
+                const cardCategory = card.dataset.category;
+                if (!selectedCategory || cardCategory === selectedCategory) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

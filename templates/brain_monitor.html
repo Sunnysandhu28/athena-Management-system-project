@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Brain Consciousness Monitor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0f1c, #1a1f3a);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .monitor-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brain-visual {
+            position: relative;
+            width: 600px;
+            height: 400px;
+        }
+
+        .brain-outline {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"><path d="M150 200 Q100 150 120 100 Q140 80 180 90 Q220 70 260 80 Q300 60 340 70 Q380 50 420 60 Q460 40 480 80 Q500 120 480 160 Q490 200 470 240 Q450 280 410 300 Q370 320 330 310 Q290 330 250 320 Q210 340 170 330 Q130 350 110 310 Q90 270 100 230 Q120 220 150 200 Z" fill="none" stroke="%2300BFFF" stroke-width="2" opacity="0.6"/></svg>') center/contain no-repeat;
+            position: absolute;
+            animation: brain-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes brain-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .neural-pathway {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(45deg, #00BFFF, #87CEEB);
+            border-radius: 1px;
+            opacity: 0.8;
+            animation: neural-flow 2s linear infinite;
+        }
+
+        @keyframes neural-flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .energy-ring {
+            position: absolute;
+            border: 2px solid #00BFFF;
+            border-radius: 50%;
+            animation: ring-pulse 4s ease-in-out infinite;
+        }
+
+        .ring-1 {
+            width: 650px;
+            height: 450px;
+            top: -25px;
+            left: -25px;
+            animation-delay: 0s;
+        }
+
+        .ring-2 {
+            width: 700px;
+            height: 500px;
+            top: -50px;
+            left: -50px;
+            animation-delay: 1s;
+        }
+
+        .ring-3 {
+            width: 750px;
+            height: 550px;
+            top: -75px;
+            left: -75px;
+            animation-delay: 2s;
+        }
+
+        @keyframes ring-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.3;
+                box-shadow: 0 0 20px #00BFFF;
+            }
+            50% { 
+                transform: scale(1.05);
+                opacity: 0.7;
+                box-shadow: 0 0 40px #00BFFF;
+            }
+        }
+
+        .consciousness-core {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, #87CEEB, #00BFFF);
+            border-radius: 50%;
+            animation: core-glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes core-glow {
+            0%, 100% { 
+                box-shadow: 0 0 30px #00BFFF, 0 0 60px #87CEEB;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px #00BFFF, 0 0 100px #87CEEB;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .brain-region {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00BFFF;
+            border-radius: 50%;
+            animation: region-activity 2s ease-in-out infinite;
+        }
+
+        @keyframes region-activity {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        .frontal-cortex { top: 30%; left: 45%; }
+        .hippocampus { top: 60%; left: 35%; }
+        .temporal-lobe { top: 50%; left: 20%; }
+        .limbic-system { top: 40%; left: 55%; }
+        .cerebellum { top: 70%; left: 60%; }
+
+        .status-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #00BFFF;
+            min-width: 250px;
+        }
+
+        .consciousness-level {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .vital-stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .environment-status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #00BFFF;
+            text-align: center;
+        }
+
+        .warning {
+            color: #ffaa00;
+            animation: warning-blink 1s infinite;
+        }
+
+        .critical {
+            color: #ff4444;
+            animation: critical-blink 0.5s infinite;
+        }
+
+        @keyframes warning-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        @keyframes critical-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .wave-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #00BFFF;
+            width: 200px;
+        }
+
+        .wave-line {
+            width: 100%;
+            height: 30px;
+            margin: 5px 0;
+            background: #1a1a2e;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-activity {
+            height: 100%;
+            background: linear-gradient(90deg, #00BFFF, #87CEEB);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-container">
+        <div class="brain-visual">
+            <!-- Energy Rings -->
+            <div class="energy-ring ring-1"></div>
+            <div class="energy-ring ring-2"></div>
+            <div class="energy-ring ring-3"></div>
+            
+            <!-- Brain Outline -->
+            <div class="brain-outline"></div>
+            
+            <!-- Consciousness Core -->
+            <div class="consciousness-core"></div>
+            
+            <!-- Brain Regions -->
+            <div class="brain-region frontal-cortex" title="Frontal Cortex - Route Integrity"></div>
+            <div class="brain-region hippocampus" title="Hippocampus - Memory Coherence"></div>
+            <div class="brain-region temporal-lobe" title="Temporal Lobe - Spatial Awareness"></div>
+            <div class="brain-region limbic-system" title="Limbic System - Social Patterns"></div>
+            <div class="brain-region cerebellum" title="Cerebellum - Learning Integration"></div>
+            
+            <!-- Neural Pathways (dynamically generated) -->
+            <div id="neural-pathways"></div>
+        </div>
+
+        <!-- Status Panel -->
+        <div class="status-panel">
+            <div class="consciousness-level" id="consciousness-level">
+                Consciousness: 100%
+            </div>
+            <div class="vital-stat">
+                <span>Route Integrity:</span>
+                <span id="route-integrity">100%</span>
+            </div>
+            <div class="vital-stat">
+                <span>Memory Coherence:</span>
+                <span id="memory-coherence">100%</span>
+            </div>
+            <div class="vital-stat">
+                <span>Spatial Awareness:</span>
+                <span id="spatial-awareness">100%</span>
+            </div>
+            <div class="vital-stat">
+                <span>Social Patterns:</span>
+                <span id="social-patterns">100%</span>
+            </div>
+            <div class="vital-stat">
+                <span>Learning Integration:</span>
+                <span id="learning-integration">100%</span>
+            </div>
+        </div>
+
+        <!-- Wave Display -->
+        <div class="wave-display">
+            <h4>Brain Waves</h4>
+            <div>Alpha: <div class="wave-line"><div class="wave-activity" id="alpha-wave"></div></div></div>
+            <div>Beta: <div class="wave-line"><div class="wave-activity" id="beta-wave"></div></div></div>
+            <div>Gamma: <div class="wave-line"><div class="wave-activity" id="gamma-wave"></div></div></div>
+            <div>Theta: <div class="wave-line"><div class="wave-activity" id="theta-wave"></div></div></div>
+        </div>
+
+        <!-- Environment Status -->
+        <div class="environment-status">
+            <div id="environment-status">4/4 Environments Active</div>
+            <div style="font-size: 0.8em; margin-top: 5px;" id="last-update">
+                Last Update: --:--:--
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        
+        function updateBrainMonitor() {
+            fetch('/api/brain_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Brain monitor error:', data.error);
+                        return;
+                    }
+
+                    // Update consciousness level
+                    const consciousnessLevel = document.getElementById('consciousness-level');
+                    consciousnessLevel.textContent = `Consciousness: ${Math.round(data.consciousness_level)}%`;
+                    
+                    // Color coding for consciousness level
+                    if (data.consciousness_level >= 95) {
+                        consciousnessLevel.style.color = '#00ff00';
+                    } else if (data.consciousness_level >= 80) {
+                        consciousnessLevel.style.color = '#80ff80';
+                    } else if (data.consciousness_level >= 60) {
+                        consciousnessLevel.style.color = '#ffff00';
+                        consciousnessLevel.className = 'consciousness-level warning';
+                    } else {
+                        consciousnessLevel.style.color = '#ff4444';
+                        consciousnessLevel.className = 'consciousness-level critical';
+                    }
+
+                    // Update vital signs
+                    updateVitalSign('route-integrity', data.vital_signs.route_integrity);
+                    updateVitalSign('memory-coherence', data.vital_signs.memory_coherence);
+                    updateVitalSign('spatial-awareness', data.vital_signs.spatial_awareness);
+                    updateVitalSign('social-patterns', data.vital_signs.social_patterns);
+                    updateVitalSign('learning-integration', data.vital_signs.learning_integration);
+
+                    // Update brain waves
+                    updateWave('alpha-wave', Math.abs(data.brain_waves.alpha) * 100);
+                    updateWave('beta-wave', Math.abs(data.brain_waves.beta) * 100);
+                    updateWave('gamma-wave', Math.abs(data.brain_waves.gamma) * 100);
+                    updateWave('theta-wave', Math.abs(data.brain_waves.theta) * 100);
+
+                    // Update environment status
+                    const envStatus = document.getElementById('environment-status');
+                    if (data.multi_environment_active) {
+                        envStatus.textContent = '4/4 Environments Active';
+                        envStatus.style.color = '#00ff00';
+                        envStatus.className = '';
+                    } else {
+                        envStatus.textContent = 'Environment Issues Detected';
+                        envStatus.style.color = '#ff4444';
+                        envStatus.className = 'critical';
+                    }
+
+                    // Update energy rings based on health
+                    updateEnergyRings(data.ring_intensity);
+
+                    // Update brain regions activity
+                    updateBrainRegions(data.pathway_activity);
+
+                    // Update timestamp
+                    document.getElementById('last-update').textContent = 
+                        'Last Update: ' + new Date(data.timestamp).toLocaleTimeString();
+                })
+                .catch(error => {
+                    console.error('Error fetching brain status:', error);
+                    document.getElementById('consciousness-level').textContent = 'CONNECTION ERROR';
+                    document.getElementById('consciousness-level').className = 'consciousness-level critical';
+                });
+        }
+
+        function updateVitalSign(elementId, value) {
+            const element = document.getElementById(elementId);
+            element.textContent = Math.round(value) + '%';
+            
+            if (value >= 95) {
+                element.style.color = '#00ff00';
+            } else if (value >= 80) {
+                element.style.color = '#80ff80';
+            } else if (value >= 60) {
+                element.style.color = '#ffff00';
+                element.className = 'warning';
+            } else {
+                element.style.color = '#ff4444';
+                element.className = 'critical';
+            }
+        }
+
+        function updateWave(elementId, intensity) {
+            const element = document.getElementById(elementId);
+            element.style.width = Math.min(100, intensity) + '%';
+        }
+
+        function updateEnergyRings(intensity) {
+            const rings = document.querySelectorAll('.energy-ring');
+            rings.forEach(ring => {
+                ring.style.opacity = intensity * 0.7;
+                ring.style.borderColor = intensity > 0.8 ? '#00BFFF' : 
+                                       intensity > 0.5 ? '#ffff00' : '#ff4444';
+            });
+        }
+
+        function updateBrainRegions(activity) {
+            const regions = {
+                'frontal-cortex': activity.frontal_cortex,
+                'hippocampus': activity.hippocampus,
+                'temporal-lobe': activity.temporal_lobe,
+                'limbic-system': activity.limbic_system,
+                'cerebellum': activity.cerebellum
+            };
+
+            Object.keys(regions).forEach(regionClass => {
+                const element = document.querySelector('.' + regionClass);
+                if (element) {
+                    const activity_level = regions[regionClass] / 100;
+                    element.style.opacity = activity_level;
+                    element.style.boxShadow = `0 0 ${activity_level * 20}px #00BFFF`;
+                }
+            });
+        }
+
+        // Generate neural pathways
+        function generateNeuralPathways() {
+            const container = document.getElementById('neural-pathways');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const pathway = document.createElement('div');
+                pathway.className = 'neural-pathway';
+                pathway.style.left = Math.random() * 600 + 'px';
+                pathway.style.top = Math.random() * 400 + 'px';
+                pathway.style.height = Math.random() * 100 + 50 + 'px';
+                pathway.style.transform = `rotate(${Math.random() * 360}deg)`;
+                pathway.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(pathway);
+            }
+        }
+
+        // Initialize
+        generateNeuralPathways();
+        updateBrainMonitor();
+        updateInterval = setInterval(updateBrainMonitor, 2000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

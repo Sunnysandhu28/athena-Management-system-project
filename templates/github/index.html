@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}GitHub Backup{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>GitHub Backup System</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Back up your Cathena Management System code to GitHub.
+                    </p>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form action="{{ url_for('github.create_backup') }}" method="post">
+                        <div class="mb-3">
+                            <label for="commit_message" class="form-label">Commit Message</label>
+                            <input type="text" class="form-control" id="commit_message" name="commit_message" 
+                                   value="Cathena Management System - Automated Backup" required>
+                            <div class="form-text">Describe what changes you're backing up.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-cloud-upload-alt"></i> Backup to GitHub
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <p class="text-muted">Repository: <a href="https://github.com/Sunnysandhu28/Cathena-Management-System" target="_blank">Cathena-Management-System</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

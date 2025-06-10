@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cathena Policy Automation System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .info-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .success {
+            color: #28a745;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        .menu-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-file-contract me-2"></i>
+                Cathena Policy Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            <i class="fas fa-folder-open me-1"></i> Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/policies">
+                            <i class="fas fa-file-alt me-1"></i> Policies
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">
+                            <i class="fas fa-search me-1"></i> Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-cogs me-1"></i> Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Cathena Policy Automation System</h1>
+            <p class="lead">
+                Advanced AI-powered enterprise policy management for comprehensive policy tracking and deployment
+            </p>
+        </div>
+
+        <!-- Recent Updates Card -->
+        <div class="info-card mb-5">
+            <h2 class="h3">Recent Updates <span class="success">✓</span></h2>
+            <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item bg-transparent">Updated policy_rename_guide.md with complete Data Protection policy mapping</li>
+                <li class="list-group-item bg-transparent">Enhanced search_policies_by_keyword method to handle GDPR prefix</li>
+                <li class="list-group-item bg-transparent">Updated QCS_POLICY_EXTRACTION_UPDATE.md with comprehensive GDPR documentation</li>
+                <li class="list-group-item bg-transparent">Added detailed GDPR policy code definitions to enhanced_policy_extractor.py</li>
+            </ul>
+        </div>
+
+        <!-- Navigation Cards -->
+        <h2 class="h3 mb-4">Quick Navigation</h2>
+        <div class="row mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-folder-open fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Policy Categories</h3>
+                        <p class="card-text">Browse all policy categories including Administration, Care Management, and more.</p>
+                        <a href="/categories" class="btn btn-primary">View Categories</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                        <h3 class="h5">Policy Library</h3>
+                        <p class="card-text">Access the full library of policies with search and filtering options.</p>
+                        <a href="/policies" class="btn btn-primary">View Policies</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tachometer-alt fa-3x text-info mb-3"></i>
+                        <h3 class="h5">Dashboard</h3>
+                        <p class="card-text">View system status, statistics, and recent activity on the dashboard.</p>
+                        <a href="/dashboard" class="btn btn-primary">Open Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Features -->
+        <h2 class="h3 mb-4">Key Features</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-robot text-primary me-2"></i> AI-Enhanced Policy Replication</h5>
+                        <p class="card-text">Creates enhanced carbon copies of policies with 100% matching format, structure, and content.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-clipboard-check text-success me-2"></i> Comprehensive Categories</h5>
+                        <p class="card-text">Covers nine key categories including Care Planning, Health & Safety, and Data Protection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Cathena Policy Management System</h5>
+                    <p>An advanced AI-powered enterprise policy management platform for automated policy tracking and intelligent deployment.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/categories" class="text-white">Categories</a></li>
+                        <li><a href="/policies" class="text-white">Policies</a></li>
+                        <li><a href="/search" class="text-white">Search</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>System</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">About</a></li>
+                        <li><a href="#" class="text-white">Help</a></li>
+                        <li><a href="#" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Cathena Systems. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

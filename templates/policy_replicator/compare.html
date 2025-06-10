@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Policies{% endblock %}
+
+{% block styles %}
+<style>
+    .comparison-container {
+        display: flex;
+        flex-direction: row;
+        min-height: 500px;
+        margin-bottom: 2rem;
+    }
+    
+    .comparison-panel {
+        flex: 1;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .comparison-panel-header {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: bold;
+    }
+    
+    .comparison-panel-body {
+        flex: 1;
+        padding: 0;
+        overflow-y: auto;
+        background-color: white;
+    }
+    
+    .comparison-divider {
+        width: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #6c757d;
+        font-size: 1.5rem;
+    }
+    
+    .document-content {
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        padding: 1rem;
+    }
+    
+    .section-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .section-item {
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .section-title:hover {
+        background-color: #e9ecef;
+    }
+    
+    .section-content {
+        padding: 1rem;
+        display: none;
+    }
+    
+    .section-content.active {
+        display: block;
+    }
+    
+    .badge-panel {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        margin-left: 0.5rem;
+    }
+    
+    .badge-panel-pdf {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .badge-panel-docx {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .nav-tabs .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .highlight {
+        background-color: #fffde7;
+        border-left: 3px solid #ffc107;
+    }
+    
+    .page-break-marker {
+        text-align: center;
+        margin: 1rem 0;
+        color: #6c757d;
+        font-style: italic;
+        border-top: 1px dashed #dee2e6;
+        border-bottom: 1px dashed #dee2e6;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    
+    .compare-toolbar {
+        padding: 0.5rem 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .compare-controls {
+        display: flex;
+        align-items: center;
+    }
+    
+    .compare-controls .form-select {
+        width: auto;
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Policy Replicator</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('policy_replicator.view_policy', policy_id=original.id) }}">{{ original.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Compare Documents</li>
+        </ol>
+    </nav>
+    
+    <h1 class="mb-4">Policy Comparison</h1>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Document Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Original Policy</h6>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Title</dt>
+                                <dd class="col-sm-8">{{ original.title }}</dd>
+                                
+                                <dt class="col-sm-4">Format</dt>
+                                <dd class="col-sm-8">
+                                    {% if original.file_path and original.file_path.endswith('.pdf') %}
+                                    <span class="badge bg-danger">PDF</span>
+                                    {% elif original.file_path and original.file_path.endswith('.docx') %}
+                                    <span class="badge bg-primary">DOCX</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Unknown</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                {% if original.created_at %}
+                                <dt class="col-sm-4">Created</dt>
+                                <dd class="col-sm-8">{{ original.created_at.strftime('%Y-%m-%d') }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Replicated Policy</h6>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Title</dt>
+                                <dd class="col-sm-8">{{ replicated.title }}</dd>
+                                
+                                <dt class="col-sm-4">Format</dt>
+                                <dd class="col-sm-8">
+                                    {% if replicated.file_path and replicated.file_path.endswith('.pdf') %}
+                                    <span class="badge bg-danger">PDF</span>
+                                    {% elif replicated.file_path and replicated.file_path.endswith('.docx') %}
+                                    <span class="badge bg-primary">DOCX</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Unknown</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                {% if replicated.created_at %}
+                                <dt class="col-sm-4">Created</dt>
+                                <dd class="col-sm-8">{{ replicated.created_at.strftime('%Y-%m-%d') }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <ul class="nav nav-tabs" id="comparisonTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="sections-tab" data-bs-toggle="tab" data-bs-target="#sections-content" type="button" role="tab" aria-controls="sections-content" aria-selected="true">
+                        <i class="fas fa-th-list me-1"></i> By Sections
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="full-tab" data-bs-toggle="tab" data-bs-target="#full-content" type="button" role="tab" aria-controls="full-content" aria-selected="false">
+                        <i class="fas fa-align-left me-1"></i> Full Documents
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="comparisonTabsContent">
+        <!-- Sections Comparison -->
+        <div class="tab-pane fade show active" id="sections-content" role="tabpanel" aria-labelledby="sections-tab">
+            <div class="comparison-container">
+                <div class="comparison-panel">
+                    <div class="comparison-panel-header">
+                        Original Document
+                        <span class="badge badge-panel badge-panel-pdf">PDF</span>
+                    </div>
+                    
+                    <div class="compare-toolbar">
+                        <span><strong>{{ original_sections|length }}</strong> sections identified</span>
+                    </div>
+                    
+                    <div class="comparison-panel-body">
+                        {% if original_sections %}
+                        <ul class="section-list" id="original-sections">
+                            {% for section in original_sections %}
+                            <li class="section-item">
+                                <div class="section-title" data-section-id="{{ loop.index }}">
+                                    {{ section.title }}
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="section-content">
+                                    <div class="document-content">{{ section.content|join('\n') }}</div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="p-4 text-center">
+                            <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                            <p>No sections could be automatically identified in the original document.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="comparison-divider d-none d-md-flex">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                
+                <div class="comparison-panel">
+                    <div class="comparison-panel-header">
+                        Replicated Document
+                        <span class="badge badge-panel badge-panel-docx">DOCX</span>
+                    </div>
+                    
+                    <div class="compare-toolbar">
+                        <span><strong>{{ replicated_sections|length }}</strong> sections identified</span>
+                    </div>
+                    
+                    <div class="comparison-panel-body">
+                        {% if replicated_sections %}
+                        <ul class="section-list" id="replicated-sections">
+                            {% for section in replicated_sections %}
+                            <li class="section-item">
+                                <div class="section-title" data-section-id="{{ loop.index }}">
+                                    {{ section.title }}
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="section-content">
+                                    <div class="document-content">{{ section.content|join('\n') }}</div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="p-4 text-center">
+                            <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                            <p>No sections could be automatically identified in the replicated document.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Full Document Comparison -->
+        <div class="tab-pane fade" id="full-content" role="tabpanel" aria-labelledby="full-tab">
+            <div class="comparison-container">
+                <div class="comparison-panel">
+                    <div class="comparison-panel-header">
+                        Original Document
+                        <span class="badge badge-panel badge-panel-pdf">PDF</span>
+                    </div>
+                    
+                    <div class="comparison-panel-body">
+                        {% if original_content %}
+                        <div class="document-content">
+                            {{ original_content|replace('=== Page Break ===', '<div class="page-break-marker">--- Page Break ---</div>')|safe }}
+                        </div>
+                        {% else %}
+                        <div class="p-4 text-center">
+                            <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                            <p>No content could be extracted from the original document.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="comparison-divider d-none d-md-flex">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                
+                <div class="comparison-panel">
+                    <div class="comparison-panel-header">
+                        Replicated Document
+                        <span class="badge badge-panel badge-panel-docx">DOCX</span>
+                    </div>
+                    
+                    <div class="comparison-panel-body">
+                        {% if replicated_content %}
+                        <div class="document-content">{{ replicated_content }}</div>
+                        {% else %}
+                        <div class="p-4 text-center">
+                            <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                            <p>No content could be extracted from the replicated document.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col">
+            <a href="{{ url_for('policy_replicator.view_policy', policy_id=original.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Original Policy
+            </a>
+            
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-list me-1"></i> Policy List
+            </a>
+            
+            <div class="float-end">
+                <a href="{{ url_for('policy_replicator.create_template', policy_id=original.id) }}" class="btn btn-success">
+                    <i class="fas fa-file-word me-1"></i> Create New Template
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle section toggle
+        const sectionTitles = document.querySelectorAll('.section-title');
+        
+        sectionTitles.forEach(title => {
+            title.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                
+                // Toggle this section
+                content.classList.toggle('active');
+                
+                // Update icon
+                if (content.classList.contains('active')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        });
+        
+        // Synchronize scrolling between panels (optional)
+        const leftPanel = document.querySelector('#sections-content .comparison-panel:first-child .comparison-panel-body');
+        const rightPanel = document.querySelector('#sections-content .comparison-panel:last-child .comparison-panel-body');
+        
+        if (leftPanel && rightPanel) {
+            leftPanel.addEventListener('scroll', function() {
+                // Calculate relative scroll percentage
+                const scrollPercent = this.scrollTop / (this.scrollHeight - this.clientHeight);
+                // Apply to right panel
+                rightPanel.scrollTop = scrollPercent * (rightPanel.scrollHeight - rightPanel.clientHeight);
+            });
+            
+            rightPanel.addEventListener('scroll', function() {
+                // Calculate relative scroll percentage
+                const scrollPercent = this.scrollTop / (this.scrollHeight - this.clientHeight);
+                // Apply to left panel
+                leftPanel.scrollTop = scrollPercent * (leftPanel.scrollHeight - leftPanel.clientHeight);
+            });
+        }
+        
+        // Same for full content panels
+        const leftFullPanel = document.querySelector('#full-content .comparison-panel:first-child .comparison-panel-body');
+        const rightFullPanel = document.querySelector('#full-content .comparison-panel:last-child .comparison-panel-body');
+        
+        if (leftFullPanel && rightFullPanel) {
+            leftFullPanel.addEventListener('scroll', function() {
+                const scrollPercent = this.scrollTop / (this.scrollHeight - this.clientHeight);
+                rightFullPanel.scrollTop = scrollPercent * (rightFullPanel.scrollHeight - rightFullPanel.clientHeight);
+            });
+            
+            rightFullPanel.addEventListener('scroll', function() {
+                const scrollPercent = this.scrollTop / (this.scrollHeight - this.clientHeight);
+                leftFullPanel.scrollTop = scrollPercent * (leftFullPanel.scrollHeight - leftFullPanel.clientHeight);
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+
+{% block title %}All Regulatory Reports{% endblock %}
+
+{% block head %}
+<style>
+    .report-card {
+        transition: all 0.2s;
+    }
+    
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-section {
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>All Regulatory Reports</h1>
+            <p class="lead">Complete list of all regulatory analysis reports</p>
+        </div>
+        <div class="col-auto d-flex align-items-center">
+            <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+            <div class="dropdown me-2">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-export me-2"></i> Export
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i> Export as PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i> Export as Excel</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i> Export as CSV</a></li>
+                </ul>
+            </div>
+            <a href="{{ url_for('regulatory_analysis.upload_document') }}" class="btn btn-primary">
+                <i class="fas fa-upload me-2"></i> Upload Document
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filter Reports</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Compliance Score</label>
+                            <div class="d-flex">
+                                <div class="me-2">
+                                    <label class="form-label small">Min</label>
+                                    <input type="number" class="form-control form-control-sm" min="0" max="100" value="0">
+                                </div>
+                                <div>
+                                    <label class="form-label small">Max</label>
+                                    <input type="number" class="form-control form-control-sm" min="0" max="100" value="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Document Type</label>
+                            <select class="form-select">
+                                <option value="">All Types</option>
+                                <option value="CQC Document">CQC Document</option>
+                                <option value="RIDDOR Document">RIDDOR Document</option>
+                                <option value="Fire Safety Document">Fire Safety Document</option>
+                                <option value="Financial Document">Financial Document</option>
+                                <option value="Management Document">Management Document</option>
+                                <option value="Audit Document">Audit Document</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Regulatory Body</label>
+                            <select class="form-select">
+                                <option value="">All Bodies</option>
+                                <option value="Care Quality Commission">Care Quality Commission</option>
+                                <option value="Health and Safety Executive">Health and Safety Executive</option>
+                                <option value="Financial Conduct Authority">Financial Conduct Authority</option>
+                                <option value="Fire and Rescue Authority">Fire and Rescue Authority</option>
+                                <option value="Internal Audit">Internal Audit</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Analysis Date</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Action Plan Status</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="hasActionItems" checked>
+                                <label class="form-check-label" for="hasActionItems">
+                                    Has Action Items
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="hasHighPriority" checked>
+                                <label class="form-check-label" for="hasHighPriority">
+                                    Has High Priority Items
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="completed" checked>
+                                <label class="form-check-label" for="completed">
+                                    Has Completed Items
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Compliance Overview</label>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>High Compliance:</span>
+                            <span class="fw-bold">{{ reports|selectattr('overall_score', 'ge', 90)|list|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Medium Compliance:</span>
+                            <span class="fw-bold">{{ reports|selectattr('overall_score', 'lt', 90)|selectattr('overall_score', 'ge', 70)|list|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Low Compliance:</span>
+                            <span class="fw-bold">{{ reports|selectattr('overall_score', 'lt', 70)|list|length }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Action Items</label>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Total:</span>
+                            <span class="fw-bold">{{ reports|sum(attribute='action_plan_count') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>High Priority:</span>
+                            <span class="fw-bold text-danger">{{ reports|sum(attribute='high_priority_count') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Medium Priority:</span>
+                            <span class="fw-bold text-warning">{{ reports|sum(attribute='medium_priority_count') }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Average Compliance Score: <span class="fw-bold">{{ reports|sum(attribute='overall_score') / reports|length if reports|length > 0 else 0 }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports List -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">All Reports ({{ reports|length }})</h5>
+                    <div class="d-flex">
+                        <div class="input-group me-2">
+                            <input type="text" class="form-control" placeholder="Search reports..." id="searchInput">
+                            <button class="btn btn-light" type="button" id="searchButton"><i class="fas fa-search"></i></button>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-light active" id="cardViewBtn"><i class="fas fa-th-large"></i></button>
+                            <button class="btn btn-light" id="listViewBtn"><i class="fas fa-list"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Card View -->
+                    <div id="cardView">
+                        <div class="row">
+                            {% for report in reports %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card report-card h-100">
+                                    <div class="card-header p-2 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge {% if report.overall_score >= 90 %}bg-success{% elif report.overall_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %} px-3 py-2">
+                                                {{ report.overall_score }}%
+                                            </span>
+                                            <small class="text-muted">{{ report.analysis_date.strftime('%d %b %Y') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate">{{ report.title }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ report.document_type }}</h6>
+                                        <p class="card-text small text-muted">
+                                            {% if report.inspector_name %}
+                                            Inspector: {{ report.inspector_name }}<br>
+                                            {% endif %}
+                                            Regulatory Body: {{ report.regulatory_body }}
+                                        </p>
+                                        
+                                        <div class="d-flex justify-content-between small mb-2">
+                                            <span>CQC:</span>
+                                            <span class="fw-bold {% if report.cqc_score >= 90 %}text-success{% elif report.cqc_score >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ report.cqc_score }}%
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between small mb-2">
+                                            <span>RIDDOR:</span>
+                                            <span class="fw-bold {% if report.riddor_score >= 90 %}text-success{% elif report.riddor_score >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ report.riddor_score }}%
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between small mb-2">
+                                            <span>Fire Safety:</span>
+                                            <span class="fw-bold {% if report.fire_safety_score >= 90 %}text-success{% elif report.fire_safety_score >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ report.fire_safety_score }}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white p-2">
+                                        <a href="{{ url_for('regulatory_analysis.view_report', report_id=report.id) }}" class="btn btn-sm btn-primary w-100">
+                                            <i class="fas fa-eye me-2"></i> View Report
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- List View -->
+                    <div id="listView" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Document Type</th>
+                                        <th>Regulatory Body</th>
+                                        <th>Date</th>
+                                        <th>Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                    <tr>
+                                        <td>{{ report.title }}</td>
+                                        <td>{{ report.document_type }}</td>
+                                        <td>{{ report.regulatory_body }}</td>
+                                        <td>{{ report.analysis_date.strftime('%d %b %Y') }}</td>
+                                        <td>
+                                            <span class="badge {% if report.overall_score >= 90 %}bg-success{% elif report.overall_score >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                                {{ report.overall_score }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('regulatory_analysis.view_report', report_id=report.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer d-flex justify-content-between">
+                    <div>
+                        <span class="text-muted">Showing {{ reports|length }} of {{ reports|length }} reports</span>
+                    </div>
+                    <div>
+                        <nav aria-label="Report pagination">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // View toggle buttons
+        const cardViewBtn = document.getElementById('cardViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const cardView = document.getElementById('cardView');
+        const listView = document.getElementById('listView');
+        
+        cardViewBtn.addEventListener('click', function() {
+            cardView.style.display = 'block';
+            listView.style.display = 'none';
+            cardViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            cardView.style.display = 'none';
+            listView.style.display = 'block';
+            listViewBtn.classList.add('active');
+            cardViewBtn.classList.remove('active');
+        });
+        
+        // Initialize filter form
+        const filterForm = document.getElementById('filterForm');
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // In a real application, this would apply filters to the reports
+            alert('Filters applied!');
+        });
+        
+        // Initialize search
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        
+        searchButton.addEventListener('click', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            // In a real application, this would search reports
+            alert('Searching for: ' + searchTerm);
+        });
+        
+        // Handle Enter key in search input
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchButton.click();
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

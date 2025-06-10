@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Apply Learned Format{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Apply Learned Format to Policy</h1>
+    
+    <div class="alert alert-info">
+        This tool applies the AI's learned format patterns to a policy document. The AI will analyze the content
+        and apply appropriate formatting based on the policy code, title, and category.
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">Policy Information</div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="policy_code" class="form-label">Policy Code</label>
+                                <input type="text" class="form-control" id="policy_code" name="policy_code" value="{{ policy_code }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="policy_title" class="form-label">Policy Title</label>
+                                <input type="text" class="form-control" id="policy_title" name="policy_title" value="{{ policy_title }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="policy_category" class="form-label">Policy Category</label>
+                                <input type="text" class="form-control" id="policy_category" name="policy_category" value="{{ policy_category }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="policy_content" class="form-label">Original Policy Content (Markdown)</label>
+                            <textarea class="form-control" id="policy_content" name="policy_content" rows="12" required>{{ policy_content }}</textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Apply Learned Format</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if formatted_content %}
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">Formatted Policy Content</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="formatted_content" class="form-label">Formatted Content (Markdown)</label>
+                        <textarea class="form-control" id="formatted_content" rows="12" readonly>{{ formatted_content }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Preview</label>
+                        <div class="border p-3 bg-light markdown-preview">
+                            {{ formatted_content | markdown }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('format_learning.index') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    var copyText = document.getElementById("formatted_content");
+    copyText.select();
+    document.execCommand("copy");
+    alert("Copied to clipboard!");
+}
+</script>
+{% endblock %}

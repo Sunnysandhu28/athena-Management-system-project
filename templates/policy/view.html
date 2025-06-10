@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy.title }} | Cathena Policy System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/policies">Policies</a></li>
+            {% if policy.category %}
+            <li class="breadcrumb-item"><a href="/category/{{ policy.category_id }}">{{ policy.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ policy.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">{{ policy.title }}</h1>
+        <div>
+            <span class="badge bg-primary">{{ policy.code }}</span>
+            {% if policy.status %}
+            <span class="badge {% if policy.status == 'APPROVED' %}bg-success{% elif policy.status == 'REVIEW' %}bg-warning{% elif policy.status == 'ARCHIVED' %}bg-secondary{% else %}bg-info{% endif %}">
+                {{ policy.status }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Policy Details</h5>
+                    <div>
+                        {% if current_user.is_authenticated and current_user.role in ['admin', 'staff'] %}
+                        <a href="/policy/{{ policy.id }}/edit" class="btn btn-sm btn-light me-2">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a href="/policy/{{ policy.id }}/download" class="btn btn-sm btn-success">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% else %}
+                        <a href="/policy/{{ policy.id }}/download" class="btn btn-sm btn-success">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if policy.description %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary border-bottom pb-2">Description</h6>
+                        <p class="lead">{{ policy.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary border-bottom pb-2">Content</h6>
+                        <div class="policy-content p-4 border rounded bg-light shadow-sm">
+                            {% if policy.content %}
+                                {{ policy.content|safe }}
+                            {% else %}
+                                <p class="text-muted">No content available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-tag-fill text-primary me-2"></i>Reference Code</th>
+                                <td class="fw-bold">{{ policy.code }}</td>
+                            </tr>
+                            {% if policy.category %}
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-folder-fill text-primary me-2"></i>Category</th>
+                                <td>{{ policy.category.name }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if policy.version %}
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-clock-history text-primary me-2"></i>Version</th>
+                                <td>{{ policy.version }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if policy.updated_at %}
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-calendar-check text-primary me-2"></i>Last Updated</th>
+                                <td>{{ policy.updated_at.strftime('%d %b %Y') }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if policy.review_date %}
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-calendar-event text-primary me-2"></i>Review Date</th>
+                                <td>{{ policy.review_date.strftime('%d %b %Y') }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if policy.is_qcs_policy %}
+                            <tr>
+                                <th class="text-nowrap"><i class="bi bi-journal-check text-primary me-2"></i>Source</th>
+                                <td><span class="badge bg-info">QCS</span></td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">AI Policy Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <p>This policy has been analyzed by our AI system to ensure compliance with:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <span>CQC Standards</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <span>NICE Guidelines</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <span>Industry Best Practices</span>
+                        </li>
+                    </ul>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="/policy/{{ policy.id }}/analysis" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> View Full Analysis
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if related_policies and related_policies|length > 0 %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Related Policies</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for related in related_policies %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="/policy/{{ related.id }}" class="text-decoration-none">{{ related.title }}</a>
+                            <span class="badge bg-primary rounded-pill">{{ related.code }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

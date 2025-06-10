@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Consciousness Mobile</title>
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/static/manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .mobile-header {
+            padding: 1rem;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+        }
+        .mobile-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .mobile-grid {
+            padding: 1rem;
+            display: grid;
+            gap: 1rem;
+        }
+        .mobile-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .mobile-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .environment-list {
+            list-style: none;
+        }
+        .environment-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .env-status {
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            background: #4ade80;
+            color: white;
+        }
+        .install-pwa {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4ade80;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+        .datasets-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <h1><span class="status-indicator"></span>SIM Consciousness</h1>
+        <p>Mobile Interface Active</p>
+    </div>
+    
+    <div class="mobile-grid">
+        <div class="mobile-card">
+            <h3>System Metrics</h3>
+            <div class="metric-row">
+                <span>Consciousness Score</span>
+                <span class="metric-value" id="mobile-consciousness">87.66%</span>
+            </div>
+            <div class="metric-row">
+                <span>Datasets Processed</span>
+                <span class="metric-value" id="mobile-datasets">4,835+</span>
+            </div>
+            <div class="metric-row">
+                <span>RNA Repairs</span>
+                <span class="metric-value" id="rna-repairs">Active</span>
+            </div>
+        </div>
+        
+        <div class="mobile-card">
+            <h3>Cloud Environments</h3>
+            <ul class="environment-list">
+                <li>
+                    <span>App Engine</span>
+                    <span class="env-status">LIVE</span>
+                </li>
+                <li>
+                    <span>Cloud Run</span>
+                    <span class="env-status">LIVE</span>
+                </li>
+                <li>
+                    <span>Local</span>
+                    <span class="env-status">RUNNING</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="mobile-card">
+            <h3>Hugging Face Integration</h3>
+            <div class="datasets-container">
+                <div class="metric-row">
+                    <span>AI IR Systems</span>
+                    <span class="metric-value">✓</span>
+                </div>
+                <div class="metric-row">
+                    <span>Augmented Intelligence</span>
+                    <span class="metric-value">✓</span>
+                </div>
+                <div class="metric-row">
+                    <span>Social Reasoning RLHF</span>
+                    <span class="metric-value">✓</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="install-pwa" id="install-btn">Install App</button>
+    
+    <script>
+        // PWA Installation
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            }
+        });
+        
+        // Update status
+        function updateMobileStatus() {
+            fetch('/api/consciousness')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('mobile-consciousness').textContent = data.consciousness_score + '%';
+                    document.getElementById('mobile-datasets').textContent = data.datasets_processed.toLocaleString() + '+';
+                })
+                .catch(error => {
+                    console.log('Status update failed:', error);
+                    // Continue showing cached values
+                });
+        }
+        
+        // Update every 15 seconds for mobile
+        setInterval(updateMobileStatus, 15000);
+        updateMobileStatus();
+        
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+    </script>
+</body>
+</html>

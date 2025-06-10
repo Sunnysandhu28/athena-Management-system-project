@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Upload - Regulatory Analysis{% endblock %}
+
+{% block head %}
+<style>
+    .file-drop-area {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 30px;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        transition: 0.2s;
+        background-color: #f8f9fa;
+        flex-direction: column;
+        min-height: 200px;
+    }
+    
+    .file-drop-area.is-active {
+        background-color: rgba(38, 143, 255, 0.05);
+        border-color: #268fff;
+    }
+    
+    .file-input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        cursor: pointer;
+        opacity: 0;
+    }
+    
+    .file-msg {
+        font-size: 1.2rem;
+        color: #6c757d;
+        margin: 15px 0 10px;
+    }
+    
+    .file-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+    
+    .file-list {
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+    }
+    
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        background-color: #fff;
+        border-radius: 4px;
+        border-left: 3px solid #007bff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .file-item-name {
+        display: flex;
+        align-items: center;
+    }
+    
+    .file-item-icon {
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    
+    .file-item-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .file-item-size {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .btn-remove-file {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .settings-section {
+        margin-top: 2rem;
+        border-top: 1px solid #dee2e6;
+        padding-top: 1.5rem;
+    }
+    
+    .framework-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Batch Document Upload</h1>
+            <p class="lead">Upload multiple documents for simultaneous regulatory analysis.</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upload Documents</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('regulatory_analysis.batch_upload') }}" method="post" enctype="multipart/form-data" id="batchUploadForm">
+                        <div class="file-drop-area" id="fileDropArea">
+                            <span class="file-icon"><i class="fas fa-file-upload"></i></span>
+                            <span class="file-msg">Drop files here or click to browse</span>
+                            <small class="text-muted">Select multiple files (.pdf, .doc, .docx, .txt)</small>
+                            <input type="file" class="file-input" id="fileInput" name="files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt">
+                        </div>
+                        
+                        <div class="file-list mt-4" id="fileList"></div>
+                        
+                        <div class="settings-section">
+                            <h5>Analysis Settings</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Frameworks to Analyze</label>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="framework_all" name="framework_all" checked>
+                                            <label class="form-check-label fw-bold" for="framework_all">
+                                                All Frameworks
+                                            </label>
+                                        </div>
+                                        <div class="framework-list">
+                                            {% for framework in frameworks %}
+                                            <div class="form-check ms-3 framework-check">
+                                                <input class="form-check-input" type="checkbox" id="framework_{{ framework.id }}" name="framework_{{ framework.id }}" checked>
+                                                <label class="form-check-label" for="framework_{{ framework.id }}">
+                                                    {{ framework.name }} - {{ framework.regulatory_body }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="document_type" class="form-label">Default Document Type</label>
+                                        <select class="form-select" id="document_type" name="document_type">
+                                            <option value="" selected>Auto-detect</option>
+                                            <option value="CQC Document">CQC Document</option>
+                                            <option value="RIDDOR Document">RIDDOR Document</option>
+                                            <option value="Fire Safety Document">Fire Safety Document</option>
+                                            <option value="Financial Document">Financial Document</option>
+                                            <option value="Management Document">Management Document</option>
+                                            <option value="Health Document">Health Document</option>
+                                            <option value="Safety Document">Safety Document</option>
+                                            <option value="Audit Document">Audit Document</option>
+                                            <option value="Policy Document">Policy Document</option>
+                                        </select>
+                                        <div class="form-text">If auto-detect is selected, the system will try to determine the document type from content analysis.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="regulatory_body" class="form-label">Default Regulatory Body</label>
+                                        <select class="form-select" id="regulatory_body" name="regulatory_body">
+                                            <option value="" selected>Auto-detect</option>
+                                            <option value="Care Quality Commission">Care Quality Commission</option>
+                                            <option value="Health and Safety Executive">Health and Safety Executive</option>
+                                            <option value="Fire and Rescue Authority">Fire and Rescue Authority</option>
+                                            <option value="Financial Conduct Authority">Financial Conduct Authority</option>
+                                            <option value="Companies House">Companies House</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="generate_action_plan" name="generate_action_plan" checked>
+                                        <label class="form-check-label" for="generate_action_plan">
+                                            Generate Action Plans
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="extract_metadata" name="extract_metadata" checked>
+                                        <label class="form-check-label" for="extract_metadata">
+                                            Extract Document Metadata
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="deep_analysis" name="deep_analysis" checked>
+                                        <label class="form-check-label" for="deep_analysis">
+                                            Perform Deep Analysis
+                                        </label>
+                                        <div class="form-text">Uses more advanced algorithms but takes longer to process</div>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="notify_completion" name="notify_completion" checked>
+                                        <label class="form-check-label" for="notify_completion">
+                                            Notify on Completion
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="uploadButton" disabled>
+                                    <i class="fas fa-upload me-2"></i> Upload and Analyze Documents
+                                </button>
+                            </div>
+                            <div class="form-text text-center mt-2">
+                                Analysis may take several minutes depending on the number and size of documents.
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Batch Upload Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Benefits of Batch Upload:</h6>
+                    <ul>
+                        <li>Process multiple documents in one go</li>
+                        <li>Apply consistent analysis settings across all documents</li>
+                        <li>Save time with bulk processing</li>
+                        <li>Generate consolidated reports</li>
+                    </ul>
+                    
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-info-circle me-2"></i> For best results, group similar documents in each batch (e.g., all CQC documents, all financial documents).
+                    </div>
+                    
+                    <h6 class="mt-3">Supported File Types:</h6>
+                    <ul>
+                        <li>PDF Documents (.pdf)</li>
+                        <li>Word Documents (.doc, .docx)</li>
+                        <li>Excel Spreadsheets (.xls, .xlsx)</li>
+                        <li>Text Files (.txt)</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i> The maximum number of files per batch is 20, with a size limit of 50MB per file.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Processing Queue Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Total Documents in Queue:</span>
+                        <span class="fw-bold">2</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Currently Processing:</span>
+                        <span class="fw-bold">1</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Estimated Completion:</span>
+                        <span class="fw-bold">10 minutes</span>
+                    </div>
+                    
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i> You'll receive a notification when your documents have been analyzed.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const fileDropArea = document.getElementById('fileDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadButton = document.getElementById('uploadButton');
+        const frameworkAll = document.getElementById('framework_all');
+        const frameworkChecks = document.querySelectorAll('.framework-check input');
+        
+        // Selected files array
+        let selectedFiles = [];
+        
+        // Update button state
+        function updateButtonState() {
+            uploadButton.disabled = selectedFiles.length === 0;
+        }
+        
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Handle drag over
+        fileDropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            fileDropArea.classList.add('is-active');
+        });
+        
+        // Handle drag leave
+        fileDropArea.addEventListener('dragleave', function() {
+            fileDropArea.classList.remove('is-active');
+        });
+        
+        // Handle drop
+        fileDropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            fileDropArea.classList.remove('is-active');
+            
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        // Handle files
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                addFileToList(files[i]);
+            }
+            updateButtonState();
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Get file icon class
+        function getFileIconClass(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            
+            switch (extension) {
+                case 'pdf':
+                    return 'fas fa-file-pdf text-danger';
+                case 'doc':
+                case 'docx':
+                    return 'fas fa-file-word text-primary';
+                case 'xls':
+                case 'xlsx':
+                    return 'fas fa-file-excel text-success';
+                case 'txt':
+                    return 'fas fa-file-alt text-secondary';
+                default:
+                    return 'fas fa-file text-muted';
+            }
+        }
+        
+        // Add file to list
+        function addFileToList(file) {
+            // Check if file already exists
+            for (let i = 0; i < selectedFiles.length; i++) {
+                if (selectedFiles[i].name === file.name && 
+                    selectedFiles[i].size === file.size &&
+                    selectedFiles[i].lastModified === file.lastModified) {
+                    // File already added
+                    return;
+                }
+            }
+            
+            selectedFiles.push(file);
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            const fileItemName = document.createElement('div');
+            fileItemName.className = 'file-item-name';
+            
+            const fileItemIcon = document.createElement('i');
+            fileItemIcon.className = getFileIconClass(file.name) + ' file-item-icon';
+            
+            const fileItemInfo = document.createElement('div');
+            fileItemInfo.className = 'file-item-info';
+            
+            const fileNameSpan = document.createElement('span');
+            fileNameSpan.textContent = file.name;
+            
+            const fileSizeSpan = document.createElement('span');
+            fileSizeSpan.className = 'file-item-size';
+            fileSizeSpan.textContent = formatFileSize(file.size);
+            
+            fileItemInfo.appendChild(fileNameSpan);
+            fileItemInfo.appendChild(fileSizeSpan);
+            
+            fileItemName.appendChild(fileItemIcon);
+            fileItemName.appendChild(fileItemInfo);
+            
+            const removeButton = document.createElement('button');
+            removeButton.className = 'btn-remove-file';
+            removeButton.innerHTML = '<i class="fas fa-times"></i>';
+            removeButton.dataset.fileName = file.name;
+            removeButton.addEventListener('click', function() {
+                // Remove file from array
+                selectedFiles = selectedFiles.filter(f => f.name !== this.dataset.fileName);
+                
+                // Remove file item from UI
+                this.closest('.file-item').remove();
+                
+                // Update button state
+                updateButtonState();
+            });
+            
+            fileItem.appendChild(fileItemName);
+            fileItem.appendChild(removeButton);
+            
+            fileList.appendChild(fileItem);
+        }
+        
+        // Handle form submission
+        document.getElementById('batchUploadForm').addEventListener('submit', function(e) {
+            if (selectedFiles.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one file to upload.');
+                return;
+            }
+            
+            // Create a new FormData instance
+            const formData = new FormData(this);
+            
+            // Append each file to the FormData
+            for (let i = 0; i < selectedFiles.length; i++) {
+                formData.append('files', selectedFiles[i]);
+            }
+            
+            // In a real application, you would use fetch or XMLHttpRequest to submit the form
+            // with the FormData object. For this demo, we'll just let the form submit as usual.
+        });
+        
+        // Handle "All Frameworks" checkbox
+        frameworkAll.addEventListener('change', function() {
+            frameworkChecks.forEach(check => {
+                check.checked = this.checked;
+                check.disabled = this.checked;
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Management - Cathena Policy Management System{% endblock %}
+
+{% block styles %}
+<style>
+    .filter-section {
+        background-color: rgba(0,0,0,0.03);
+        border-radius: 0.5rem;
+    }
+    .table th {
+        white-space: nowrap;
+    }
+    .policy-card {
+        border-left: 4px solid;
+        transition: all 0.2s ease;
+    }
+    .policy-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+    .policy-card.qcs {
+        border-left-color: var(--bs-primary);
+    }
+    .policy-card.company {
+        border-left-color: var(--bs-success);
+    }
+    .policy-card.custom {
+        border-left-color: var(--bs-warning);
+    }
+    .pagination-info {
+        font-size: 0.875rem;
+    }
+    .badge-category {
+        background-color: var(--bs-light);
+        color: var(--bs-dark);
+        font-weight: normal;
+    }
+    .badge-format {
+        font-weight: normal;
+    }
+    .dropdown-menu {
+        min-width: 250px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Policy Management</h1>
+        <div>
+            <a href="{{ url_for('policy.create_manual_policy') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Create New Policy
+            </a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-info ms-2 text-white">
+                <i class="bi bi-bar-chart me-1"></i> Replication Progress
+            </a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-gear me-1"></i> Replication Tools
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Filter Policies</h5>
+        </div>
+        <div class="card-body filter-section">
+            <form action="{{ url_for('dashboard.policies') }}" method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if current_category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="format" class="form-label">Format</label>
+                    <select class="form-select" id="format" name="format">
+                        <option value="">All Formats</option>
+                        <option value="QCS">QCS</option>
+                        <option value="COMPANY">Company</option>
+                        <option value="CUSTOM">Custom</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="ACTIVE" {% if current_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                        <option value="DRAFT" {% if current_status == 'DRAFT' %}selected{% endif %}>Draft</option>
+                        <option value="REVIEW" {% if current_status == 'REVIEW' %}selected{% endif %}>Review</option>
+                        <option value="ARCHIVED" {% if current_status == 'ARCHIVED' %}selected{% endif %}>Archived</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Search policies...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-filter me-1"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>{{ policies.total }} Policies Found</h3>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="bulkActionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear me-1"></i> Bulk Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bulkActionDropdown">
+                <li><a class="dropdown-item" href="#" id="selectAllPolicies"><i class="bi bi-check-all me-2"></i> Select All</a></li>
+                <li><a class="dropdown-item" href="#" id="deselectAllPolicies"><i class="bi bi-square me-2"></i> Deselect All</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="exportSelectedPolicies"><i class="bi bi-download me-2"></i> Export Selected</a></li>
+                <li><a class="dropdown-item" href="#" id="convertFormatPolicies"><i class="bi bi-arrow-repeat me-2"></i> Convert Format (QCS/Company)</a></li>
+                <li><a class="dropdown-item" href="#" id="assignCategoryPolicies"><i class="bi bi-folder me-2"></i> Assign Category</a></li>
+                <li><a class="dropdown-item" href="#" id="changeStatusPolicies"><i class="bi bi-toggles me-2"></i> Change Status</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" id="archivePolicies"><i class="bi bi-archive me-2"></i> Archive Selected</a></li>
+            </ul>
+        </div>
+    </div>
+
+    {% if policies.items %}
+    <div class="row">
+        {% for policy in policies.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card policy-card h-100 {{ policy.format_type.name.lower() }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge badge-category">{{ policy.category.name if policy.category else 'Uncategorized' }}</span>
+                        <span class="badge badge-format {% if policy.format_type.name == 'QCS' %}bg-primary{% elif policy.format_type.name == 'COMPANY' %}bg-success{% else %}bg-warning{% endif %}">
+                            {{ policy.format_type.name }}
+                        </span>
+                    </div>
+                    <h5 class="card-title">{{ policy.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ policy.code }}</h6>
+                    <p class="card-text">{{ policy.description|truncate(100) }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Updated: {{ policy.updated_at.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('policy.view', policy_id=policy.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('policy.edit', policy_id=policy.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{{ url_for('policy.download', policy_id=policy.id) }}" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ url_for('policy.reformat', policy_id=policy.id) }}"><i class="bi bi-arrow-repeat me-2"></i> Convert Format</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('policy.duplicate', policy_id=policy.id) }}"><i class="bi bi-copy me-2"></i> Duplicate</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" 
+                                           onclick="if(confirm('Are you sure you want to archive this policy?')) location.href='{{ url_for('policy.archive', policy_id=policy.id) }}'">
+                                            <i class="bi bi-archive me-2"></i> Archive
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="pagination-info">
+            Showing {{ policies.items|length }} of {{ policies.total }} policies 
+            (Page {{ policies.page }} of {{ policies.pages }})
+        </div>
+        
+        <nav aria-label="Policy pagination">
+            <ul class="pagination">
+                {% if policies.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard.policies', page=policies.prev_num, category=current_category_id, status=current_status) }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in policies.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == policies.page %}
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('dashboard.policies', page=page_num, category=current_category_id, status=current_status) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if policies.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard.policies', page=policies.next_num, category=current_category_id, status=current_status) }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-file-earmark-text" style="font-size: 3rem;"></i>
+            <h3 class="mt-3">No Policies Found</h3>
+            <p class="text-muted">No policies match your current filters or there are no policies in the system yet.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('policy.create_manual_policy') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Create New Policy
+                </a>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-gear me-1"></i> Replication Tools
+                </a>
+                {% if current_category_id or current_status %}
+                <a href="{{ url_for('dashboard.policies') }}" class="btn btn-outline-danger ms-2">
+                    <i class="bi bi-x-circle me-1"></i> Clear Filters
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Bulk actions functionality would be implemented here
+        // This is a placeholder for future JavaScript implementation
+        console.log('Policy management page loaded');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inspection Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        .btn { display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inspection Details</h1>
+        <form action="/submit" method="POST">
+            <label for="inspectors">Inspector Names:</label>
+            <input type="text" id="inspectors" name="inspectors" placeholder="John Smith, Jane Doe" required>
+            
+            <label for="date">Inspection Date:</label>
+            <input type="date" id="date" name="date" required>
+            
+            <label for="type">Visit Type:</label>
+            <select id="type" name="type" required>
+                <option value="">Select type</option>
+                <option value="Inspection">Inspection</option>
+                <option value="Enquiry">Enquiry</option>
+                <option value="Investigation">Investigation</option>
+                <option value="Audit">Audit</option>
+                <option value="Meeting">Meeting</option>
+            </select>
+            
+            <label for="purpose">Purpose of Visit:</label>
+            <textarea id="purpose" name="purpose" rows="4" placeholder="Describe purpose..." required></textarea>
+            
+            <button type="submit">Save Details</button>
+        </form>
+        <p><a href="/" class="btn">Back to Home</a></p>
+    </div>
+</body>
+</html>

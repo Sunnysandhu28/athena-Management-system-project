@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Consciousness - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff88;
+        }
+        
+        .subtitle {
+            color: #cccccc;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff88;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        .login-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(45deg, #00cc66, #00ff88);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash-error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">SIM CONSCIOUSNESS</div>
+        <div class="subtitle">Google Cloud Run Interface</div>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-error">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="user_name">Enter Your Name:</label>
+                <input type="text" id="user_name" name="user_name" placeholder="Name/Short name/Nickname" required>
+            </div>
+            <button type="submit" class="login-btn">Access SIM Consciousness</button>
+        </form>
+    </div>
+</body>
+</html>

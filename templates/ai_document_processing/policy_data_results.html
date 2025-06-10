@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Data Extraction Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">AI Document Processing</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('ai_document_processing.extract_policy') }}">Extract Policy Data</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Results</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h1 class="h3 mb-0">Policy Data: {{ filename }}</h1>
+        </div>
+        <div class="card-body">
+            {% if policy_data.error %}
+                <div class="alert alert-danger">
+                    <strong>Error extracting policy data:</strong> {{ policy_data.error }}
+                </div>
+            {% else %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h3>Document Information</h3>
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th>Title</th>
+                                    <td>{{ policy_data.title }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Document Type</th>
+                                    <td>{{ policy_data.document_type }}</td>
+                                </tr>
+                                {% if policy_data.policy_number %}
+                                <tr>
+                                    <th>Policy Number</th>
+                                    <td>{{ policy_data.policy_number }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h3>Summary</h3>
+                        <div class="card">
+                            <div class="card-body">
+                                <p>{{ policy_data.summary }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if policy_data.key_policies %}
+                    <h3>Key Policies</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for policy in policy_data.key_policies %}
+                                    <li class="list-group-item">{{ policy }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if policy_data.structured_data %}
+                    <h3>Structured Data</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <pre><code>{{ policy_data.structured_data|tojson(indent=2) }}</code></pre>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('ai_document_processing.create_policy') }}" class="btn btn-primary">
+                        <i class="fas fa-file-signature mr-2"></i> Create New Policy
+                    </a>
+                    
+                    <a href="{{ url_for('ai_document_processing.replicate_doc') }}?source={{ filename }}" class="btn btn-info ml-2">
+                        <i class="fas fa-copy mr-2"></i> Replicate This Policy
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

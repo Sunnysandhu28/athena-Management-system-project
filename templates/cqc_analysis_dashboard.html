@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Analysis Dashboard | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .metric-card {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+        height: 300px;
+        position: relative;
+    }
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .metric-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .progress-thin {
+        height: 8px;
+        border-radius: 4px;
+    }
+    .overview-card {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+    }
+    .card-header-blue {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        font-weight: 600;
+    }
+    .trend-indicator {
+        font-size: 0.9rem;
+    }
+    .trend-up {
+        color: #28a745;
+    }
+    .trend-down {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">CQC Analysis Dashboard</h1>
+            <p class="lead">Comprehensive analysis of Care Quality Commission reports and compliance metrics</p>
+        </div>
+    </div>
+
+    <!-- Overview Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card overview-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle text-primary me-2"></i>Overview</h5>
+                    <p class="card-text">
+                        This dashboard provides detailed analysis of CQC reports, highlighting key compliance areas and recommendations.
+                        The system uses machine learning to identify patterns across inspections and report metrics.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted text-uppercase">CQC Reports Analyzed</h6>
+                    <div class="metric-value">3,450</div>
+                    <div class="d-flex justify-content-center">
+                        <span class="trend-indicator trend-up"><i class="fas fa-arrow-up me-1"></i>12.5%</span>
+                    </div>
+                    <p class="metric-description mt-2">Total reports processed through ML analysis</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted text-uppercase">Compliance Score</h6>
+                    <div class="metric-value">82.7%</div>
+                    <div class="d-flex justify-content-center">
+                        <span class="trend-indicator trend-up"><i class="fas fa-arrow-up me-1"></i>3.2%</span>
+                    </div>
+                    <p class="metric-description mt-2">Average compliance rate across all domains</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted text-uppercase">Key Findings</h6>
+                    <div class="metric-value">5,280</div>
+                    <div class="d-flex justify-content-center">
+                        <span class="trend-indicator trend-up"><i class="fas fa-arrow-up me-1"></i>7.8%</span>
+                    </div>
+                    <p class="metric-description mt-2">Important insights extracted from reports</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted text-uppercase">Action Items</h6>
+                    <div class="metric-value">925</div>
+                    <div class="d-flex justify-content-center">
+                        <span class="trend-indicator trend-down"><i class="fas fa-arrow-down me-1"></i>5.1%</span>
+                    </div>
+                    <p class="metric-description mt-2">Required actions identified (lower is better)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header card-header-blue">
+                    <i class="fas fa-chart-pie me-2"></i>CQC Domain Performance
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" id="domainPerformanceChart">
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                            <div class="text-center">
+                                <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                <p>Domain performance visualization will appear here</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadChartData()">Load Chart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header card-header-blue">
+                    <i class="fas fa-chart-line me-2"></i>Compliance Trends
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" id="complianceTrendChart">
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                <p>Compliance trend visualization will appear here</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadChartData()">Load Chart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Domain Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header card-header-blue">
+                    <i class="fas fa-tasks me-2"></i>CQC Domain Compliance Breakdown
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Safe</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <span class="fw-bold">85%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Effective</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <span class="fw-bold">78%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Caring</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <span class="fw-bold">92%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Responsive</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 74%" aria-valuenow="74" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <span class="fw-bold">74%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Well-led</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 68%" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <span class="fw-bold">68%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header card-header-blue">
+                    <i class="fas fa-clipboard-list me-2"></i>Recent Reports
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Organization</th>
+                                    <th>Report Date</th>
+                                    <th>Overall Rating</th>
+                                    <th>Compliance Score</th>
+                                    <th>Action Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Riverside Care Home</td>
+                                    <td>15 May 2025</td>
+                                    <td><span class="badge bg-success">Good</span></td>
+                                    <td>89.5%</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Sunnydale Residential</td>
+                                    <td>12 May 2025</td>
+                                    <td><span class="badge bg-warning">Requires Improvement</span></td>
+                                    <td>72.3%</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Oakwood Healthcare</td>
+                                    <td>8 May 2025</td>
+                                    <td><span class="badge bg-success">Good</span></td>
+                                    <td>84.1%</td>
+                                    <td><span class="badge bg-info">Review</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Meadow View Care</td>
+                                    <td>3 May 2025</td>
+                                    <td><span class="badge bg-danger">Inadequate</span></td>
+                                    <td>58.7%</td>
+                                    <td><span class="badge bg-danger">Urgent</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Green Valley Home</td>
+                                    <td>1 May 2025</td>
+                                    <td><span class="badge bg-primary">Outstanding</span></td>
+                                    <td>95.2%</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadChartData() {
+        // Placeholder for chart loading functionality
+        alert("Chart data would be loaded here in the full implementation.");
+    }
+</script>
+{% endblock %}

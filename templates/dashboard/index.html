@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Stats overview -->
+    <div class="col-md-9">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary bg-opacity-10 text-primary h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Policies</h5>
+                        <h2 class="display-4">{{ policy_count }}</h2>
+                        <p class="card-text">Total policies</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success bg-opacity-10 text-success h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Categories</h5>
+                        <h2 class="display-4">{{ category_count }}</h2>
+                        <p class="card-text">Organized areas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info bg-opacity-10 text-info h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Sites</h5>
+                        <h2 class="display-4">{{ site_count }}</h2>
+                        <p class="card-text">Managed locations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning bg-opacity-10 text-warning h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">System Health</h5>
+                        <h2 class="display-4">{{ system_health.get('score', 0) }}%</h2>
+                        <p class="card-text">Diagnostic rating</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status breakdown -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Policy Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                        style="width: {{ (status_counts.get('APPROVED', 0) / policy_count * 100) if policy_count else 0 }}%;" 
+                                        aria-valuenow="{{ status_counts.get('APPROVED', 0) }}" aria-valuemin="0" aria-valuemax="{{ policy_count }}">
+                                        Approved ({{ status_counts.get('APPROVED', 0) }})
+                                    </div>
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                        style="width: {{ (status_counts.get('REVIEW', 0) / policy_count * 100) if policy_count else 0 }}%;" 
+                                        aria-valuenow="{{ status_counts.get('REVIEW', 0) }}" aria-valuemin="0" aria-valuemax="{{ policy_count }}">
+                                        Review ({{ status_counts.get('REVIEW', 0) }})
+                                    </div>
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                        style="width: {{ (status_counts.get('DRAFT', 0) / policy_count * 100) if policy_count else 0 }}%;" 
+                                        aria-valuenow="{{ status_counts.get('DRAFT', 0) }}" aria-valuemin="0" aria-valuemax="{{ policy_count }}">
+                                        Draft ({{ status_counts.get('DRAFT', 0) }})
+                                    </div>
+                                    <div class="progress-bar bg-secondary" role="progressbar" 
+                                        style="width: {{ (status_counts.get('ARCHIVED', 0) / policy_count * 100) if policy_count else 0 }}%;" 
+                                        aria-valuenow="{{ status_counts.get('ARCHIVED', 0) }}" aria-valuemin="0" aria-valuemax="{{ policy_count }}">
+                                        Archived ({{ status_counts.get('ARCHIVED', 0) }})
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge bg-success me-2">&nbsp;</div>
+                                            <span>Approved: {{ status_counts.get('APPROVED', 0) }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge bg-warning me-2">&nbsp;</div>
+                                            <span>In Review: {{ status_counts.get('REVIEW', 0) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge bg-info me-2">&nbsp;</div>
+                                            <span>Draft: {{ status_counts.get('DRAFT', 0) }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge bg-secondary me-2">&nbsp;</div>
+                                            <span>Archived: {{ status_counts.get('ARCHIVED', 0) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent viewed policies -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Recently Viewed Policies</h5>
+                        <a href="{{ url_for('dashboard.policies') }}" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_views %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Policy Name</th>
+                                        <th>Code</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Viewed At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for view in recent_views %}
+                                    <tr>
+                                        <td>{{ view.policy.name }}</td>
+                                        <td><code>{{ view.policy.policy_code }}</code></td>
+                                        <td>{{ view.policy.category.name if view.policy.category else 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if view.policy.status.name == 'APPROVED' else 'warning' if view.policy.status.name == 'REVIEW' else 'info' if view.policy.status.name == 'DRAFT' else 'secondary' }}">
+                                                {{ view.policy.status.name }}
+                                            </span>
+                                        </td>
+                                        <td>{{ view.viewed_at|format_datetime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('policy.view', policy_id=view.policy.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            No policies viewed yet. Start exploring policies from the <a href="{{ url_for('dashboard.policies') }}">Policies</a> page.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent activity and system health -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_activities %}
+                <ul class="list-group list-group-flush">
+                    {% for activity in recent_activities %}
+                    <li class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ activity.action.replace('_', ' ').title() }}</h6>
+                            <small class="text-muted">{{ activity.created_at|format_datetime('%H:%M') }}</small>
+                        </div>
+                        <small class="text-muted">{{ activity.details }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info m-3">No recent activity</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">System Health</h5>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('dashboard.system_health') }}" class="btn btn-sm btn-outline-primary">Details</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Health Score</label>
+                    <div class="progress">
+                        <div class="progress-bar {{ 'bg-success' if system_health.get('score', 0) >= 80 else 'bg-warning' if system_health.get('score', 0) >= 60 else 'bg-danger' }}" role="progressbar"
+                            style="width: {{ system_health.get('score', 0) }}%"
+                            aria-valuenow="{{ system_health.get('score', 0) }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ system_health.get('score', 0) }}%
+                        </div>
+                    </div>
+                </div>
+
+                {% if system_health.get('issues', []) %}
+                <div class="alert alert-{{ 'warning' if system_health.get('score', 0) >= 60 else 'danger' }}">
+                    <h6>{{ system_health.get('issues', [])|length }} Issue{% if system_health.get('issues', [])|length != 1 %}s{% endif %} Detected</h6>
+                    <ul class="mb-0">
+                        {% for issue in system_health.get('issues', [])[:3] %}
+                        <li>{{ issue.message }}</li>
+                        {% endfor %}
+                        {% if system_health.get('issues', [])|length > 3 %}
+                        <li>
+                            <a href="{{ url_for('dashboard.system_health') }}">
+                                View {{ system_health.get('issues', [])|length - 3 }} more...
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% else %}
+                <div class="alert alert-success">
+                    All systems operating normally
+                </div>
+                {% endif %}
+
+                {% if system_health.get('timestamp') %}
+                <small class="text-muted">Last check: {{ system_health.get('timestamp')|format_datetime }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.policies') }}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-file-earmark-text fs-4 d-block mb-2"></i>
+                            Browse Policies
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-folder2 fs-4 d-block mb-2"></i>
+                            View Categories
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-file-earmark-pdf fs-4 d-block mb-2"></i>
+                            Document Repository
+                        </a>
+                    </div>
+                    {% if current_user.role in ['admin', 'staff'] %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.policy_import') }}" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-file-earmark-plus fs-4 d-block mb-2"></i>
+                            Policy Management
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if current_user.role == 'admin' %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('dashboard.system_health') }}" class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-heart-pulse fs-4 d-block mb-2"></i>
+                            System Health
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

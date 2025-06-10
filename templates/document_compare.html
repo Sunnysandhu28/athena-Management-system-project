@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Documents{% endblock %}
+
+{% block styles %}
+<style>
+    .comparison-container {
+        position: relative;
+    }
+    .similarity-badge {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+    .comparison-header {
+        border-bottom: 2px solid #eee;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 5;
+        padding: 10px 0;
+    }
+    .document-header {
+        border-bottom: 1px solid #eee;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+    .concept-badge {
+        margin-right: 5px;
+        margin-bottom: 5px;
+        display: inline-block;
+    }
+    .concept-badge.common {
+        background-color: #28a745;
+        color: white;
+    }
+    .concept-badge.unique {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+    .score-high {
+        color: #28a745;
+    }
+    .score-medium {
+        color: #ffc107;
+    }
+    .score-low {
+        color: #dc3545;
+    }
+    .comparison-section {
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    .progress {
+        height: 8px;
+    }
+    .diff-highlight {
+        background-color: #e2f3ff;
+        padding: 2px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 mb-0">Document Comparison</h1>
+            <p class="text-muted">Compare two documents to identify similarities and differences</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('regulatory.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show mb-4">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Document Selection Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Select Documents to Compare</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('regulatory.compare_documents') }}" class="row g-3">
+                <div class="col-md-5">
+                    <label for="document1" class="form-label">First Document</label>
+                    <select name="document1" id="document1" class="form-select" required>
+                        <option value="" selected disabled>Select document...</option>
+                        {% for doc in documents %}
+                        <option value="{{ doc.id }}" {% if selected_doc1 and selected_doc1|string == doc.id|string %}selected{% endif %}>
+                            {{ doc.original_filename or doc.filename }} ({{ doc.document_type|capitalize }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-center justify-content-center">
+                    <span class="h3 mb-0 text-muted"><i class="fas fa-exchange-alt"></i></span>
+                </div>
+                
+                <div class="col-md-5">
+                    <label for="document2" class="form-label">Second Document</label>
+                    <select name="document2" id="document2" class="form-select" required>
+                        <option value="" selected disabled>Select document...</option>
+                        {% for doc in documents %}
+                        <option value="{{ doc.id }}" {% if selected_doc2 and selected_doc2|string == doc.id|string %}selected{% endif %}>
+                            {{ doc.original_filename or doc.filename }} ({{ doc.document_type|capitalize }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Compare</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comparison Results -->
+    {% if comparison_results %}
+    <div class="card shadow-sm mb-4 comparison-container">
+        <!-- Similarity Score Badge -->
+        <div class="similarity-badge">
+            {% set similarity = comparison_results.similarity_score * 100 %}
+            <span class="badge {% if similarity > 80 %}bg-success{% elif similarity > 60 %}bg-warning{% else %}bg-danger{% endif %} p-2 rounded-pill">
+                <i class="fas fa-percentage me-1"></i> {{ "%.1f"|format(similarity) }}% Similarity
+            </span>
+        </div>
+        
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Comparison Results</h5>
+        </div>
+        
+        <div class="card-body">
+            <!-- Document Headers -->
+            <div class="row comparison-header mb-4">
+                <div class="col-md-6">
+                    <div class="document-header">
+                        <h5>{{ doc1.original_filename or doc1.filename }}</h5>
+                        <div class="text-muted">
+                            <small>
+                                <span class="badge bg-secondary me-2">{{ doc1.document_type|capitalize }}</span>
+                                {% if doc1.regulatory_framework %}
+                                <span class="badge bg-info me-2">{{ doc1.regulatory_framework }}</span>
+                                {% endif %}
+                                {% if doc1.word_count %}
+                                <span>{{ doc1.word_count }} words</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="document-header">
+                        <h5>{{ doc2.original_filename or doc2.filename }}</h5>
+                        <div class="text-muted">
+                            <small>
+                                <span class="badge bg-secondary me-2">{{ doc2.document_type|capitalize }}</span>
+                                {% if doc2.regulatory_framework %}
+                                <span class="badge bg-info me-2">{{ doc2.regulatory_framework }}</span>
+                                {% endif %}
+                                {% if doc2.word_count %}
+                                <span>{{ doc2.word_count }} words</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Concepts Section -->
+            <div class="comparison-section">
+                <h5 class="mb-3">Key Concepts</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Unique Concepts in Document 1</h6>
+                        <div>
+                            {% for concept in comparison_results.unique_concepts_doc1 %}
+                            <span class="badge concept-badge unique">{{ concept }}</span>
+                            {% else %}
+                            <span class="text-muted">No unique concepts found</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Unique Concepts in Document 2</h6>
+                        <div>
+                            {% for concept in comparison_results.unique_concepts_doc2 %}
+                            <span class="badge concept-badge unique">{{ concept }}</span>
+                            {% else %}
+                            <span class="text-muted">No unique concepts found</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-2">Common Concepts</h6>
+                        <div>
+                            {% for concept in comparison_results.common_key_concepts %}
+                            <span class="badge concept-badge common">{{ concept }}</span>
+                            {% else %}
+                            <span class="text-muted">No common concepts found</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Regulatory Framework Section -->
+            <div class="comparison-section">
+                <h5 class="mb-3">Regulatory Framework Comparison</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Document 1</h6>
+                        <div class="mb-2">
+                            <strong>Framework:</strong> 
+                            {% if comparison_results.framework_comparison.doc1.framework %}
+                            <span class="badge bg-info">{{ comparison_results.framework_comparison.doc1.framework }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>Compliance Score:</strong>
+                            {% set score1 = comparison_results.framework_comparison.doc1.compliance_score %}
+                            {% if score1 %}
+                            <span class="{% if score1 > 80 %}score-high{% elif score1 > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(score1) }}%
+                            </span>
+                            <div class="progress mt-1">
+                                <div class="progress-bar 
+                                    {% if score1 > 80 %}bg-success{% elif score1 > 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                    role="progressbar" style="width: {{ score1 }}%;" 
+                                    aria-valuenow="{{ score1 }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Not available</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Document 2</h6>
+                        <div class="mb-2">
+                            <strong>Framework:</strong>
+                            {% if comparison_results.framework_comparison.doc2.framework %}
+                            <span class="badge bg-info">{{ comparison_results.framework_comparison.doc2.framework }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>Compliance Score:</strong>
+                            {% set score2 = comparison_results.framework_comparison.doc2.compliance_score %}
+                            {% if score2 %}
+                            <span class="{% if score2 > 80 %}score-high{% elif score2 > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(score2) }}%
+                            </span>
+                            <div class="progress mt-1">
+                                <div class="progress-bar 
+                                    {% if score2 > 80 %}bg-success{% elif score2 > 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                    role="progressbar" style="width: {{ score2 }}%;" 
+                                    aria-valuenow="{{ score2 }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Not available</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Comparison -->
+            <div class="comparison-section">
+                <h5 class="mb-3">Detailed Comparison</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Word Count Difference:</strong> 
+                            {{ comparison_results.detailed_comparison.word_count_difference }} words
+                        </div>
+                        <div>
+                            <strong>Structure Similarity:</strong>
+                            {% set structure_sim = comparison_results.detailed_comparison.structure_similarity * 100 %}
+                            <span class="{% if structure_sim > 80 %}score-high{% elif structure_sim > 60 %}score-medium{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(structure_sim) }}%
+                            </span>
+                            <div class="progress mt-1">
+                                <div class="progress-bar 
+                                    {% if structure_sim > 80 %}bg-success{% elif structure_sim > 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                    role="progressbar" style="width: {{ structure_sim }}%;" 
+                                    aria-valuenow="{{ structure_sim }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div>
+                            <strong>Comparison Summary:</strong>
+                            <p class="mt-2">
+                                These documents have a 
+                                <span class="{% if similarity > 80 %}score-high{% elif similarity > 60 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ "%.1f"|format(similarity) }}% similarity
+                                </span> 
+                                overall. 
+                                {% if similarity > 80 %}
+                                They share substantial content and structure, possibly based on the same template or source material.
+                                {% elif similarity > 60 %}
+                                They have moderate similarities, covering related content but with significant differences.
+                                {% else %}
+                                They are mostly different documents with minimal common content.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Links -->
+            <div class="d-flex justify-content-end mt-4">
+                <a href="{{ url_for('regulatory.export_comparison', doc1=selected_doc1, doc2=selected_doc2) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-download me-1"></i> Export Comparison Report
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent selecting the same document in both dropdowns
+    const doc1Select = document.getElementById('document1');
+    const doc2Select = document.getElementById('document2');
+    
+    if (doc1Select && doc2Select) {
+        doc1Select.addEventListener('change', function() {
+            const selectedValue = this.value;
+            
+            // Enable all options in doc2
+            Array.from(doc2Select.options).forEach(option => {
+                option.disabled = false;
+            });
+            
+            // Disable the option in doc2 that matches doc1's selection
+            const matchingOption = doc2Select.querySelector(`option[value="${selectedValue}"]`);
+            if (matchingOption) {
+                matchingOption.disabled = true;
+            }
+            
+            // If doc2 has the same value selected, reset it
+            if (doc2Select.value === selectedValue) {
+                doc2Select.value = "";
+            }
+        });
+        
+        doc2Select.addEventListener('change', function() {
+            const selectedValue = this.value;
+            
+            // Enable all options in doc1
+            Array.from(doc1Select.options).forEach(option => {
+                option.disabled = false;
+            });
+            
+            // Disable the option in doc1 that matches doc2's selection
+            const matchingOption = doc1Select.querySelector(`option[value="${selectedValue}"]`);
+            if (matchingOption) {
+                matchingOption.disabled = true;
+            }
+            
+            // If doc1 has the same value selected, reset it
+            if (doc1Select.value === selectedValue) {
+                doc1Select.value = "";
+            }
+        });
+        
+        // Initialize on page load
+        if (doc1Select.value) {
+            const matchingOption = doc2Select.querySelector(`option[value="${doc1Select.value}"]`);
+            if (matchingOption) {
+                matchingOption.disabled = true;
+            }
+        }
+        
+        if (doc2Select.value) {
+            const matchingOption = doc1Select.querySelector(`option[value="${doc2Select.value}"]`);
+            if (matchingOption) {
+                matchingOption.disabled = true;
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

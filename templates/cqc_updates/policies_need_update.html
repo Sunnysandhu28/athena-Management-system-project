@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Policies Needing Update{% endblock %}
+
+{% block head %}
+<style>
+    .filter-card {
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .policy-update-card {
+        border-left: 4px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s ease;
+    }
+    .policy-update-card:hover {
+        background-color: #f0f0f0;
+    }
+    .priority-high {
+        border-left-color: #f44336;
+    }
+    .priority-medium {
+        border-left-color: #ff9800;
+    }
+    .priority-low {
+        border-left-color: #4caf50;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .status-pending {
+        background-color: #ffecb3;
+        color: #ff6f00;
+    }
+    .status-in-progress {
+        background-color: #bbdefb;
+        color: #0d47a1;
+    }
+    .status-completed {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .status-ignored {
+        background-color: #e0e0e0;
+        color: #616161;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Policies Needing Update</h1>
+        <a href="{{ url_for('cqc_updates.index') }}" class="btn btn-outline-secondary">Dashboard</a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="filter-card">
+                <h5 class="mb-3">Filters</h5>
+                <form method="get" action="{{ url_for('cqc_updates.policies_need_update') }}">
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">Priority</label>
+                        <select class="form-select" id="priority" name="priority">
+                            <option value="">All Priorities</option>
+                            <option value="high" {% if selected_priority == 'high' %}selected{% endif %}>High</option>
+                            <option value="medium" {% if selected_priority == 'medium' %}selected{% endif %}>Medium</option>
+                            <option value="low" {% if selected_priority == 'low' %}selected{% endif %}>Low</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="ignored" {% if selected_status == 'ignored' %}selected{% endif %}>Ignored</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            {% if policies %}
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>{{ policies|length }} Policies Found</h5>
+                </div>
+                <hr>
+                
+                {% for policy in policies %}
+                <div class="policy-update-card priority-{{ policy.priority }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">{{ policy.title }}</h5>
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">{{ policy.reference }}</span>
+                                {% if policy.status == 'pending' %}
+                                <span class="status-badge status-pending">Pending</span>
+                                {% elif policy.status == 'in_progress' %}
+                                <span class="status-badge status-in-progress">In Progress</span>
+                                {% elif policy.status == 'completed' %}
+                                <span class="status-badge status-completed">Completed</span>
+                                {% elif policy.status == 'ignored' %}
+                                <span class="status-badge status-ignored">Ignored</span>
+                                {% endif %}
+                                
+                                <span class="text-muted">Based on: <a href="{{ url_for('cqc_updates.view_update', update_id=policy.update_id) }}">{{ policy.update_title }}</a></span>
+                            </div>
+                            
+                            {% if policy.reason %}
+                            <p class="mb-2">{{ policy.reason | truncate(200) }}</p>
+                            {% endif %}
+                            
+                            <p class="mb-0 small text-muted">Added on {{ policy.created_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('cqc_updates.view_policy_update', policy_id=policy.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <h4>No policies found</h4>
+                <p class="text-muted">Try adjusting your filters or run the CQC update crawler to check for policy updates.</p>
+                <a href="{{ url_for('cqc_updates.index') }}" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

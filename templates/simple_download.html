@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download CQC Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 5% auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-group {
+            margin: 2rem 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+        
+        .progress {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 2rem auto;
+            max-width: 80%;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            border-radius: 10px;
+            width: 0;
+            transition: width 1.5s ease;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CQC Compliance Report</h1>
+        
+        <p>The report includes comprehensive inspection details and compliance information</p>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div id="status-message" class="message">Preparing your report...</div>
+        
+        <div id="success-message" class="success-message">
+            <strong>Success!</strong> Your report is ready for download.
+        </div>
+        
+        <div class="btn-group">
+            <a href="/download-pdf-file" class="btn" id="standard-download">Download Standard Report</a>
+            <a href="/generate-report" class="btn btn-outline" id="detailed-download">Download Report with Inspection Details</a>
+        </div>
+        
+        <p>
+            <a href="/reports">Return to Reports</a> | 
+            <a href="/inspection-form">Update Inspection Details</a>
+        </p>
+    </div>
+    
+    <script>
+        // Animate progress bar on page load
+        window.onload = function() {
+            var progressBar = document.getElementById('progress-bar');
+            var statusMessage = document.getElementById('status-message');
+            var successMessage = document.getElementById('success-message');
+            
+            // Animate progress
+            setTimeout(function() {
+                progressBar.style.width = '30%';
+                statusMessage.textContent = 'Processing compliance data...';
+            }, 300);
+            
+            setTimeout(function() {
+                progressBar.style.width = '70%';
+                statusMessage.textContent = 'Finalizing reports...';
+            }, 1000);
+            
+            setTimeout(function() {
+                progressBar.style.width = '100%';
+                statusMessage.textContent = 'Report ready for download!';
+                successMessage.style.display = 'block';
+            }, 1800);
+        };
+    </script>
+</body>
+</html>

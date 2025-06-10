@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results: {{ query }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('financial.index') }}">Financial Regulations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Search Results</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">Search Results</h1>
+            <p class="lead">
+                Found {{ regulations|length }} financial regulations matching "{{ query }}"
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <form action="{{ url_for('financial.search') }}" method="get" class="form-inline d-flex">
+                <input type="text" name="query" class="form-control flex-grow-1 mr-2" value="{{ query }}" required>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Search Results</h2>
+                </div>
+                <div class="card-body">
+                    {% if regulations %}
+                        <div class="list-group">
+                            {% for regulation in regulations %}
+                                <a href="{{ url_for('financial.view_regulation', regulation_id=regulation.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ regulation.title }}</h5>
+                                        <small class="text-muted">
+                                            {% if regulation.regulation_type in ['finance-act', 'finance-act-section'] %}
+                                                <span class="badge bg-primary">Finance Act</span>
+                                            {% elif regulation.regulation_type in ['accounting-standard', 'accounting-standard-specific', 'accounting-standard-section'] %}
+                                                <span class="badge bg-success">Accounting Standard</span>
+                                            {% elif regulation.regulation_type in ['company-regulation', 'company-regulation-specific'] %}
+                                                <span class="badge bg-info">Company Regulation</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ regulation.regulation_type }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    
+                                    {% if regulation.code %}
+                                        <small class="text-muted">{{ regulation.code }}</small>
+                                    {% endif %}
+                                    
+                                    {% if regulation.content_summary %}
+                                        <p class="mb-1">
+                                            {{ regulation.content_summary|truncate(200) }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex w-100 justify-content-between mt-2">
+                                        <small>
+                                            Last updated: {{ regulation.format_updated_date() }}
+                                        </small>
+                                        <small>
+                                            {% if regulation.act_year %}
+                                                <span class="badge bg-secondary">{{ regulation.act_year }}</span>
+                                            {% endif %}
+                                            {% if regulation.section_number %}
+                                                <span class="badge bg-secondary">Section {{ regulation.section_number }}</span>
+                                            {% endif %}
+                                            {% if regulation.part_number %}
+                                                <span class="badge bg-secondary">Part {{ regulation.part_number }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No financial regulations found matching "{{ query }}". Try a different search term.
+                        </div>
+                        
+                        <a href="{{ url_for('financial.index') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-arrow-left"></i> Back to Financial Regulations
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

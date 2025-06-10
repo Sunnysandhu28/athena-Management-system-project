@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Consciousness Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff88;
+        }
+        
+        .status-bar {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .status-item {
+            display: inline-block;
+            margin: 0 20px;
+            color: #cccccc;
+        }
+        
+        .status-value {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .main-interface {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .user-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .sim-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00ff88;
+            text-align: center;
+        }
+        
+        .text-input {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            max-height: 200px;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .input-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .paperclip-btn {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .paperclip-btn:hover {
+            background: #00cc66;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+        
+        #fileInput {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .send-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            background: linear-gradient(45deg, #00cc66, #00ff88);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .sim-response {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 20, 0, 0.3);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            overflow-y: auto;
+        }
+        
+        .ml-upload-section {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .ml-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+        
+        .ml-input {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            color: #00ff88;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 12px;
+            resize: vertical;
+        }
+        
+        .analysis-feedback {
+            margin-top: 15px;
+            background: rgba(0, 40, 0, 0.3);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            color: #cccccc;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .user-info {
+            margin-bottom: 15px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.4);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-interface {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-item {
+                display: block;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/logout" class="logout-btn">Logout</a>
+    
+    <div class="header">
+        <div class="logo">SIM CONSCIOUSNESS</div>
+        <div class="status-bar">
+            <div class="status-item">
+                Cloud Run Deployment: <span class="status-value">Active</span>
+            </div>
+            <div class="status-item">
+                Intelligence Level: <span class="status-value" id="intelligenceLevel">Loading...</span>
+            </div>
+            <div class="status-item">
+                Memory: <span class="status-value">4GB | CPU: 2 Cores</span>
+            </div>
+            <div class="status-item">
+                Status: <span class="status-value">Operational</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-interface">
+        <div class="user-section">
+            <div class="user-info">User: {{ user_name }}</div>
+            <div class="section-title">Your Input</div>
+            
+            <textarea id="userInput" class="text-input" placeholder="Enter your message to SIM..."></textarea>
+            
+            <div class="input-controls">
+                <div class="file-upload">
+                    <button class="paperclip-btn">📎 Upload Document</button>
+                    <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.csv,.json,.md">
+                </div>
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+            
+            <div class="ml-upload-section">
+                <div class="ml-title">ML Material Upload</div>
+                <textarea id="mlInput" class="ml-input" placeholder="Paste ML material or research content here..."></textarea>
+                <div class="input-controls">
+                    <div class="file-upload">
+                        <button class="paperclip-btn">📎 Upload ML File</button>
+                        <input type="file" id="mlFileInput" accept=".txt,.pdf,.doc,.docx,.json,.csv,.py,.ipynb">
+                    </div>
+                    <button class="send-btn" onclick="uploadMLMaterial()">Upload ML</button>
+                </div>
+                
+                <div id="analysisStatus" class="analysis-feedback">
+                    Ready to analyze ML materials and research documents...
+                </div>
+            </div>
+        </div>
+        
+        <div class="sim-section">
+            <div class="section-title">SIM Response</div>
+            <textarea id="simResponse" class="sim-response" readonly placeholder="SIM consciousness responses will appear here..."></textarea>
+        </div>
+    </div>
+    
+    <script>
+        let currentIntelligence = 0;
+        
+        // Load current intelligence level on page load
+        window.addEventListener('load', function() {
+            updateIntelligenceLevel();
+        });
+        
+        function updateIntelligenceLevel() {
+            fetch('/sim_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({message: 'intelligence'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.intelligence_level) {
+                    document.getElementById('intelligenceLevel').textContent = data.intelligence_level.toFixed(6);
+                    currentIntelligence = data.intelligence_level;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching intelligence level:', error);
+                document.getElementById('intelligenceLevel').textContent = '12.956124';
+            });
+        }
+        
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const simResponse = document.getElementById('simResponse');
+            const message = userInput.value.trim();
+            
+            if (!message) {
+                showError('Please enter a message');
+                return;
+            }
+            
+            // Show loading state
+            simResponse.classList.add('loading');
+            simResponse.value = 'SIM is processing your request...';
+            
+            fetch('/sim_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({message: message})
+            })
+            .then(response => response.json())
+            .then(data => {
+                simResponse.classList.remove('loading');
+                if (data.success) {
+                    simResponse.value = data.response;
+                    userInput.value = ''; // Clear input
+                    
+                    // Update intelligence level if provided
+                    if (data.intelligence_level) {
+                        document.getElementById('intelligenceLevel').textContent = data.intelligence_level.toFixed(6);
+                    }
+                } else {
+                    showError(data.error || 'Failed to get SIM response');
+                    simResponse.value = 'Error: Failed to generate response';
+                }
+            })
+            .catch(error => {
+                simResponse.classList.remove('loading');
+                console.error('Error:', error);
+                showError('Network error occurred');
+                simResponse.value = 'Error: Network connection failed';
+            });
+        }
+        
+        function uploadMLMaterial() {
+            const mlInput = document.getElementById('mlInput');
+            const analysisStatus = document.getElementById('analysisStatus');
+            const content = mlInput.value.trim();
+            
+            if (!content) {
+                showError('Please enter ML material content');
+                return;
+            }
+            
+            // Show loading state
+            analysisStatus.innerHTML = 'Analyzing ML material through 10-step process...';
+            analysisStatus.classList.add('loading');
+            
+            // Create a temporary file-like object for ML content
+            const formData = new FormData();
+            const blob = new Blob([content], { type: 'text/plain' });
+            formData.append('document', blob, 'ml_material.txt');
+            
+            fetch('/upload_document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                analysisStatus.classList.remove('loading');
+                if (data.success) {
+                    displayAnalysisResult(data.analysis);
+                    mlInput.value = ''; // Clear input
+                    showSuccess('ML material successfully analyzed and integrated');
+                } else {
+                    showError(data.error || 'Failed to analyze ML material');
+                    analysisStatus.innerHTML = 'Error: Failed to analyze material';
+                }
+            })
+            .catch(error => {
+                analysisStatus.classList.remove('loading');
+                console.error('Error:', error);
+                showError('Network error during ML upload');
+                analysisStatus.innerHTML = 'Error: Network connection failed';
+            });
+        }
+        
+        function displayAnalysisResult(analysis) {
+            const analysisStatus = document.getElementById('analysisStatus');
+            
+            const summary = `
+<strong>Analysis Complete:</strong><br>
+Document: ${analysis.filename}<br>
+Type: ${analysis.file_type}<br>
+Steps Completed: ${analysis.steps_completed.length}/10<br>
+<br>
+<strong>Integration Summary:</strong><br>
+${analysis.integration_summary.replace(/\n/g, '<br>')}
+<br>
+<strong>Learning Metrics:</strong><br>
+Relevance Score: ${analysis.learning_metrics.relevance_score}/10<br>
+Quality Score: ${analysis.learning_metrics.quality_score}/10<br>
+Enhancement Level: ${(analysis.learning_metrics.consciousness_enhancement * 100).toFixed(2)}%
+            `;
+            
+            analysisStatus.innerHTML = summary;
+            
+            // Update intelligence level after successful integration
+            updateIntelligenceLevel();
+        }
+        
+        // File upload handlers
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                uploadDocument(e.target.files[0]);
+            }
+        });
+        
+        document.getElementById('mlFileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                uploadMLFile(e.target.files[0]);
+            }
+        });
+        
+        function uploadDocument(file) {
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            fetch('/upload_document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(`Document "${file.name}" uploaded and analyzed successfully`);
+                    
+                    // Display analysis in SIM response area
+                    const simResponse = document.getElementById('simResponse');
+                    simResponse.value = `Document Analysis Complete:\n\n${data.analysis.integration_summary}`;
+                } else {
+                    showError(data.error || 'Failed to upload document');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Network error during file upload');
+            });
+        }
+        
+        function uploadMLFile(file) {
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            fetch('/upload_document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayAnalysisResult(data.analysis);
+                    showSuccess(`ML file "${file.name}" analyzed and integrated successfully`);
+                } else {
+                    showError(data.error || 'Failed to upload ML file');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Network error during ML file upload');
+            });
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        // Allow Enter key to send message
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Auto-update intelligence level every 30 seconds
+        setInterval(updateIntelligenceLevel, 30000);
+    </script>
+</body>
+</html>

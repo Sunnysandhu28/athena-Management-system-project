@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis Results - Regulatory Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Analysis Results: {{ learning_data.title }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('regulatory_analysis.generate_report', learning_data_id=learning_data.id) }}" class="btn btn-sm btn-success">
+                    <i data-feather="file-text"></i> Generate Report
+                </a>
+                <a href="{{ url_for('regulatory_analysis.heat_map', learning_data_id=learning_data.id) }}" class="btn btn-sm btn-primary">
+                    <i data-feather="activity"></i> View Heat Map
+                </a>
+                <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i data-feather="arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Results Tabs -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="resultsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="regulations-tab" data-bs-toggle="tab" data-bs-target="#regulations" type="button" role="tab" aria-controls="regulations" aria-selected="true">Regulations</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="requirements-tab" data-bs-toggle="tab" data-bs-target="#requirements" type="button" role="tab" aria-controls="requirements" aria-selected="false">Requirements</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="deadlines-tab" data-bs-toggle="tab" data-bs-target="#deadlines" type="button" role="tab" aria-controls="deadlines" aria-selected="false">Deadlines</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="patterns-tab" data-bs-toggle="tab" data-bs-target="#patterns" type="button" role="tab" aria-controls="patterns" aria-selected="false">Patterns</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="resultsTabsContent">
+                        <!-- Regulations Tab -->
+                        <div class="tab-pane fade show active" id="regulations" role="tabpanel" aria-labelledby="regulations-tab">
+                            <h5 class="mb-3">Matched Regulations</h5>
+                            <div class="list-group">
+                                <!-- Sample data - In production, this would be populated from the analysis results -->
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Regulation 12: Safe Care and Treatment</h6>
+                                        <span class="badge bg-primary rounded-pill">CQC</span>
+                                    </div>
+                                    <p class="mb-1">Relevance Score: <span class="text-primary">85%</span></p>
+                                    <small class="text-muted">Matched Keywords: safe, safety, risk, treatment</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Regulation 17: Good Governance</h6>
+                                        <span class="badge bg-primary rounded-pill">CQC</span>
+                                    </div>
+                                    <p class="mb-1">Relevance Score: <span class="text-primary">76%</span></p>
+                                    <small class="text-muted">Matched Keywords: governance, audit, quality, improvement</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Regulation 18: Staffing</h6>
+                                        <span class="badge bg-primary rounded-pill">CQC</span>
+                                    </div>
+                                    <p class="mb-1">Relevance Score: <span class="text-primary">62%</span></p>
+                                    <small class="text-muted">Matched Keywords: staff, staffing, training</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Requirements Tab -->
+                        <div class="tab-pane fade" id="requirements" role="tabpanel" aria-labelledby="requirements-tab">
+                            <h5 class="mb-3">Requirements</h5>
+                            <div class="list-group">
+                                <!-- Sample data - In production, this would be populated from the analysis results -->
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Staff must receive appropriate training to perform their roles effectively.</h6>
+                                        <span class="badge bg-danger rounded-pill">High</span>
+                                    </div>
+                                    <p class="mb-1">Regulation: <span class="text-primary">Regulation 18: Staffing</span></p>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">The provider must ensure that all equipment is regularly maintained and kept in proper working order.</h6>
+                                        <span class="badge bg-warning text-dark rounded-pill">Medium</span>
+                                    </div>
+                                    <p class="mb-1">Regulation: <span class="text-primary">Regulation 12: Safe Care and Treatment</span></p>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Records must be maintained accurately and securely to ensure proper governance.</h6>
+                                        <span class="badge bg-success rounded-pill">Low</span>
+                                    </div>
+                                    <p class="mb-1">Regulation: <span class="text-primary">Regulation 17: Good Governance</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Deadlines Tab -->
+                        <div class="tab-pane fade" id="deadlines" role="tabpanel" aria-labelledby="deadlines-tab">
+                            <h5 class="mb-3">Deadlines and Timeframes</h5>
+                            <div class="list-group">
+                                <!-- Sample data - In production, this would be populated from the analysis results -->
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Complete staff training program by 30 June 2025</h6>
+                                        <span class="badge bg-danger rounded-pill">High</span>
+                                    </div>
+                                    <p class="mb-1">Extracted from: <em>"All staff must complete the training program no later than 30 June 2025."</em></p>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Implement new governance framework within 3 months</h6>
+                                        <span class="badge bg-warning text-dark rounded-pill">Medium</span>
+                                    </div>
+                                    <p class="mb-1">Extracted from: <em>"The governance framework should be implemented within 3 months of this report."</em></p>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Regular equipment maintenance checks every 6 weeks</h6>
+                                        <span class="badge bg-success rounded-pill">Low</span>
+                                    </div>
+                                    <p class="mb-1">Extracted from: <em>"Equipment should be checked and maintained every 6 weeks to ensure proper functioning."</em></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Patterns Tab -->
+                        <div class="tab-pane fade" id="patterns" role="tabpanel" aria-labelledby="patterns-tab">
+                            <h5 class="mb-3">Identified Patterns</h5>
+                            <div class="list-group">
+                                <!-- Sample data - In production, this would be populated from the analysis results -->
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Documentation Issues</h6>
+                                        <span class="badge bg-primary rounded-pill">Common</span>
+                                    </div>
+                                    <p class="mb-1">Confidence: <span class="text-primary">92%</span></p>
+                                    <small class="text-muted">Matched Terms: incomplete, missing document, record, not documented</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Training Gaps</h6>
+                                        <span class="badge bg-primary rounded-pill">CQC</span>
+                                    </div>
+                                    <p class="mb-1">Confidence: <span class="text-primary">78%</span></p>
+                                    <small class="text-muted">Matched Terms: training, competence, skill gap, knowledge</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Governance Weaknesses</h6>
+                                        <span class="badge bg-primary rounded-pill">CQC</span>
+                                    </div>
+                                    <p class="mb-1">Confidence: <span class="text-primary">64%</span></p>
+                                    <small class="text-muted">Matched Terms: governance, oversight, process, management</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Document Content Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Document Content</h5>
+                </div>
+                <div class="card-body">
+                    <div class="document-preview p-3 bg-light rounded" style="max-height: 300px; overflow-y: auto;">
+                        <p>{{ learning_data.document_text|truncate(1000, true) }}</p>
+                        {% if learning_data.document_text|length > 1000 %}
+                        <div class="text-center mt-3">
+                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#fullDocumentContent" aria-expanded="false" aria-controls="fullDocumentContent">
+                                View Full Document
+                            </button>
+                        </div>
+                        <div class="collapse mt-3" id="fullDocumentContent">
+                            <div class="card card-body">
+                                <p>{{ learning_data.document_text }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Document Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Document Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Title</dt>
+                        <dd class="col-sm-8">{{ learning_data.title }}</dd>
+                        
+                        <dt class="col-sm-4">Type</dt>
+                        <dd class="col-sm-8">{{ learning_data.document_type }}</dd>
+                        
+                        <dt class="col-sm-4">Analyzed</dt>
+                        <dd class="col-sm-8">{{ learning_data.created_at.strftime('%d %b %Y, %H:%M') }}</dd>
+                        
+                        <dt class="col-sm-4">ID</dt>
+                        <dd class="col-sm-8">{{ learning_data.id }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <!-- Regulatory Heat Map -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Regulatory Heat Map</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="regulationHeatMap" height="250"></canvas>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('regulatory_analysis.heat_map', learning_data_id=learning_data.id) }}" class="btn btn-sm btn-outline-primary">View Detailed Heat Maps</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('regulatory_analysis.generate_report', learning_data_id=learning_data.id) }}" class="btn btn-success">
+                            <i data-feather="file-text"></i> Generate Report
+                        </a>
+                        <a href="{{ url_for('regulatory_analysis.heat_map', learning_data_id=learning_data.id) }}" class="btn btn-primary">
+                            <i data-feather="activity"></i> View Heat Maps
+                        </a>
+                        <a href="{{ url_for('regulatory_analysis.analyze_document') }}" class="btn btn-outline-secondary">
+                            <i data-feather="file-plus"></i> Analyze Another Document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Regulation Heat Map
+        const regulationHeatMap = new Chart(
+            document.getElementById('regulationHeatMap'),
+            {
+                type: 'radar',
+                data: {
+                    labels: ['Documentation', 'Training', 'Safety', 'Compliance', 'Governance'],
+                    datasets: [{
+                        label: 'Heat Score',
+                        data: [0.85, 0.65, 0.92, 0.78, 0.56],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1
+                        }
+                    }
+                }
+            }
+        );
+    });
+</script>
+{% endblock %}

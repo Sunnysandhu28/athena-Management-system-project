@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Categories - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .categories-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .category-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .category-count {
+        background-color: #007bff;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+    
+    .category-card .card-footer {
+        background-color: transparent;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        padding-top: 15px;
+    }
+    
+    .policy-list {
+        max-height: 150px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+    
+    .policy-item {
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .policy-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="categories-header">
+        <div>
+            <h1 class="display-4">Policy Categories</h1>
+            <p class="lead">Browse policies by category</p>
+        </div>
+        <a href="{{ url_for('policies.index') }}" class="btn btn-primary">
+            <i class="fas fa-list"></i> View All Policies
+        </a>
+    </div>
+    
+    <!-- Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <form action="{{ url_for('policies.search') }}" method="get">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search across all policies...">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if categories %}
+    <div class="row">
+        {% for category_id, category in categories.items() %}
+        <div class="col-md-6">
+            <div class="card category-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">{{ category.name }}</h5>
+                        <span class="category-count">{{ category.count }}</span>
+                    </div>
+                    
+                    <div class="policy-list">
+                        {% for policy in category.policies %}
+                        <div class="policy-item">
+                            <a href="{{ url_for('policies.view_policy', policy_id=policy.id) }}">{{ policy.name }}</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('policies.index') }}?category={{ category_id }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> View All in Category
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading"><i class="fas fa-info-circle"></i> No Categories Found</h4>
+        <p>There are no policy categories currently available. Categories will appear here once policies have been added to the system.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

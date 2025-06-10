@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.replace('_', ' ') }} Policies | Cathena Policy Automation{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.ma_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ category.replace('_', ' ') }}</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">{{ category.replace('_', ' ') }} Policies</h1>
+        <p class="lead">Browse all policies in the {{ category.replace('_', ' ') }} category.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control" id="policySearch" placeholder="Filter policies...">
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-folder-open me-2"></i> 
+                    {{ category.replace('_', ' ') }} Policies ({{ policies|length }})
+                </span>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" id="sortByCode">Sort by Code</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="sortByTitle">Sort by Title</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="policiesTable">
+                        <thead>
+                            <tr>
+                                <th width="15%">Code</th>
+                                <th width="55%">Title</th>
+                                <th width="15%">Last Modified</th>
+                                <th width="15%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for policy in policies %}
+                            <tr class="policy-row" data-code="{{ policy.code }}" data-title="{{ policy.title }}">
+                                <td><strong>{{ policy.code }}</strong></td>
+                                <td>{{ policy.title }}</td>
+                                <td>{{ policy.modified }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('policy_display.view_policy', policy_code=policy.code) }}" class="btn btn-sm btn-primary">View</a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            More
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="{{ url_for('policy_repository.view_policy', policy_code=policy.code) }}">
+                                                <i class="fas fa-pencil-alt me-2"></i> Customize
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('policy_repository.download_policy', policy_code=policy.code) }}">
+                                                <i class="fas fa-download me-2"></i> Download
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('policy_comparison.comparison_report') }}?policy_code_1={{ policy.code }}">
+                                                <i class="fas fa-code-compare me-2"></i> Compare
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><strong>{{ policies|length }}</strong> policies in this category</span>
+                    <a href="{{ url_for('dashboard.ma_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Description Card -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i> About {{ category.replace('_', ' ') }} Policies
+            </div>
+            <div class="card-body">
+                {% if category == 'Administration' %}
+                <p>Administration policies govern the day-to-day operational procedures and administrative functions within the organization. These policies ensure consistency, efficiency, and compliance in administrative tasks.</p>
+                <p>Typical Administration policies include document management, admissions procedures, record keeping, meeting protocols, and general administrative responsibilities.</p>
+                
+                {% elif category == 'Care_Management' %}
+                <p>Care Management policies outline the procedures and protocols for managing the care of residents or service users. They focus on ensuring high-quality care delivery, risk management, and care coordination.</p>
+                <p>These policies cover areas such as care planning, medication management, health assessments, incident reporting, and specialized care procedures.</p>
+                
+                {% elif category == 'Care_Planning' %}
+                <p>Care Planning policies detail the processes for developing, implementing, and reviewing personalized care plans. They ensure that care is person-centered, goal-oriented, and properly documented.</p>
+                <p>These policies include care assessment methods, care plan development guidelines, review procedures, and discharge planning protocols.</p>
+                
+                {% elif category == 'Health_Safety' %}
+                <p>Health & Safety policies establish protocols for maintaining a safe environment for both staff and service users. They ensure compliance with health and safety regulations and minimize risk.</p>
+                <p>Areas covered include infection control, risk assessments, equipment safety, emergency procedures, and workplace safety measures.</p>
+                
+                {% elif category == 'Data_Protection' %}
+                <p>Data Protection policies outline the procedures for handling personal and sensitive information in compliance with data protection regulations such as GDPR and Data Protection Act.</p>
+                <p>These policies cover data collection, storage, sharing, access controls, data subject rights, and data breach protocols.</p>
+                
+                {% elif category == 'Human_Resources' %}
+                <p>Human Resources policies govern the management of staff, including recruitment, training, performance management, and employment conditions.</p>
+                <p>They cover areas such as staff recruitment, induction, supervision, appraisal, disciplinary procedures, and professional development.</p>
+                
+                {% elif category == 'Quality_Assurance' %}
+                <p>Quality Assurance policies establish systems for monitoring and improving the quality of services provided. They ensure consistent service standards and continuous improvement.</p>
+                <p>These policies include quality audits, feedback mechanisms, service evaluation, and improvement planning procedures.</p>
+                
+                {% elif category == 'Miscellaneous' %}
+                <p>Miscellaneous policies include specialized procedures and guidelines that don't fit neatly into other categories but are essential for specific operational aspects.</p>
+                <p>These policies may cover unique situations, specialized services, or emerging requirements that warrant dedicated policy documentation.</p>
+                
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Policy filtering functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('policySearch');
+        const policyRows = document.querySelectorAll('.policy-row');
+        const sortByCodeBtn = document.getElementById('sortByCode');
+        const sortByTitleBtn = document.getElementById('sortByTitle');
+        
+        // Filter policies based on search
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            policyRows.forEach(row => {
+                const code = row.getAttribute('data-code').toLowerCase();
+                const title = row.getAttribute('data-title').toLowerCase();
+                
+                if (code.includes(searchTerm) || title.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Sort by code
+        sortByCodeBtn.addEventListener('click', function() {
+            const tbody = document.querySelector('#policiesTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const codeA = a.getAttribute('data-code');
+                const codeB = b.getAttribute('data-code');
+                return codeA.localeCompare(codeB);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        });
+        
+        // Sort by title
+        sortByTitleBtn.addEventListener('click', function() {
+            const tbody = document.querySelector('#policiesTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const titleA = a.getAttribute('data-title');
+                const titleB = b.getAttribute('data-title');
+                return titleA.localeCompare(titleB);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+</script>
+{% endblock %}

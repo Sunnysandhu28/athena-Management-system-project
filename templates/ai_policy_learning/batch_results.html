@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Enhancement Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_policy_learning.batch_enhance') }}">Batch Enhancement</a></li>
+                    <li class="breadcrumb-item active">Results</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Batch Enhancement Results</h1>
+            <p class="lead">Summary of policy enhancements</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Processing Summary</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Processed</h5>
+                                    <p class="display-4">{{ result.policies_processed }}</p>
+                                    <p class="text-muted">Total policies processed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Enhanced</h5>
+                                    <p class="display-4">{{ result.policies_enhanced }}</p>
+                                    <p>Policies successfully enhanced</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card {% if result.errors %}bg-warning{% else %}bg-light{% endif %}">
+                                <div class="card-body">
+                                    <h5 class="card-title">Errors</h5>
+                                    <p class="display-4">{{ result.errors|length }}</p>
+                                    <p>Errors encountered</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if result.errors %}
+                    <div class="mt-4">
+                        <h4>Error Details</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Policy ID</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for error in result.errors %}
+                                    <tr>
+                                        <td>{{ error.policy_id if error.policy_id else 'N/A' }}</td>
+                                        <td>{{ error.error }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
+                        <a href="{{ url_for('ai_policy_learning.batch_enhance') }}" class="btn btn-outline-primary ml-2">Run Another Batch</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Success Rate</h2>
+                </div>
+                <div class="card-body text-center">
+                    {% set success_rate = (result.policies_enhanced / result.policies_processed * 100) if result.policies_processed > 0 else 0 %}
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: {{ success_rate }}%;" 
+                            aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ "%.1f"|format(success_rate) }}%
+                        </div>
+                    </div>
+                    <p class="text-muted">Enhancement success rate</p>
+                    
+                    <hr>
+                    
+                    <div class="mt-3">
+                        <h5>Next Steps</h5>
+                        <p>Review enhanced policies to verify the quality of AI-generated content.</p>
+                        <a href="{{ url_for('view_policies') }}" class="btn btn-sm btn-outline-secondary">Browse All Policies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

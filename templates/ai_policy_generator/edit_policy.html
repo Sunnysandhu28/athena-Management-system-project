@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Policy - Cathena Policy Management{% endblock %}
+
+{% block styles %}
+<style>
+    .policy-editor {
+        margin-bottom: 30px;
+    }
+    .policy-editor textarea {
+        height: 500px;
+        font-family: 'Courier New', monospace;
+    }
+    .section-header {
+        background-color: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-left: 4px solid #007bff;
+    }
+    .form-label {
+        font-weight: bold;
+    }
+    .btn-success {
+        margin-right: 10px;
+    }
+    .preview-panel {
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 5px;
+    }
+    .preview-panel h2 {
+        color: #007bff;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    .note-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    /* Style for policy content preview */
+    .policy-content h1, .policy-content h2, .policy-content h3 {
+        color: #007bff;
+    }
+    .policy-content hr {
+        border-top: 1px solid #007bff;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ request.path.rsplit('/', 3)[0] }}">AI Policy Generator</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('direct_view_generated_policy', generation_id=generation_id) if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.view_generated_policy', generation_id=generation_id) }}">View Policy</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Policy</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">
+                <i class="bi bi-pencil-square"></i> Edit Policy
+            </h1>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('direct_update_policy', generation_id=generation_id) if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.update_policy', generation_id=generation_id) }}">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Policy Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="policy_title" class="form-label">Policy Title</label>
+                            <input type="text" class="form-control" id="policy_title" name="policy_title" value="{{ policy.title }}" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="policy_category" class="form-label">Category</label>
+                                    <input type="text" class="form-control" id="policy_category" name="policy_category" value="{{ policy.category }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="policy_reference" class="form-label">Reference Code</label>
+                                    <input type="text" class="form-control" id="policy_reference" name="policy_reference" value="{{ policy.reference_code }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="policy_version" class="form-label">Version</label>
+                                    <input type="text" class="form-control" id="policy_version" name="policy_version" value="{{ policy.version }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="policy_objective" class="form-label">Policy Objective</label>
+                                    <input type="text" class="form-control" id="policy_objective" name="policy_objective" value="{{ policy.objective }}" required>
+                                </div>
+                                
+                                <!-- We'll add a dedicated section for legislation in a separate card below -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Legislation References</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Applicable Acts and Legislation</label>
+                            <p class="note-text">
+                                <i class="bi bi-info-circle"></i> Select the relevant legislation acts that apply to this policy. These references help ensure compliance with regulatory requirements.
+                            </p>
+                            <div id="legislation-container">
+                                {% if policy.legislation_references %}
+                                    {% for act in policy.legislation_references %}
+                                        <div class="input-group mb-2 legislation-entry">
+                                            <input type="text" class="form-control" name="legislation_references" value="{{ act }}">
+                                            <button type="button" class="btn btn-outline-danger remove-legislation">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                                <div id="legislation-placeholder" {% if policy.legislation_references %}class="d-none"{% endif %}>
+                                    <p class="text-muted small">No legislation references added yet.</p>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" id="add-legislation" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Legislation Reference
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Policy Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3 policy-editor">
+                            <label for="policy_content" class="form-label">Content</label>
+                            <p class="note-text">
+                                <i class="bi bi-info-circle"></i> You can use HTML formatting for headings and paragraphs. Section titles can be formatted with &lt;h2&gt; tags, and you can add &lt;hr&gt; after section titles.
+                            </p>
+                            <textarea class="form-control" id="policy_content" name="policy_content" rows="20" required>{{ policy.content|safe }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-panel d-none" id="preview-container">
+                    <h2>Content Preview</h2>
+                    <div class="policy-content" id="content-preview"></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="preview-button">
+                                <i class="bi bi-eye"></i> Preview Content
+                            </button>
+                            <a href="{{ url_for('direct_view_generated_policy', generation_id=generation_id) if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.view_generated_policy', generation_id=generation_id) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">Formatting Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>HTML Formatting Tips:</h6>
+                        <ul class="small">
+                            <li>Use <code>&lt;h1&gt;</code> for the main title</li>
+                            <li>Use <code>&lt;h2&gt;</code> for section headers</li>
+                            <li>Add <code>&lt;hr&gt;</code> after section headers for a dividing line</li>
+                            <li>Use <code>&lt;p&gt;</code> for paragraphs</li>
+                            <li>Use <code>&lt;ul&gt;</code> and <code>&lt;li&gt;</code> for bullet points</li>
+                            <li>Use <code>&lt;ol&gt;</code> and <code>&lt;li&gt;</code> for numbered lists</li>
+                            <li>Use <code>&lt;strong&gt;</code> for bold text</li>
+                            <li>Use <code>&lt;em&gt;</code> for italic text</li>
+                        </ul>
+                        
+                        <h6 class="mt-3">Section Structure:</h6>
+                        <div class="small bg-light p-2 mt-2 rounded">
+<pre style="white-space: pre-wrap;">
+&lt;h2 class="section-title"&gt;Purpose/Objective&lt;/h2&gt;
+&lt;hr class="section-hr"&gt;
+&lt;p class="section-paragraph"&gt;Content goes here...&lt;/p&gt;
+</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview button functionality
+        const previewButton = document.getElementById('preview-button');
+        const previewContainer = document.getElementById('preview-container');
+        const contentPreview = document.getElementById('content-preview');
+        const contentTextarea = document.getElementById('policy_content');
+        
+        previewButton.addEventListener('click', function() {
+            contentPreview.innerHTML = contentTextarea.value;
+            previewContainer.classList.remove('d-none');
+            
+            // Scroll to the preview
+            previewContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Legislation references functionality
+        const addLegislationBtn = document.getElementById('add-legislation');
+        const legislationContainer = document.getElementById('legislation-container');
+        const legislationPlaceholder = document.getElementById('legislation-placeholder');
+        
+        // Function to create a new legislation entry
+        function createLegislationEntry(value = '') {
+            const entry = document.createElement('div');
+            entry.className = 'input-group mb-2 legislation-entry';
+            
+            entry.innerHTML = `
+                <input type="text" class="form-control" name="legislation_references" value="${value}" placeholder="Enter legislation act name">
+                <button type="button" class="btn btn-outline-danger remove-legislation">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            
+            // Add event listener to the remove button
+            const removeBtn = entry.querySelector('.remove-legislation');
+            removeBtn.addEventListener('click', function() {
+                entry.remove();
+                checkEmptyLegislation();
+            });
+            
+            return entry;
+        }
+        
+        // Check if there are any legislation entries and show/hide placeholder
+        function checkEmptyLegislation() {
+            const entries = legislationContainer.querySelectorAll('.legislation-entry');
+            if (entries.length === 0) {
+                legislationPlaceholder.classList.remove('d-none');
+            } else {
+                legislationPlaceholder.classList.add('d-none');
+            }
+        }
+        
+        // Add event listener to the add button
+        addLegislationBtn.addEventListener('click', function() {
+            const newEntry = createLegislationEntry();
+            legislationContainer.insertBefore(newEntry, legislationPlaceholder);
+            checkEmptyLegislation();
+        });
+        
+        // Set up event listeners for existing remove buttons
+        const removeButtons = document.querySelectorAll('.remove-legislation');
+        removeButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                button.closest('.legislation-entry').remove();
+                checkEmptyLegislation();
+            });
+        });
+        
+        // Check initial state
+        checkEmptyLegislation();
+    });
+</script>
+{% endblock %}

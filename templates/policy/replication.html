@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress {
+        height: 25px;
+    }
+    
+    .category-card {
+        transition: all 0.2s ease;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .credentials-section {
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 0.375rem;
+        padding: 1.5rem;
+    }
+    
+    .credentials-icon {
+        font-size: 2.5rem;
+        color: var(--bs-primary);
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 0.375rem;
+        background-color: white;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        height: 100%;
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card .stat-label {
+        color: var(--bs-secondary);
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.05em;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-arrow-repeat me-2" viewBox="0 0 16 16">
+                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+            </svg>
+            Policy Replication
+        </h1>
+        <p class="lead text-muted">Replicate policies from QCS to your local system for use in your organization.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Replication Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon text-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-value">{{ progress.total_policies }}</div>
+                            <div class="stat-label">Total Policies</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon text-success">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-value">{{ progress.replicated_policies }}</div>
+                            <div class="stat-label">Replicated</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon text-danger">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+                                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                                    <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-value">{{ progress.failed_policies }}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Overall Progress: {{ progress.completion_percentage }}%</h6>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             role="progressbar" 
+                             style="width: {{ progress.completion_percentage }}%;" 
+                             aria-valuenow="{{ progress.completion_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ progress.completion_percentage }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <form method="post" action="{{ url_for('policy_replicator.start_full_replication') }}">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat me-2" viewBox="0 0 16 16">
+                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                            </svg>
+                            Start Full Replication
+                        </button>
+                    </form>
+                    
+                    <form method="post" action="{{ url_for('policy_replicator.check_updates') }}" class="ms-2">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search me-2" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                            Check for Updates
+                        </button>
+                    </form>
+                    
+                    <a href="{{ url_for('dashboard.validate_documents') }}" class="btn btn-outline-primary ms-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-2" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                        </svg>
+                        Validate Documents
+                    </a>
+                    
+                    <a href="{{ url_for('policy_replicator.check_errors') }}" class="btn btn-outline-danger ms-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle me-2" viewBox="0 0 16 16">
+                            <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                            <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                        </svg>
+                        View Errors
+                    </a>
+                    
+                    <a href="{{ url_for('policy_replicator.external_check') }}" class="btn btn-outline-primary ms-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye me-2" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                        External View Check
+                    </a>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">Last Activity</h6>
+                        <p class="mb-0 small">
+                            {% if progress.last_replication %}
+                                Last replication: {{ progress.last_replication }}
+                            {% else %}
+                                No replication has been performed yet.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">QCS Credentials</h5>
+            </div>
+            <div class="card-body">
+                <div class="credentials-section mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-3">
+                            <span class="credentials-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-key" viewBox="0 0 16 16">
+                                    <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
+                                    <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Current Credentials</h6>
+                            <p class="mb-0">
+                                <strong>Username:</strong> {{ credentials_form.username.data }}<br>
+                                <strong>Password:</strong> ********
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" action="{{ url_for('policy_replicator.update_credentials') }}">
+                    {{ credentials_form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        {{ credentials_form.username(class="form-control", id="username") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        {{ credentials_form.password(class="form-control", id="password") }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Update Credentials</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">External View Check</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Verify how policies will appear to different users in various roles and at different sites.
+                </p>
+                
+                <form method="post" action="{{ url_for('policy_replicator.external_check') }}">
+                    {{ external_view_form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="user_role" class="form-label">User Role</label>
+                        {{ external_view_form.user_role(class="form-select", id="user_role") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="site_id" class="form-label">Site</label>
+                        {{ external_view_form.site_id(class="form-select", id="site_id") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="policy_format" class="form-label">Policy Format</label>
+                        {{ external_view_form.policy_format(class="form-select", id="policy_format") }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye me-2" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                        Check External View
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Replication Progress by Category</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Categories</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if category_stats %}
+                        {% for category in category_stats %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card category-card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ category.category_name }}</h5>
+                                    <p class="card-text text-muted">
+                                        {{ category.replicated_policies }} of {{ category.total_policies }} policies replicated
+                                    </p>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-success" 
+                                             role="progressbar" 
+                                             style="width: {{ category.completion_percentage }}%;" 
+                                             aria-valuenow="{{ category.completion_percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ category.completion_percentage }}%
+                                        </div>
+                                    </div>
+                                    <form method="post" action="{{ url_for('policy_replicator.replicate_category', category_id=category.category_id) }}">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat me-1" viewBox="0 0 16 16">
+                                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                                            </svg>
+                                            Replicate Category
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <small class="text-muted">
+                                        {{ category.formatted_policies }} policies formatted
+                                        {% if category.failed_policies > 0 %}
+                                        <span class="text-danger ms-2">{{ category.failed_policies }} failed</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col">
+                            <div class="alert alert-info">
+                                No categories found. Start replication to retrieve categories from QCS.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse chart data from server
+        const chartData = {{ chart_data|safe }};
+        
+        if (chartData && chartData.labels && chartData.labels.length > 0) {
+            // Create chart
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

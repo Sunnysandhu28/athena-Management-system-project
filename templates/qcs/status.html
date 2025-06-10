@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}QCS Connection Status{% endblock %}
+
+{% block styles %}
+<style>
+    .status-card {
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .status-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-badge.real {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-badge.simulation {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .status-badge.auto {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .status-badge.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-badge.warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .status-badge.danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .status-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .status-info {
+        padding: 1.5rem;
+    }
+    .status-detail {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+    .policy-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    .policy-item:hover {
+        background-color: #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">QCS Policy Download</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Connection Status</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">QCS Connection Status</h1>
+            <p class="lead">Current status of the QCS integration and connection.</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card status-card h-100">
+                <div class="status-header d-flex align-items-center">
+                    <h4 class="mb-0 flex-grow-1">Connection Status</h4>
+                    {% if status.connection_working %}
+                    <span class="status-badge success">Connected</span>
+                    {% elif status.connection_tested %}
+                    <span class="status-badge danger">Failed</span>
+                    {% else %}
+                    <span class="status-badge warning">Not Tested</span>
+                    {% endif %}
+                </div>
+                <div class="status-info text-center">
+                    {% if status.connection_working %}
+                    <div class="status-icon text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5>Successfully Connected</h5>
+                    <p class="text-muted">Connected to QCS in {{ status.mode }} mode</p>
+                    {% elif status.connection_tested %}
+                    <div class="status-icon text-danger">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h5>Connection Failed</h5>
+                    <p class="text-muted">
+                        {% if status.error %}
+                        {{ status.error }}
+                        {% else %}
+                        Unable to connect to QCS. Please check your credentials.
+                        {% endif %}
+                    </p>
+                    {% else %}
+                    <div class="status-icon text-warning">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h5>Not Tested</h5>
+                    <p class="text-muted">Connection has not been tested yet</p>
+                    {% endif %}
+                </div>
+                <div class="status-detail">
+                    <small class="d-block text-muted">Last checked: {{ status.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card status-card h-100">
+                <div class="status-header d-flex align-items-center">
+                    <h4 class="mb-0 flex-grow-1">Credentials</h4>
+                    {% if status.has_credentials %}
+                    <span class="status-badge success">Available</span>
+                    {% else %}
+                    <span class="status-badge warning">Missing</span>
+                    {% endif %}
+                </div>
+                <div class="status-info text-center">
+                    {% if status.has_credentials %}
+                    <div class="status-icon text-success">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h5>Credentials Available</h5>
+                    <p class="text-muted">QCS username and password are set in environment variables</p>
+                    {% else %}
+                    <div class="status-icon text-warning">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h5>Credentials Missing</h5>
+                    <p class="text-muted">QCS credentials are not set in environment variables</p>
+                    {% endif %}
+                </div>
+                <div class="status-detail">
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i> Update Credentials
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card status-card h-100">
+                <div class="status-header d-flex align-items-center">
+                    <h4 class="mb-0 flex-grow-1">QCS Mode</h4>
+                    {% if status.mode %}
+                    <span class="status-badge {{ status.mode }}">{{ status.mode }}</span>
+                    {% else %}
+                    <span class="status-badge warning">Unknown</span>
+                    {% endif %}
+                </div>
+                <div class="status-info text-center">
+                    {% if status.mode == 'real' %}
+                    <div class="status-icon text-success">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <h5>Real QCS Access</h5>
+                    <p class="text-muted">Connected directly to the live QCS system</p>
+                    {% elif status.mode == 'simulation' %}
+                    <div class="status-icon text-primary">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h5>Simulation Mode</h5>
+                    <p class="text-muted">Using simulated QCS access</p>
+                    {% else %}
+                    <div class="status-icon text-warning">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h5>Mode Unknown</h5>
+                    <p class="text-muted">QCS access mode has not been determined</p>
+                    {% endif %}
+                </div>
+                <div class="status-detail">
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-cog me-1"></i> Change Mode
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if status.connection_working %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <h4 class="mb-0 flex-grow-1">Available Categories</h4>
+                    <span class="badge bg-primary rounded-pill">{{ status.categories_count }}</span>
+                </div>
+                <div class="card-body">
+                    {% if status.categories_count > 0 %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i> Found {{ status.categories_count }} policy categories in QCS
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> No policy categories found in QCS
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if status.policies_sample %}
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <h4 class="mb-0 flex-grow-1">Sample Policies</h4>
+                    <span class="badge bg-primary rounded-pill">{{ status.policies_sample|length }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Sample policies from the first category:</p>
+                    
+                    <div class="list-group">
+                        {% for policy in status.policies_sample %}
+                        <div class="policy-item">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">{{ policy.name }}</h5>
+                                    {% if policy.code %}
+                                    <small class="text-muted">Code: {{ policy.code }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if policy.url %}
+                                <span class="badge bg-secondary">Has URL</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i> Download Policies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    
+    <div class="row mt-4">
+        <div class="col">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to QCS Download
+            </a>
+            
+            <a href="javascript:window.location.reload()" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-sync me-2"></i> Refresh Status
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

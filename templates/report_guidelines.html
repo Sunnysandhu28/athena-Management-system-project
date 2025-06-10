@@ -1,0 +1,466 @@
+{% extends "layout.html" %}
+
+{% block title %}Comprehensive Compliance Report Guidelines - Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .guideline-section {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .reference-example {
+        background-color: #f8f9fa;
+        border-left: 4px solid #6c757d;
+        padding: 15px;
+        margin-bottom: 15px;
+        font-family: monospace;
+    }
+    
+    .note-box {
+        background-color: #fff3cd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .note-box i {
+        color: #856404;
+    }
+    
+    .tip-item {
+        margin-bottom: 15px;
+    }
+    
+    .tip-item i {
+        color: #28a745;
+        margin-right: 8px;
+    }
+    
+    .warning-item {
+        background-color: #f8d7da;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .warning-item i {
+        color: #721c24;
+        margin-right: 8px;
+    }
+    
+    .reference-table {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .reference-table th {
+        background-color: #f8f9fa;
+    }
+    
+    .example-report-structure {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    
+    .example-report-structure ul {
+        list-style-type: none;
+        padding-left: 20px;
+    }
+    
+    .example-report-structure ul li {
+        margin-bottom: 10px;
+    }
+    
+    .example-report-structure ul li::before {
+        content: "•";
+        color: #007bff;
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+    
+    .detailed-explanation {
+        background-color: #e2f0fd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Comprehensive Compliance Report Guidelines</h1>
+            <p class="lead">Reference guidelines for creating effective and standardised compliance reports</p>
+        </div>
+        <div>
+            <a href="{{ url_for('cqc_report.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+    
+    <!-- Introduction Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Introduction</h3>
+        <p>This document outlines the standardised approach to creating comprehensive compliance reports within the Cathena system. These guidelines ensure that all reports maintain a consistent format, include all necessary information, and follow established best practices for regulatory compliance reporting.</p>
+        
+        <div class="note-box">
+            <p><i class="fas fa-info-circle"></i> <strong>Important Note:</strong> All compliance reports must follow these guidelines to ensure consistency, completeness, and regulatory alignment. The system will use this structure for AI-enhanced report generation.</p>
+        </div>
+    </div>
+    
+    <!-- Report Structure Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Report Structure</h3>
+        <p>Every comprehensive compliance report should follow this structure:</p>
+        
+        <div class="example-report-structure">
+            <ol>
+                <li><strong>Cover Page</strong>
+                    <ul>
+                        <li>Report title</li>
+                        <li>Regulatory body</li>
+                        <li>Date range of inspection/audit</li>
+                        <li>Organisation name</li>
+                        <li>Report reference number</li>
+                        <li>Date of report creation</li>
+                    </ul>
+                </li>
+                <li><strong>Executive Summary</strong>
+                    <ul>
+                        <li>Overview of findings</li>
+                        <li>Key strengths identified</li>
+                        <li>Areas of concern</li>
+                        <li>Summary of recommendations</li>
+                    </ul>
+                </li>
+                <li><strong>Inspection/Audit Details</strong>
+                    <ul>
+                        <li>Purpose of inspection/audit</li>
+                        <li>Scope and methodology</li>
+                        <li>Inspection team members</li>
+                        <li>Key staff interviewed</li>
+                        <li>Documents reviewed</li>
+                    </ul>
+                </li>
+                <li><strong>Findings by Regulatory Area</strong>
+                    <ul>
+                        <li>Governance and leadership</li>
+                        <li>Staffing and training</li>
+                        <li>Care delivery and documentation</li>
+                        <li>Medication management and safety</li>
+                        <li>Infection control</li>
+                        <li>Environment and premises</li>
+                        <li>Service user experience and feedback</li>
+                    </ul>
+                </li>
+                <li><strong>Regulatory Requirements</strong>
+                    <ul>
+                        <li>Detailed listing of all requirements</li>
+                        <li>Compliance status for each requirement</li>
+                        <li>Evidence supporting compliance assessment</li>
+                        <li>Gaps identified</li>
+                    </ul>
+                </li>
+                <li><strong>Action Plan</strong>
+                    <ul>
+                        <li>Prioritised actions (High/Medium/Low)</li>
+                        <li>Timeline for implementation</li>
+                        <li>Responsible persons</li>
+                        <li>Resource requirements</li>
+                        <li>Expected outcomes</li>
+                    </ul>
+                </li>
+                <li><strong>Heat Map Visualisation</strong>
+                    <ul>
+                        <li>Colour-coded compliance levels</li>
+                        <li>Trend analysis (if available)</li>
+                        <li>Framework-specific breakdowns</li>
+                    </ul>
+                </li>
+                <li><strong>Supporting Documentation</strong>
+                    <ul>
+                        <li>Evidence files (referenced)</li>
+                        <li>Interview notes (anonymised)</li>
+                        <li>Regulatory framework references</li>
+                    </ul>
+                </li>
+                <li><strong>Appendices</strong>
+                    <ul>
+                        <li>Methodology explanation</li>
+                        <li>Scoring system details</li>
+                        <li>Glossary of terms</li>
+                        <li>References to previous reports</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+    
+    <!-- Reference Formatting Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Reference Formatting</h3>
+        <p>All references in compliance reports must follow this standardised format for consistency and traceability:</p>
+        
+        <h5>Reference Format:</h5>
+        <div class="reference-example">
+            [Category]/[Framework]/[Frequency]/[Author]/[ID]/[Source]
+        </div>
+        
+        <table class="reference-table table table-bordered">
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>Description</th>
+                    <th>Examples</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Category</td>
+                    <td>Primary classification of the reference</td>
+                    <td>Gov, Pol, Insp, Rep</td>
+                </tr>
+                <tr>
+                    <td>Framework</td>
+                    <td>Specific regulatory framework</td>
+                    <td>CQC, HSE, RIDDOR, Fire</td>
+                </tr>
+                <tr>
+                    <td>Frequency</td>
+                    <td>Reporting frequency or singular</td>
+                    <td>W (weekly), M (monthly), Q (quarterly), Y (yearly), S (singular)</td>
+                </tr>
+                <tr>
+                    <td>Author</td>
+                    <td>Creator of the reference document</td>
+                    <td>aj.sandhu, ana.ionescu</td>
+                </tr>
+                <tr>
+                    <td>ID</td>
+                    <td>Unique identifier (4 digits)</td>
+                    <td>0001, 0002, etc.</td>
+                </tr>
+                <tr>
+                    <td>Source</td>
+                    <td>Origin of the requirement or finding</td>
+                    <td>CQC, Internal, Cathena</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h5>Examples:</h5>
+        <div class="reference-example">
+            Insp/CQC/M/aj.sandhu/0001/CQC
+        </div>
+        <p class="text-muted">Monthly CQC inspection reference created by Aj Sandhu, ID 0001, sourced from CQC.</p>
+        
+        <div class="reference-example">
+            Pol/HSE/Q/ana.ionescu/0015/Internal
+        </div>
+        <p class="text-muted">Quarterly HSE policy reference created by Ana Ionescu, ID 0015, internally sourced.</p>
+        
+        <div class="note-box">
+            <p><i class="fas fa-info-circle"></i> <strong>Important:</strong> Always include the full reference code when citing evidence, requirements, or actions in reports. This ensures traceability and supports the ML system's understanding of regulatory linkages.</p>
+        </div>
+    </div>
+    
+    <!-- Regulatory Analysis Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Regulatory Analysis Methodology</h3>
+        <p>The system uses a standardised methodology for regulatory analysis that combines document analysis, evidence review, and ML-enhanced pattern recognition:</p>
+        
+        <div class="detailed-explanation">
+            <h5>Scoring Methodology</h5>
+            <p>Compliance scores are calculated based on the following weighted components:</p>
+            <ul>
+                <li><strong>Document Analysis (40%)</strong> - Assessment of policies, procedures, and documentation</li>
+                <li><strong>Evidence Review (30%)</strong> - Evaluation of supporting evidence and implementation</li>
+                <li><strong>Staff Knowledge (15%)</strong> - Assessment of staff understanding and application</li>
+                <li><strong>Service User Experience (15%)</strong> - Feedback and observations of care recipients</li>
+            </ul>
+            
+            <h5>ML Enhancement</h5>
+            <p>The ML system enhances regulatory analysis through:</p>
+            <ul>
+                <li><strong>Natural Language Processing</strong> - To identify key themes and concerns in documentation</li>
+                <li><strong>Pattern Recognition</strong> - To identify recurring issues across multiple reports</li>
+                <li><strong>Predictive Analytics</strong> - To forecast potential compliance challenges</li>
+                <li><strong>Semantic Analysis</strong> - To understand the context and significance of findings</li>
+            </ul>
+        </div>
+        
+        <div class="tip-item">
+            <i class="fas fa-lightbulb"></i> <strong>Pro Tip:</strong> When writing findings, focus on factual observations first, followed by analysis and then recommendations. This structure helps the ML system to properly categorise and learn from the report content.
+        </div>
+    </div>
+    
+    <!-- Best Practices Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Best Practices for Report Creation</h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Language and Terminology</h5>
+                <ul>
+                    <li>Use British English spelling conventions throughout</li>
+                    <li>Refer to individuals in care homes as "residents" (not patients, service users, etc.)</li>
+                    <li>Avoid jargon and acronyms without explanation</li>
+                    <li>Use precise, factual language for findings</li>
+                    <li>Maintain a professional, objective tone</li>
+                </ul>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Evidence and Documentation</h5>
+                <ul>
+                    <li>Always cite specific evidence using the reference format</li>
+                    <li>Include dates and times of observations where relevant</li>
+                    <li>Anonymise resident information in compliance with GDPR</li>
+                    <li>Cross-reference evidence to strengthen findings</li>
+                    <li>Clearly separate factual evidence from interpretations</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="warning-item mt-4">
+            <i class="fas fa-exclamation-triangle"></i> <strong>Important Warning:</strong> Never include identifiable personal information about residents in reports. Always anonymise case examples and use role descriptors (e.g., "a resident with mobility needs") rather than names or initials.
+        </div>
+    </div>
+    
+    <!-- Statistical Presentation Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Statistical Data Presentation</h3>
+        
+        <p>Statistical data in compliance reports must follow these guidelines:</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5>General Principles</h5>
+                <ul>
+                    <li>Place detailed statistical data in appendices</li>
+                    <li>Use simple, clear visualisations in the main report</li>
+                    <li>Explain statistical terminology in plain language</li>
+                    <li>Include sample sizes and confidence intervals</li>
+                    <li>Highlight statistical significance where relevant</li>
+                </ul>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Z-Score and Standard Deviation</h5>
+                <ul>
+                    <li>Include explanation of what Z-scores represent</li>
+                    <li>Provide context for standard deviation values</li>
+                    <li>Use comparative tables for regional variations</li>
+                    <li>Show Z-score thresholds for significant findings</li>
+                    <li>Include both raw scores and standardised scores</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="detailed-explanation mt-4">
+            <h5>Explaining Statistics to Non-Technical Readers</h5>
+            <p>When presenting statistical information, always include:</p>
+            <ul>
+                <li><strong>Plain Language Summary</strong> - A clear explanation of what the statistics show without technical terms</li>
+                <li><strong>Significance Statement</strong> - An explanation of whether differences are meaningful or likely due to chance</li>
+                <li><strong>Contextual Explanation</strong> - How the statistics relate to regulatory requirements and resident outcomes</li>
+                <li><strong>Visual Representation</strong> - Charts or tables that visually demonstrate the pattern or finding</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Report Templates Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Report Templates</h3>
+        
+        <p>The system provides several standardised templates for specific report types:</p>
+        
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Comprehensive Compliance Report</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Complete assessment of compliance across all regulatory areas with statistical analysis and detailed action planning.</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">For full regulatory assessments and annual reviews</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Focused Thematic Report</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Detailed assessment of compliance in a specific area (e.g., medication management, infection control).</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">For targeted reviews and specific regulatory requirements</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Statistical Analysis Report</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>In-depth statistical analysis of compliance data, including Z-scores, standard deviations, and comparative analysis.</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">For data-driven compliance monitoring and trend analysis</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Resources Section -->
+    <div class="guideline-section">
+        <h3 class="section-title">Additional Resources</h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Reference Materials</h5>
+                <ul>
+                    <li><a href="#">CQC Key Lines of Enquiry (KLOEs) Reference Guide</a></li>
+                    <li><a href="#">Statistical Analysis Methodology Documentation</a></li>
+                    <li><a href="#">Regulatory Framework Alignment Matrix</a></li>
+                    <li><a href="#">Evidence Collection Best Practices Guide</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Training and Support</h5>
+                <ul>
+                    <li><a href="#">Report Writing Masterclass (Video Tutorial)</a></li>
+                    <li><a href="#">Understanding Statistical Significance in Compliance</a></li>
+                    <li><a href="#">Effective Action Planning Workshop Materials</a></li>
+                    <li><a href="#">Evidence-Based Compliance Assessment Guide</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

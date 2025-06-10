@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}AI Learned Concepts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">AI Learned Concepts</h1>
+            <p class="lead">
+                Concepts extracted from regulations by the AI learning system.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">All Concepts</h5>
+                        <a href="{{ url_for('ai_learning.index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if concepts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Importance</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for concept in concepts %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('ai_learning.view_concept', concept_id=concept.id) }}">
+                                                    {{ concept.name }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ concept.concept_type }}</span>
+                                            </td>
+                                            <td>
+                                                {{ concept.description|truncate(100) }}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 10px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                         style="width: {{ (concept.importance_score * 100)|int }}%;" 
+                                                         aria-valuenow="{{ (concept.importance_score * 100)|int }}" 
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ (concept.importance_score * 100)|int }}%</small>
+                                            </td>
+                                            <td>
+                                                {{ concept.format_created_date() }}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('ai_learning.view_concept', concept_id=concept.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No concepts found in the database. Process regulations to extract concepts.
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <form action="{{ url_for('ai_learning.process_all_regulations') }}" method="post">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sync-alt"></i> Process All Regulations
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

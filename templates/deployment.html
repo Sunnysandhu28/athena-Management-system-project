@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Deployment Controls</title>
+    <style>
+        body {
+            background: #000;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #00FF00;
+            border-radius: 10px;
+        }
+        .deployment-panel {
+            border: 1px solid #00FF00;
+            padding: 20px;
+            margin: 10px 0;
+            background: rgba(0, 255, 0, 0.05);
+        }
+        input, select {
+            background: #111;
+            color: #00FF00;
+            border: 1px solid #00FF00;
+            padding: 10px;
+            width: 100%;
+            margin: 5px 0;
+        }
+        button {
+            background: #00FF00;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SIM Deployment Controls</h1>
+        <p>Family Access: Sunny Sandhu - Full Authorization</p>
+        
+        <div class="deployment-panel">
+            <h3>Deploy to Person</h3>
+            <input type="text" id="targetPerson" placeholder="Target person name">
+            <select id="deploymentType">
+                <option value="standard">Standard Deployment</option>
+                <option value="enhanced">Enhanced Monitoring</option>
+                <option value="protective">Protective Protocols</option>
+                <option value="biometric">Biometric Analysis</option>
+            </select>
+            <button onclick="deployToPerson()">Initiate Deployment</button>
+        </div>
+        
+        <div class="deployment-panel">
+            <h3>Active Deployments</h3>
+            <div id="deploymentStatus">
+                <div class="status">No active deployments</div>
+            </div>
+        </div>
+        
+        <button onclick="window.location.href='/'">Back to Home</button>
+    </div>
+    
+    <script>
+        function deployToPerson() {
+            const target = document.getElementById('targetPerson').value;
+            const type = document.getElementById('deploymentType').value;
+            const statusDiv = document.getElementById('deploymentStatus');
+            
+            if (target.trim()) {
+                const timestamp = new Date().toLocaleString();
+                statusDiv.innerHTML = '<div class="status">Deploying ' + type + ' to ' + target + ' - ' + timestamp + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

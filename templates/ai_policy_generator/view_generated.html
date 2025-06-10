@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Generated Policy{% endblock %}
+
+{% block head_extra %}
+<style>
+    .policy-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .policy-metadata {
+        margin-bottom: 1.5rem;
+    }
+    
+    .metadata-label {
+        font-weight: bold;
+        min-width: 150px;
+    }
+    
+    .policy-content {
+        white-space: pre-wrap;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+    
+    .action-buttons {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    @media print {
+        .no-print {
+            display: none;
+        }
+        
+        .policy-content {
+            font-size: 12pt;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row no-print mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ai_policy_generator.index') }}">AI Policy Generator</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Generated Policy</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="policy-header">
+                        <h1 class="card-title">{{ policy.title }}</h1>
+                        <p class="text-muted">{{ policy.number }}</p>
+                    </div>
+                    
+                    <div class="policy-metadata">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><span class="metadata-label">Category:</span> {{ policy.category }}</p>
+                                <p><span class="metadata-label">Generated:</span> {{ policy.generated_at }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><span class="metadata-label">Status:</span> <span class="badge bg-warning">{{ policy.status }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="policy-content">
+                        {{ policy.content|safe }}
+                    </div>
+                    
+                    <div class="action-buttons no-print">
+                        <form action="{{ url_for('ai_policy_generator.save_policy') }}" method="POST">
+                            <div class="btn-group" role="group">
+                                <button type="submit" class="btn btn-success">Save Policy</button>
+                                <a href="#" onclick="window.print(); return false;" class="btn btn-secondary">Print</a>
+                                <a href="{{ url_for('ai_policy_generator.index') }}" class="btn btn-outline-primary">Generate Another</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

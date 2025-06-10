@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Policies from QCS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-file-alt me-2"></i> Generate Policies from QCS
+            </h1>
+            <p class="lead">
+                Generate and customize policy documents based on QCS templates
+            </p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Use this tool to generate policy documents based on QCS templates. Customize with your organization details for a personalized policy that meets regulatory requirements.
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i> Policy Generation Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('generate_from_qcs') }}">
+                        <div class="mb-3">
+                            <label for="generation_option" class="form-label">Generation Option</label>
+                            <select class="form-select" id="generation_option" name="generation_option">
+                                <option value="single">Generate a single policy</option>
+                                <option value="category">Generate all policies in a category</option>
+                                <option value="all">Generate all policies from QCS index</option>
+                            </select>
+                            <div class="form-text">Choose whether to generate a single policy or all policies</div>
+                        </div>
+
+                        <div id="single-policy-section" class="mb-3">
+                            <label for="policy_code" class="form-label">Policy Code</label>
+                            <select class="form-select" id="policy_code" name="policy_code">
+                                <option value="">Select a policy code...</option>
+                                {% for policy in sample_policies %}
+                                <option value="{{ policy.code }}">{{ policy.code }} - {{ policy.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select the QCS policy code you want to generate</div>
+                        </div>
+
+                        <div id="category-section" class="mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select a category or leave as "All Categories" for all policies</div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5><i class="fas fa-building me-2"></i> Organization Details (Optional)</h5>
+                        <p class="text-muted mb-3">Provide these details to customize the policy for your organization</p>
+
+                        <div class="mb-3">
+                            <label for="organization_name" class="form-label">Organization Name</label>
+                            <input type="text" class="form-control" id="organization_name" name="organization_name" placeholder="e.g., Cathena Care">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="care_home_name" class="form-label">Care Home Name</label>
+                            <input type="text" class="form-control" id="care_home_name" name="care_home_name" placeholder="e.g., Oakwood House">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="manager_name" class="form-label">Manager Name</label>
+                            <input type="text" class="form-control" id="manager_name" name="manager_name" placeholder="e.g., Jane Smith">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-alt me-2"></i> Generate Policy
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> About Policy Generation</h5>
+                </div>
+                <div class="card-body">
+                    <p>This tool allows you to generate policy documents based on QCS templates. You can:</p>
+                    <ul>
+                        <li>Generate standard policies with QCS content</li>
+                        <li>Customize policies with your organization details</li>
+                        <li>Ensure compliance with regulatory requirements</li>
+                    </ul>
+                    <hr>
+                    <h6><i class="fas fa-clipboard-check me-2"></i> Available Policy Categories</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for category in categories[:5] %}
+                        <li class="list-group-item">{{ category.name }}</li>
+                        {% endfor %}
+                        {% if categories|length > 5 %}
+                        <li class="list-group-item text-muted">...and {{ categories|length - 5 }} more</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i> Popular Policies</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">HS01 - Health and Safety Policy</li>
+                        <li class="list-group-item">CR63 - Accessible Information</li>
+                        <li class="list-group-item">PE09 - Disciplinary Policy</li>
+                        <li class="list-group-item">CR35 - Mental Capacity Act</li>
+                        <li class="list-group-item">SC01 - Safeguarding Policy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generationOption = document.getElementById('generation_option');
+        const singlePolicySection = document.getElementById('single-policy-section');
+        const categorySection = document.getElementById('category-section');
+        const policyCodeField = document.getElementById('policy_code');
+        const categorySelect = document.getElementById('category_id');
+        
+        // Store original policy options
+        const allPolicies = Array.from(policyCodeField.options);
+        
+        // Function to update the sections based on the selected generation option
+        function updateSections() {
+            const option = generationOption.value;
+            
+            // Reset all sections
+            singlePolicySection.style.display = 'none';
+            categorySection.style.display = 'none';
+            
+            // Policy code field is only required for single policy option
+            policyCodeField.required = false;
+            
+            // Show the appropriate sections based on the selected option
+            if (option === 'single') {
+                singlePolicySection.style.display = 'block';
+                categorySection.style.display = 'block';
+                policyCodeField.required = true;
+            } else if (option === 'category') {
+                categorySection.style.display = 'block';
+            } else if (option === 'all') {
+                // No additional fields needed for 'all' option
+            }
+            
+            // Update the submit button text based on the option
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (option === 'all') {
+                submitBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate All Policies';
+                submitBtn.classList.add('btn-lg');
+            } else if (option === 'category') {
+                submitBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Category Policies';
+                submitBtn.classList.remove('btn-lg');
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Policy';
+                submitBtn.classList.remove('btn-lg');
+            }
+        }
+        
+        // Initial setup
+        updateSections();
+        
+        // Update sections when the generation option changes
+        generationOption.addEventListener('change', updateSections);
+        
+        // Filter policies when category changes
+        categorySelect.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            
+            // Reset policy select
+            policyCodeField.innerHTML = '';
+            
+            // Add blank option
+            const blankOption = document.createElement('option');
+            blankOption.value = '';
+            blankOption.textContent = 'Select a policy code...';
+            policyCodeField.appendChild(blankOption);
+            
+            // Filter policies by category
+            if (selectedCategory) {
+                // This is a placeholder - in a real implementation, you'd filter by category
+                // Since we don't have category IDs in the sample_policies, we'll just show all
+                allPolicies.slice(1).forEach(option => {
+                    policyCodeField.appendChild(option.cloneNode(true));
+                });
+            } else {
+                // Show all policies
+                allPolicies.slice(1).forEach(option => {
+                    policyCodeField.appendChild(option.cloneNode(true));
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Update: {{ update.title }}{% endblock %}
+
+{% block head %}
+<style>
+    .update-header {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .update-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+    }
+    .update-type-news {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+    }
+    .update-type-guidance {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+    }
+    .update-type-publication {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    .update-type-regulation {
+        background-color: #f3e5f5;
+        color: #4a148c;
+    }
+    .update-content {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .affected-area {
+        display: inline-block;
+        background-color: #f1f1f1;
+        color: #333;
+        padding: 6px 12px;
+        border-radius: 16px;
+        margin: 0 5px 10px 0;
+    }
+    .policy-update-card {
+        border-left: 4px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s ease;
+    }
+    .policy-update-card:hover {
+        background-color: #f0f0f0;
+    }
+    .priority-high {
+        border-left-color: #f44336;
+    }
+    .priority-medium {
+        border-left-color: #ff9800;
+    }
+    .priority-low {
+        border-left-color: #4caf50;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .status-pending {
+        background-color: #ffecb3;
+        color: #ff6f00;
+    }
+    .status-in-progress {
+        background-color: #bbdefb;
+        color: #0d47a1;
+    }
+    .status-completed {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .status-ignored {
+        background-color: #e0e0e0;
+        color: #616161;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <a href="{{ url_for('cqc_updates.updates_list') }}" class="btn btn-sm btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Updates
+            </a>
+            <h1>{{ update.title }}</h1>
+        </div>
+        <div>
+            <a href="{{ update.url }}" target="_blank" class="btn btn-primary">
+                <i class="fas fa-external-link-alt"></i> View on CQC Website
+            </a>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="update-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="mb-3">
+                            {% if update.content_type == 'News' %}
+                            <span class="update-type update-type-news">{{ update.content_type }}</span>
+                            {% elif update.content_type == 'Guidance' %}
+                            <span class="update-type update-type-guidance">{{ update.content_type }}</span>
+                            {% elif update.content_type == 'Publication' %}
+                            <span class="update-type update-type-publication">{{ update.content_type }}</span>
+                            {% elif update.content_type == 'Regulation' %}
+                            <span class="update-type update-type-regulation">{{ update.content_type }}</span>
+                            {% else %}
+                            <span class="update-type">{{ update.content_type }}</span>
+                            {% endif %}
+                            
+                            {% if update.update_date %}
+                            <span class="text-muted">Published: {{ update.update_date }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if update.description %}
+                        <p class="lead">{{ update.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if update.affected_areas %}
+                <div class="mt-3">
+                    <h6>Affected Policy Areas:</h6>
+                    <div>
+                        {% for area in update.affected_areas %}
+                        <span class="affected-area">{{ area }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="update-content">
+                <h5 class="mb-3">Update Content</h5>
+                <div class="update-text">
+                    {% if update.update_text %}
+                    <p>{{ update.update_text | nl2br }}</p>
+                    {% else %}
+                    <p class="text-muted">No content available. Please visit the original CQC website for full details.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Affected Policies</h5>
+                </div>
+                <div class="card-body">
+                    {% if affected_policies %}
+                    {% for policy in affected_policies %}
+                    <div class="policy-update-card priority-{{ policy.priority }}">
+                        <h6 class="mb-1">{{ policy.title }}</h6>
+                        <p class="mb-1">
+                            <small>{{ policy.reference }}</small>
+                            {% if policy.status == 'pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                            {% elif policy.status == 'in_progress' %}
+                            <span class="status-badge status-in-progress">In Progress</span>
+                            {% elif policy.status == 'completed' %}
+                            <span class="status-badge status-completed">Completed</span>
+                            {% elif policy.status == 'ignored' %}
+                            <span class="status-badge status-ignored">Ignored</span>
+                            {% endif %}
+                        </p>
+                        {% if policy.reason %}
+                        <p class="mb-1 small">{{ policy.reason | truncate(100) }}</p>
+                        {% endif %}
+                        <a href="{{ url_for('cqc_updates.view_policy_update', policy_id=policy.id) }}" class="btn btn-sm btn-outline-secondary mt-2">View Details</a>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No policies have been identified as affected by this update.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Re-analyze Update</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Re-analyzing this update will check if any policies need to be updated based on the content of this update.</p>
+                    <form action="{{ url_for('cqc_updates.analyze_specific') }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="update_ids" value="{{ update.id }}">
+                        <button type="submit" class="btn btn-primary w-100">Re-analyze Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

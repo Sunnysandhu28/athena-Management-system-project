@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health - Cathena Policy Automation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <a href="/">Cathena Policy System</a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/categories">Categories</a></li>
+                    <li><a href="/health">System Health</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div style="margin-bottom: 15px;">
+            <a href="javascript:history.back()" class="btn" style="display: inline-flex; align-items: center;">
+                <span style="margin-right: 5px;">←</span> Back
+            </a>
+        </div>
+        
+        <h1>System Health</h1>
+        
+        <div class="card">
+            <h2>System Status</h2>
+            <table>
+                <tr>
+                    <th>Component</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>Database</td>
+                    <td>
+                        {% if db_status == "Connected" %}
+                        <span class="badge badge-success">Connected</span>
+                        {% else %}
+                        <span class="badge badge-danger">{{ db_status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Folder Structure</td>
+                    <td>
+                        {% if folder_structure_ok %}
+                        <span class="badge badge-success">OK</span>
+                        {% else %}
+                        <span class="badge badge-danger">Error</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Statistics</h2>
+            <table>
+                <tr>
+                    <th>Category</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>Total Policies</td>
+                    <td>{{ total_policies }}</td>
+                </tr>
+                <tr>
+                    <td>QCS Policies</td>
+                    <td>{{ qcs_policies }}</td>
+                </tr>
+                <tr>
+                    <td>Adapted Policies</td>
+                    <td>{{ adapted_policies }}</td>
+                </tr>
+                <tr>
+                    <td>Categories</td>
+                    <td>{{ categories_count }}</td>
+                </tr>
+            </table>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container footer-content">
+            <ul class="footer-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/categories">Categories</a></li>
+                <li><a href="/health">System Health</a></li>
+            </ul>
+            <div class="copyright">
+                &copy; {{ now.year|default(2025) }} Cathena Policy Automation System
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

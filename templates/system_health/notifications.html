@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}System Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-card {
+        margin-bottom: 15px;
+    }
+    
+    .notification-card.info {
+        border-left: 4px solid #0dcaf0;
+    }
+    
+    .notification-card.warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .notification-card.critical {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .notification-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .notification-title {
+        font-weight: bold;
+    }
+    
+    .notification-details {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+    
+    .no-notifications {
+        text-align: center;
+        padding: 60px 0;
+    }
+    
+    .no-notifications i {
+        font-size: 4rem;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>System Notifications</h1>
+        <a href="{{ url_for('system_health.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    {% if notifications %}
+        <div class="mb-3">
+            <p class="text-muted">Showing {{ notifications|length }} notifications from most recent to oldest.</p>
+        </div>
+        
+        {% for notification in notifications %}
+        <div class="card notification-card {{ notification.severity }}">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge {% if notification.severity == 'info' %}bg-info
+                          {% elif notification.severity == 'warning' %}bg-warning
+                          {% else %}bg-danger{% endif %}">
+                        {{ notification.severity|upper }}
+                    </span>
+                    <span class="notification-title ms-2">{{ notification.title }}</span>
+                </div>
+                <span class="notification-meta">{{ notification.timestamp }}</span>
+            </div>
+            <div class="card-body">
+                <p>{{ notification.message }}</p>
+                
+                {% if notification.details %}
+                <div class="notification-details">
+                    <pre>{{ notification.details|tojson(indent=2) }}</pre>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-notifications">
+            <i class="fas fa-bell-slash"></i>
+            <h3>No Notifications</h3>
+            <p class="text-muted">You don't have any system notifications at this time.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/js/all.min.js"></script>
+{% endblock %}

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Analysis Results - Cathena Policy Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .term-card {
+            margin-bottom: 15px;
+            border-left: 4px solid #0d6efd;
+        }
+        .new-term-card {
+            margin-bottom: 15px;
+            border-left: 4px solid #fd7e14;
+        }
+        .term-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .known-term {
+            color: #0d6efd;
+        }
+        .new-term {
+            color: #fd7e14;
+        }
+        .term-definition {
+            margin-top: 10px;
+        }
+        .term-relevance {
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 8px;
+        }
+        .relationship-diagram {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 300px;
+        }
+        .relationship-item {
+            margin-bottom: 10px;
+        }
+        .related-term-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Document Analysis Results</h1>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Document Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Filename:</strong> {{ filename }}</p>
+                        <p><strong>Regulatory Framework:</strong> {{ framework }}</p>
+                        <p><strong>Analysis Date:</strong> {{ now().strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Known Terms Column -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Known Regulatory Terms</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if results.known_terms %}
+                            {% for term in results.known_terms %}
+                                <div class="term-card card p-3">
+                                    <div class="term-title known-term">{{ term }}</div>
+                                    {% if term in results.definitions %}
+                                        <div class="term-definition">{{ results.definitions[term].definition }}</div>
+                                        {% if results.definitions[term].relevance %}
+                                            <div class="term-relevance">Relevance: {{ results.definitions[term].relevance }}</div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No known regulatory terms found in the document.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Terms Column -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">New Regulatory Terms</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if results.new_terms %}
+                            {% for term in results.new_terms %}
+                                <div class="new-term-card card p-3">
+                                    <div class="term-title new-term">{{ term }}</div>
+                                    {% if term in results.definitions %}
+                                        <div class="term-definition">{{ results.definitions[term].definition }}</div>
+                                        {% if results.definitions[term].relevance %}
+                                            <div class="term-relevance">Relevance: {{ results.definitions[term].relevance }}</div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No new regulatory terms identified in the document.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Relationships Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Term Relationships</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if results.relationships %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="relationship-diagram" id="relationshipDiagram">
+                                        <!-- D3.js visualization will be rendered here -->
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Relationship Details:</h6>
+                                    <div class="relationship-list">
+                                        {% for term, related_terms in results.relationships.items() %}
+                                            <div class="relationship-item">
+                                                <strong>{{ term }}</strong> is related to:
+                                                <ul>
+                                                    {% for related_term in related_terms %}
+                                                        <li>
+                                                            <strong>{{ related_term.term }}</strong>
+                                                            {% if related_term.type %}
+                                                                ({{ related_term.type }})
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No relationships found between regulatory terms in the document.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('regulatory.index') }}" class="btn btn-secondary">Back to Terminology Assistant</a>
+                            <a href="#" class="btn btn-primary" id="generateGuidelinesBtn">Generate Compliance Guidelines</a>
+                        </div>
+                        <div id="guidelinesSection" class="mt-4" style="display: none;">
+                            <h5>Compliance Guidelines</h5>
+                            <div id="guidelinesContent">
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Function to create a simple force-directed graph for term relationships
+        function createRelationshipDiagram(relationships) {
+            // Convert relationships to a format suitable for D3
+            const nodes = new Set();
+            const links = [];
+            
+            Object.entries(relationships).forEach(([term, relatedTerms]) => {
+                nodes.add(term);
+                relatedTerms.forEach(relation => {
+                    nodes.add(relation.term);
+                    links.push({
+                        source: term,
+                        target: relation.term,
+                        type: relation.type || 'related'
+                    });
+                });
+            });
+            
+            const data = {
+                nodes: Array.from(nodes).map(term => ({ id: term })),
+                links: links
+            };
+            
+            // Clear previous diagram
+            d3.select("#relationshipDiagram").html("");
+            
+            // Set up SVG
+            const width = document.getElementById('relationshipDiagram').clientWidth;
+            const height = 300;
+            
+            const svg = d3.select("#relationshipDiagram")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            
+            // Create the force simulation
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+            
+            // Add links
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(data.links)
+                .enter()
+                .append("line")
+                .attr("stroke", "#999")
+                .attr("stroke-opacity", 0.6)
+                .attr("stroke-width", 2);
+            
+            // Add nodes
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(data.nodes)
+                .enter()
+                .append("circle")
+                .attr("r", 10)
+                .attr("fill", "#0d6efd")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+            
+            // Add labels
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(data.nodes)
+                .enter()
+                .append("text")
+                .text(d => d.id)
+                .attr("font-size", 12)
+                .attr("dx", 15)
+                .attr("dy", 4);
+            
+            // Update positions on tick
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+                
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            });
+            
+            // Drag functions
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+        
+        // Generate compliance guidelines
+        document.getElementById('generateGuidelinesBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show guidelines section with loading spinner
+            document.getElementById('guidelinesSection').style.display = 'block';
+            
+            // Get all terms
+            const allTerms = [
+                {% for term in results.known_terms %}
+                    "{{ term }}",
+                {% endfor %}
+                {% for term in results.new_terms %}
+                    "{{ term }}",
+                {% endfor %}
+            ];
+            
+            // Call API to generate guidelines
+            fetch('/regulatory/generate_guidelines', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    terms: allTerms,
+                    framework: "{{ framework }}"
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const guidelinesContent = document.getElementById('guidelinesContent');
+                    
+                    if (data.error) {
+                        guidelinesContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    let html = '';
+                    
+                    if (data.overview) {
+                        html += `<div class="alert alert-info mb-3">${data.overview}</div>`;
+                    }
+                    
+                    if (data.guidelines && data.guidelines.length > 0) {
+                        html += '<h6>Specific Guidelines:</h6><ul>';
+                        data.guidelines.forEach(guideline => {
+                            html += `<li>${guideline}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (data.common_pitfalls && data.common_pitfalls.length > 0) {
+                        html += '<h6>Common Pitfalls to Avoid:</h6><ul>';
+                        data.common_pitfalls.forEach(pitfall => {
+                            html += `<li>${pitfall}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    if (data.implementation_tips && data.implementation_tips.length > 0) {
+                        html += '<h6>Implementation Tips:</h6><ul>';
+                        data.implementation_tips.forEach(tip => {
+                            html += `<li>${tip}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    guidelinesContent.innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('guidelinesContent').innerHTML = 
+                        `<div class="alert alert-danger">Error generating guidelines: ${error.message}</div>`;
+                });
+        });
+        
+        // Initialize relationship diagram if relationships exist
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if results.relationships %}
+                const relationships = {{ results.relationships|tojson }};
+                createRelationshipDiagram(relationships);
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Policy System Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Cathena Policy Management System</h1>
+            <div class="alert alert-info">
+                <p><strong>AI Policy Generation Active</strong></p>
+                <p>The AI is currently generating policies that match QCS standards exactly.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Care Management Policies</h4>
+                </div>
+                <div class="card-body">
+                    <p>Status: <span class="badge bg-success">Generating</span></p>
+                    <p>The AI is recreating these policies from memory with 100% accuracy to QCS style, content, and legislation.</p>
+                    <a href="/formatted_policies" class="btn btn-primary">View Policies</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Administrator Controls</h4>
+                </div>
+                <div class="card-body">
+                    <p>Use these controls to manage policy generation:</p>
+                    <a href="/generate_policies" class="btn btn-success mb-2">Generate More Policies</a>
+                    <a href="/action_plan" class="btn btn-info">View Action Plan Generator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">System Information</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Policy Formatting:</strong> All policies match QCS standards with blue headers and QCS copyright information.</p>
+                    <p><strong>AI Model:</strong> Using the latest GPT-4o model for accurate policy reproduction.</p>
+                    <p><strong>Process:</strong> Policies are stored in the database for quick access and fully formatted for viewing and downloading.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

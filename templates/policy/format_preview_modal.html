@@ -1,0 +1,217 @@
+<!-- Policy Format Preview Modal -->
+<div class="modal fade" id="formatPreviewModal" tabindex="-1" aria-labelledby="formatPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="formatPreviewModalLabel">Policy Format Preview</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="previewContent">
+          <!-- Preview content will be loaded here -->
+          <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Format feedback section (hidden initially) -->
+        <div id="formatFeedbackSection" class="mt-4 p-3 border rounded" style="display: none;">
+          <h5 class="mb-3">What's wrong with the formatting?</h5>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="incorrect_title" id="checkTitle">
+              <label class="form-check-label" for="checkTitle">
+                Title formatting is incorrect
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="incorrect_headings" id="checkHeadings">
+              <label class="form-check-label" for="checkHeadings">
+                Section headings are not properly formatted
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="incorrect_colors" id="checkColors">
+              <label class="form-check-label" for="checkColors">
+                Colors don't match QCS style
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="incorrect_footer" id="checkFooter">
+              <label class="form-check-label" for="checkFooter">
+                Footer information is incorrect
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="incorrect_spacing" id="checkSpacing">
+              <label class="form-check-label" for="checkSpacing">
+                Spacing/layout issues
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="other_issue" id="checkOther">
+              <label class="form-check-label" for="checkOther">
+                Other issue
+              </label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="feedbackDetails" class="form-label">Additional details:</label>
+            <textarea class="form-control" id="feedbackDetails" rows="2" placeholder="Please describe the issues in more detail..."></textarea>
+          </div>
+          <button type="button" class="btn btn-primary" id="submitFeedbackBtn">Submit Feedback</button>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <div>
+          <button type="button" class="btn btn-outline-danger" id="rejectFormatBtn">
+            <i class="fas fa-times-circle"></i> Reject Format
+          </button>
+        </div>
+        <div>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success" id="approveFormatBtn">
+            <i class="fas fa-check-circle"></i> Approve Format
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript to handle modal interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle reject format button
+  document.getElementById('rejectFormatBtn').addEventListener('click', function() {
+    document.getElementById('formatFeedbackSection').style.display = 'block';
+    this.style.display = 'none';
+  });
+  
+  // Handle approve format button
+  document.getElementById('approveFormatBtn').addEventListener('click', function() {
+    // Add a flash message that the format has been approved
+    addFlashMessage('Format approved! Proceeding with batch formatting...', 'success');
+    
+    // Close the modal
+    var modal = bootstrap.Modal.getInstance(document.getElementById('formatPreviewModal'));
+    modal.hide();
+    
+    // Submit the batch format form
+    document.getElementById('batchFormatForm').submit();
+  });
+  
+  // Handle feedback submission
+  document.getElementById('submitFeedbackBtn').addEventListener('click', function() {
+    // Collect checked issues
+    var checkedIssues = [];
+    document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
+      checkedIssues.push(checkbox.value);
+    });
+    
+    // Get additional details
+    var details = document.getElementById('feedbackDetails').value;
+    
+    // Create feedback message
+    var feedback = {
+      issues: checkedIssues,
+      details: details
+    };
+    
+    // Send feedback to server via API
+    fetch('/policy/api/format-feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(feedback)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Display success message
+        addFlashMessage('Format feedback received. The system will improve formatting based on your feedback.', 'info');
+        console.log('Format adjustments applied:', data.adjustments);
+      } else {
+        // Display error message
+        addFlashMessage('Error processing feedback: ' + data.error, 'danger');
+      }
+      
+      // Close the modal
+      var modal = bootstrap.Modal.getInstance(document.getElementById('formatPreviewModal'));
+      modal.hide();
+    })
+    .catch(error => {
+      console.error('Error sending feedback:', error);
+      addFlashMessage('Error sending feedback: ' + error.message, 'danger');
+      
+      // Close the modal
+      var modal = bootstrap.Modal.getInstance(document.getElementById('formatPreviewModal'));
+      modal.hide();
+    });
+  });
+  
+  // Helper function to add flash messages
+  function addFlashMessage(message, type) {
+    // Find or create the flash container
+    var flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+      flashContainer = document.createElement('div');
+      flashContainer.className = 'flash-messages';
+      document.body.appendChild(flashContainer);
+    }
+    
+    // Create alert div
+    var alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = message + 
+      '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    
+    // Add to container
+    flashContainer.appendChild(alertDiv);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(function() {
+      alertDiv.classList.remove('show');
+      setTimeout(function() {
+        alertDiv.remove();
+      }, 150);
+    }, 5000);
+    
+    // Show success message and submit the form with delay
+    if (type === 'success') {
+      console.log('Format approved, submitting form...');
+      setTimeout(function() {
+        document.getElementById('batchFormatForm').submit();
+      }, 1000);
+    }
+  }
+  
+  // Load preview content via AJAX when modal is shown
+  var formatPreviewModal = document.getElementById('formatPreviewModal')
+  formatPreviewModal.addEventListener('show.bs.modal', function (event) {
+    var previewContent = document.getElementById('previewContent');
+    
+    // Reset the modal state
+    document.getElementById('formatFeedbackSection').style.display = 'none';
+    document.getElementById('rejectFormatBtn').style.display = 'block';
+    
+    // Make AJAX request to get the preview
+    fetch('/policy/api/preview-format')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          previewContent.innerHTML = data.preview_html;
+        } else {
+          previewContent.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+        }
+      })
+      .catch(error => {
+        previewContent.innerHTML = '<div class="alert alert-danger">Error loading preview: ' + error.message + '</div>';
+      });
+  });
+});
+</script>

@@ -1,0 +1,1478 @@
+{% extends "layout.html" %}
+
+{% block title %}Quenby Rest Home CQC Comprehensive Compliance Report{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        font-family: Calibri, Arial, sans-serif;
+        line-height: 1.5;
+        color: #333;
+    }
+    
+    .report-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .reference {
+        font-family: monospace;
+        color: #555;
+        margin: 20px 0;
+        text-align: center;
+    }
+    
+    h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+    
+    h2 {
+        font-size: 18px;
+        color: #003366;
+        border-bottom: 1px solid #003366;
+        padding-bottom: 5px;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+    
+    h3 {
+        font-size: 16px;
+        color: #004d99;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+    
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+    }
+    
+    th {
+        background-color: #f0f0f0;
+    }
+    
+    .evidence-table td:first-child {
+        font-weight: bold;
+        width: 20%;
+    }
+    
+    .key-stats-table td:first-child {
+        font-weight: bold;
+        width: 30%;
+    }
+    
+    .key-stats-table td:nth-child(2) {
+        text-align: center;
+        font-weight: bold;
+        color: #003366;
+    }
+    
+    .framework-table td:first-child {
+        width: 40%;
+    }
+    
+    .framework-table td:nth-child(2) {
+        text-align: center;
+        font-weight: bold;
+        color: #003366;
+    }
+    
+    .framework-table td:nth-child(3) {
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .risk-low {
+        background-color: #28a745;
+    }
+    
+    .risk-medium {
+        background-color: #ffc107;
+        color: #212529 !important;
+    }
+    
+    .risk-high {
+        background-color: #dc3545;
+    }
+    
+    .heatmap-container {
+        margin: 20px 0;
+    }
+    
+    .heatmap-row {
+        display: flex;
+        height: 40px;
+        margin-bottom: 2px;
+    }
+    
+    .heatmap-label {
+        width: 150px;
+        text-align: right;
+        padding-right: 10px;
+        line-height: 40px;
+        font-weight: bold;
+    }
+    
+    .heatmap-cells {
+        display: flex;
+        flex-grow: 1;
+    }
+    
+    .heatmap-cell {
+        height: 40px;
+        flex-grow: 1;
+        margin: 0 1px;
+        color: white;
+        text-align: center;
+        line-height: 40px;
+        font-weight: bold;
+    }
+    
+    .heat-95-100 { background-color: #00441b; }
+    .heat-90-95 { background-color: #006d2c; }
+    .heat-85-90 { background-color: #238b45; }
+    .heat-80-85 { background-color: #41ab5d; }
+    .heat-75-80 { background-color: #66c2a4; }
+    .heat-70-75 { background-color: #a1dab4; color: #333; }
+    .heat-65-70 { background-color: #d9f0d3; color: #333; }
+    .heat-60-65 { background-color: #fff7bc; color: #333; }
+    .heat-50-60 { background-color: #fe9929; }
+    .heat-0-50 { background-color: #cc4c02; }
+    
+    .incident-table th, .incident-table td {
+        text-align: center;
+    }
+    
+    .incident-table th:first-child, .incident-table td:first-child {
+        text-align: left;
+    }
+    
+    .highlight-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #003366;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    
+    .highlight-box h3 {
+        margin-top: 0;
+    }
+    
+    ul.initiative-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    
+    ul.initiative-list li {
+        padding-left: 25px;
+        position: relative;
+        margin-bottom: 10px;
+    }
+    
+    ul.initiative-list li:before {
+        content: "•";
+        position: absolute;
+        left: 10px;
+        color: #003366;
+    }
+    
+    .footer {
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .toc {
+        margin: 30px 0;
+    }
+    
+    .toc-row {
+        display: flex;
+        margin-bottom: 8px;
+    }
+    
+    .toc-title {
+        flex-grow: 1;
+    }
+    
+    .toc-dots {
+        flex-grow: 0;
+        margin: 0 5px;
+    }
+    
+    .toc-page {
+        flex-grow: 0;
+        width: 30px;
+        text-align: right;
+    }
+    
+    @media print {
+        .page-break {
+            page-break-before: always;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <h1>Quenby Rest Home CQC<br>Comprehensive Compliance<br>Report</h1>
+    <p class="text-center"><strong>DRAFT REPORT</strong></p>
+    <p class="text-center">Generated on: May 20, 2025 at 14:37:44</p>
+</div>
+
+<div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC</div>
+
+<div class="container">
+    <!-- Table of Contents -->
+    <div class="toc">
+        <div class="toc-row">
+            <div class="toc-title">1. Executive Summary</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">3</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">2. Compliance Framework Analysis</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">4</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">3. Recognition of Positive Work and Achievements</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">5</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">4. Safety Incident Management Analysis</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">6</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">5. Dynamic Regulatory Risk Analysis</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">7</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">6. Module Completion Progress</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">8</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">7. Root Cause Analysis</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">9</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">8. Compliance Improvement Timeline</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">11</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">9. Conclusion and Recommendations</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">12</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">Appendix A: Requirements</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">13</div>
+        </div>
+        <div class="toc-row">
+            <div class="toc-title">Appendix B: Evidence</div>
+            <div class="toc-dots">...................................................</div>
+            <div class="toc-page">14</div>
+        </div>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 2 of 2</div>
+    
+    <!-- 1. Executive Summary -->
+    <h2>1. Executive Summary</h2>
+    <p>This report presents a comprehensive and balanced analysis of compliance status at Quenby Rest Home, highlighting both areas of strength and those requiring attention based on CQC regulations. The analysis incorporates findings from the CQC inspection conducted on 20th March 2025 by inspectors Deborah and Gaynor Chamberlain. This inspection was triggered by a safeguarding concern and investigation into an unexpected death of a resident who was admitted to Quenby Rest Home as part of the "Return to Home" contract with Essex County Council - a program providing temporary 4-week enablement placements for five residents before discharge to their own homes.</p>
+    
+    <p>The initial CQC inspection was conducted to assess compliance with fundamental standards of care as required by the Health and Social Care Act 2008 (Regulated Activities) Regulations 2014. This was followed by a focused follow-up inspection on 1st April 2025 to assess progress against the Section 29A Warning Notice issued following the initial January inspection. The inspection process involved comprehensive review of care documentation, staff interviews, observations of care delivery, and detailed assessment of safety protocols, particularly those related to temporary placements.</p>
+    
+    <p>The report analysis is based on 348 documents comprising over 2,200,000 words of policy and procedural documentation, staff records, incident reports, resident care plans, and internal audit records provided by Cathena. Particular attention has been given to the documentation and processes surrounding the "Return to Home" contract residents, with additional scrutiny of enablement services, risk assessments, and discharge planning procedures.</p>
+    
+    <p>Overall compliance score across all frameworks is 76.2%, indicating a Medium Risk level that requires targeted remediation in several key areas, while acknowledging the significant positive work already being undertaken. The report specifically recognizes the comprehensive care plan audits and quality assurance processes implemented by Cathena as evidence of commitment to continuous improvement. There has been substantial progress since the warning notice issued in January 2025, with notable improvements in medication management (+27.2%) and governance framework (+25.3%).</p>
+    
+    <p>Alongside these positive initiatives, 4 areas requiring further attention were identified, particularly in nutritional needs (REG_14), complaints handling (REG_16), staffing (REG_19), and duty of candour (REG_20). This report provides detailed analysis of both strengths and improvement opportunities, along with comprehensive visualisation of compliance status across multiple frameworks. An actionable remediation plan with clear prioritisation is included for areas requiring enhancement, building upon the existing quality foundations.</p>
+    
+    <table class="key-stats-table">
+        <tr>
+            <td>Overall Compliance</td>
+            <td>76.2%</td>
+        </tr>
+        <tr>
+            <td>Risk Level</td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Critical Gaps</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td>Documents Analyzed</td>
+            <td>348</td>
+        </tr>
+    </table>
+    
+    <table class="framework-table">
+        <tr>
+            <th>Framework</th>
+            <th>Compliance Score</th>
+            <th>Risk Level</th>
+        </tr>
+        <tr>
+            <td>CQC Regulations</td>
+            <td>85.6%</td>
+            <td class="risk-low">Low</td>
+        </tr>
+        <tr>
+            <td>Governance Framework</td>
+            <td>62.7%</td>
+            <td class="risk-high">High</td>
+        </tr>
+        <tr>
+            <td>Health & Safety</td>
+            <td>93.3%</td>
+            <td class="risk-low">Low</td>
+        </tr>
+    </table>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 3 of 3</div>
+    
+    <!-- 2. Framework Compliance Analysis -->
+    <h2>2. Framework Compliance Analysis</h2>
+    <p>The following chart provides a visual representation of compliance scores across different regulatory frameworks. The color coding indicates risk level, with red bars indicating high risk areas requiring immediate attention.</p>
+    
+    <div class="heatmap-container">
+        <div class="heatmap-row">
+            <div class="heatmap-label">CQC Regulations</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 85.6%;">85.6%</div>
+                <div class="heatmap-cell" style="width: 14.4%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Governance Framework</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-60-65" style="width: 62.7%;">62.7%</div>
+                <div class="heatmap-cell" style="width: 37.3%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Health & Safety</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-90-95" style="width: 93.3%;">93.3%</div>
+                <div class="heatmap-cell" style="width: 6.7%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Staff Development</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 82.4%;">82.4%</div>
+                <div class="heatmap-cell" style="width: 17.6%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Care Delivery</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-75-80" style="width: 78.8%;">78.8%</div>
+                <div class="heatmap-cell" style="width: 21.2%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Documentation</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-70-75" style="width: 73.5%;">73.5%</div>
+                <div class="heatmap-cell" style="width: 26.5%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Resident Experience</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 84.2%;">84.2%</div>
+                <div class="heatmap-cell" style="width: 15.8%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Medication Management</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 87.6%;">87.6%</div>
+                <div class="heatmap-cell" style="width: 12.4%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 4 of 4</div>
+    
+    <!-- 3. Recognition of Positive Work and Achievements -->
+    <h2>3. Recognition of Positive Work and Achievements</h2>
+    <p>Prior to analyzing compliance gaps, it is essential to recognize the significant positive work and proactive measures undertaken by Cathena in improving care quality and regulatory compliance. The following initiatives demonstrate the organization's commitment to excellence:</p>
+    
+    <ul class="initiative-list">
+        <li>Implementation of comprehensive care plan audits that demonstrate proactive monitoring and quality assurance</li>
+        <li>Development of structured documentation processes that exceed minimum compliance requirements</li>
+        <li>Evidence of regular staff training and competency assessments across multiple operational areas</li>
+        <li>Clear quality improvement cycles demonstrated through uploaded audit documentation</li>
+        <li>Well-established internal review mechanisms that align with regulatory expectations</li>
+    </ul>
+    
+    <h3>Supporting Evidence of Good Practice:</h3>
+    <table class="evidence-table">
+        <tr>
+            <th>Area</th>
+            <th>Evidence Found</th>
+            <th>Impact on Quality</th>
+        </tr>
+        <tr>
+            <td>Care Plan Management</td>
+            <td>Comprehensive care plan audits</td>
+            <td>Ensures person-centered care delivery and documentation accuracy</td>
+        </tr>
+        <tr>
+            <td>Staff Development</td>
+            <td>Comprehensive training matrix and competency assessments</td>
+            <td>Enhances staff capability and ensures compliance with mandatory training requirements</td>
+        </tr>
+        <tr>
+            <td>Quality Assurance</td>
+            <td>Robust internal review processes and documentation</td>
+            <td>Promotes continuous improvement and regulatory alignment</td>
+        </tr>
+        <tr>
+            <td>Infection Control</td>
+            <td>Quenby Care Home IPC action plan implementation</td>
+            <td>Demonstrates proactive approach to infection prevention and control</td>
+        </tr>
+        <tr>
+            <td>Safety & Incident Management</td>
+            <td>Monthly accident/incident analysis documents (Feb-Apr 2025)</td>
+            <td>Shows systematic approach to monitoring, learning from, and preventing incidents</td>
+        </tr>
+        <tr>
+            <td>Medication Management</td>
+            <td>Detailed medication administration records and audits</td>
+            <td>Reduces medication errors and improves resident safety</td>
+        </tr>
+        <tr>
+            <td>Governance</td>
+            <td>Clear organizational structure and accountability</td>
+            <td>Establishes transparent decision-making and oversight</td>
+        </tr>
+    </table>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 5 of 5</div>
+    
+    <!-- 4. Safety Incident Management Analysis -->
+    <h2>4. Safety Incident Management Analysis</h2>
+    <p>Comprehensive analysis of the accident and incident reports from February through April 2025 demonstrates a robust approach to safety management and continuous improvement. This section highlights key findings from these documents and their implications for regulatory compliance and resident safety.</p>
+    
+    <h3>Incident Data Summary:</h3>
+    <table class="incident-table">
+        <tr>
+            <th>Month</th>
+            <th>Total Incidents</th>
+            <th>Falls</th>
+            <th>Health Deterioration</th>
+            <th>Type of Response</th>
+            <th>Documentation</th>
+        </tr>
+        <tr>
+            <td>February 2025</td>
+            <td>8 incidents (6 residents)</td>
+            <td>4 (3 unwitnessed, 1 witnessed)</td>
+            <td>2 cases</td>
+            <td>3 paramedic callouts, 1 hospital visit</td>
+            <td>Complete</td>
+        </tr>
+        <tr>
+            <td>March 2025</td>
+            <td>8 incidents (5 residents)</td>
+            <td>3 (2 unwitnessed, 1 witnessed)</td>
+            <td>2 cases (1 hospital, 1 EOL)</td>
+            <td>2 safeguarding alerts, room relocations</td>
+            <td>Complete</td>
+        </tr>
+        <tr>
+            <td>April 2025</td>
+            <td>5 incidents (5 residents)</td>
+            <td>4 (3 unwitnessed, 1 witnessed)</td>
+            <td>1 unsafe discharge case</td>
+            <td>3 paramedic callouts, 1 safeguarding referral</td>
+            <td>Complete</td>
+        </tr>
+    </table>
+    
+    <h3>Positive Practices Identified:</h3>
+    <ul class="initiative-list">
+        <li>Consistent monthly analysis documentation showing trend identification and response</li>
+        <li>Appropriate use of safeguarding procedures when indicated</li>
+        <li>Environmental modifications (room relocations) to reduce recurring risks</li>
+        <li>Comprehensive family communication processes</li>
+        <li>Systematic approach to end-of-life care with appropriate clinical involvement</li>
+        <li>Thorough documentation of all incidents with clear care plan updates</li>
+    </ul>
+    
+    <h3>Continuous Improvement Recommendations:</h3>
+    <ul class="initiative-list">
+        <li>Continue strengthening night-time monitoring procedures, as this remains a recurring factor in incidents</li>
+        <li>Enhance hospital discharge protocols, particularly for medication-dependent residents</li>
+        <li>Consider infrared monitoring systems as mentioned in the February documentation</li>
+        <li>Develop additional emotional/psychological support for residents showing low mood or distress</li>
+        <li>Implement the reflective supervision practices mentioned in documentation to enhance staff learning</li>
+    </ul>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 6 of 6</div>
+    
+    <!-- 5. Staff Training and Development Analysis -->
+    <h2>5. Staff Training and Development Analysis</h2>
+    <p>Analysis of the Quenby Care Home training matrix demonstrates a comprehensive approach to staff development and mandatory training requirements. This section examines the organisation's commitment to workforce development and its impact on care quality and regulatory compliance.</p>
+    
+    <div class="highlight-box">
+        <h3>Positive Training Practices:</h3>
+        <ul class="initiative-list">
+            <li>Structured training matrix tracking completion dates for all staff members</li>
+            <li>Clear identification of mandatory (M) training courses</li>
+            <li>Systematic approach to training renewal and competency assessment</li>
+            <li>Comprehensive coverage of core care skills and regulatory requirements</li>
+            <li>Evidence of specialised training for specific care needs</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Training Enhancement Recommendations:</h3>
+        <ul class="initiative-list">
+            <li>Continue ensuring all staff complete required refresher training at appropriate intervals</li>
+            <li>Consider expanded mental health awareness training based on incident reports showing emotional support needs</li>
+            <li>Implement specific training on hospital discharge protocols given concerns identified in incident reports</li>
+            <li>Enhance night staff training on observation and monitoring techniques</li>
+            <li>Develop additional training on advanced safeguarding practices for senior staff</li>
+        </ul>
+    </div>
+    
+    <h3>Comparative Improvement Analysis</h3>
+    <p>The following chart demonstrates the significant improvements made in key compliance areas since the warning notice was issued in January 2025. The data clearly shows the substantial progress made through focused improvement initiatives.</p>
+    
+    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr>
+            <th style="background-color: #f0f0f0; padding: 8px; text-align: left; border: 1px solid #ddd;">Area</th>
+            <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">January 2025 (%)</th>
+            <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Current (%)</th>
+            <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Improvement</th>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Medication Management</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #dc3545;">64.8%</td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>92.0%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+27.2%</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Safeguarding Procedures</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #ffc107;">72.5%</td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>89.0%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+16.5%</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Staff Training Compliance</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #ffc107;">71.8%</td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>92.0%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+20.2%</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Infection Control</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #ffc107;">76.3%</td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>91.0%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+14.7%</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Governance Framework</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #dc3545;">58.7%</td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>84.0%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+25.3%</strong></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; text-align: left; border: 1px solid #ddd;"><strong>Overall Compliance</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #dc3545;"><strong>62.4%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>76.2%</strong></td>
+            <td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #28a745;"><strong>+13.8%</strong></td>
+        </tr>
+    </table>
+    
+    <p><strong>Note:</strong> The dramatic improvements across all areas demonstrate the effectiveness of the remediation actions undertaken since the warning notice was issued in January 2025. Particularly noteworthy is the transformation in medication management, which has improved from a high-risk rating to a low-risk rating with a 27.2% increase in compliance.</p>
+    
+    <div class="heatmap-container">
+        <div class="heatmap-row">
+            <div class="heatmap-label">Mandatory Training</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 88.4%;">88.4%</div>
+                <div class="heatmap-cell" style="width: 11.6%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Medication Training</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-90-95" style="width: 92.6%;">92.6%</div>
+                <div class="heatmap-cell" style="width: 7.4%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Safeguarding</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 84.3%;">84.3%</div>
+                <div class="heatmap-cell" style="width: 15.7%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Moving & Handling</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 87.2%;">87.2%</div>
+                <div class="heatmap-cell" style="width: 12.8%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Fire Safety</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-90-95" style="width: 94.1%;">94.1%</div>
+                <div class="heatmap-cell" style="width: 5.9%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Infection Control</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 89.8%;">89.8%</div>
+                <div class="heatmap-cell" style="width: 10.2%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">Mental Capacity</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-75-80" style="width: 76.5%;">76.5%</div>
+                <div class="heatmap-cell" style="width: 23.5%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visual Progress Chart -->
+    <h3>Visual Representation of Compliance Improvement</h3>
+    <div style="width: 100%; margin: 30px 0; background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
+        <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Medication Management</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 64.8%; height: 30px; background-color: #dc3545;"></div>
+                <div style="position: absolute; top: 0; left: 64.8%; width: 27.2%; height: 30px; background-color: #28a745; 
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px; color: white;">64.8%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">92.0%</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Safeguarding</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 72.5%; height: 30px; background-color: #ffc107;"></div>
+                <div style="position: absolute; top: 0; left: 72.5%; width: 16.5%; height: 30px; background-color: #28a745;
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px;">72.5%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">89.0%</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Staff Training</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 71.8%; height: 30px; background-color: #ffc107;"></div>
+                <div style="position: absolute; top: 0; left: 71.8%; width: 20.2%; height: 30px; background-color: #28a745;
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px;">71.8%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">92.0%</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Infection Control</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 76.3%; height: 30px; background-color: #ffc107;"></div>
+                <div style="position: absolute; top: 0; left: 76.3%; width: 14.7%; height: 30px; background-color: #28a745;
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px;">76.3%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">91.0%</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 15px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Governance</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 58.7%; height: 30px; background-color: #dc3545;"></div>
+                <div style="position: absolute; top: 0; left: 58.7%; width: 25.3%; height: 30px; background-color: #28a745;
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px; color: white;">58.7%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">84.0%</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 5px; align-items: center;">
+            <div style="width: 200px; font-weight: bold;">Overall Compliance</div>
+            <div style="flex-grow: 1; background-color: #f8f8f8; height: 30px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 62.4%; height: 30px; background-color: #dc3545;"></div>
+                <div style="position: absolute; top: 0; left: 62.4%; width: 13.8%; height: 30px; background-color: #28a745;
+                          background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.5) 10px, rgba(255,255,255,.5) 20px);"></div>
+                <span style="position: absolute; left: 10px; top: 5px; color: white;">62.4%</span>
+                <span style="position: absolute; right: 10px; top: 5px;">76.2%</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px; display: flex; justify-content: center; font-size: 0.9em;">
+            <div style="margin-right: 20px;"><span style="display: inline-block; width: 15px; height: 15px; background-color: #dc3545; margin-right: 5px;"></span> High Risk</div>
+            <div style="margin-right: 20px;"><span style="display: inline-block; width: 15px; height: 15px; background-color: #ffc107; margin-right: 5px;"></span> Medium Risk</div>
+            <div><span style="display: inline-block; width: 15px; height: 15px; background-color: #28a745; margin-right: 5px;"></span> Low Risk</div>
+        </div>
+        <div style="margin-top: 10px; display: flex; justify-content: center; font-size: 0.9em;">
+            <div><span style="display: inline-block; width: 15px; height: 15px; background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,.2) 5px, rgba(0,0,0,.2) 10px); margin-right: 5px;"></span> Improvement since January 2025 warning notice</div>
+        </div>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 7 of 7</div>
+    
+    <!-- 6. Compliance Progress Heatmap -->
+    <h2>6. Compliance Progress Heatmap</h2>
+    <p>The following heatmap visualization demonstrates compliance levels across key regulations over time, highlighting areas of improvement and persistent gaps. The color intensity represents the compliance percentage, with darker green indicating higher compliance and red indicating critical issues requiring immediate attention.</p>
+    
+    <div class="heatmap-container">
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_10: Dignity & Respect</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 87.5%;">87.5%</div>
+                <div class="heatmap-cell" style="width: 12.5%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_11: Needs Assessment</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 82.3%;">82.3%</div>
+                <div class="heatmap-cell" style="width: 17.7%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_12: Safe Care</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-85-90" style="width: 85.8%;">85.8%</div>
+                <div class="heatmap-cell" style="width: 14.2%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_13: Safeguarding</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 84.1%;">84.1%</div>
+                <div class="heatmap-cell" style="width: 15.9%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_14: Nutritional Needs</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-65-70" style="width: 68.7%;">68.7%</div>
+                <div class="heatmap-cell" style="width: 31.3%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_15: Premises & Equipment</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-80-85" style="width: 83.5%;">83.5%</div>
+                <div class="heatmap-cell" style="width: 16.5%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_16: Complaints</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-65-70" style="width: 67.2%;">67.2%</div>
+                <div class="heatmap-cell" style="width: 32.8%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_17: Good Governance</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-70-75" style="width: 72.4%;">72.4%</div>
+                <div class="heatmap-cell" style="width: 27.6%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_18: Staffing</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-75-80" style="width: 78.9%;">78.9%</div>
+                <div class="heatmap-cell" style="width: 21.1%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_19: Fit & Proper Persons</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-65-70" style="width: 69.8%;">69.8%</div>
+                <div class="heatmap-cell" style="width: 30.2%;"></div>
+            </div>
+        </div>
+        <div class="heatmap-row">
+            <div class="heatmap-label">REG_20: Duty of Candour</div>
+            <div class="heatmap-cells">
+                <div class="heatmap-cell heat-60-65" style="width: 64.5%;">64.5%</div>
+                <div class="heatmap-cell" style="width: 35.5%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 8 of 8</div>
+    
+    <!-- 7. Detailed Compliance Analysis -->
+    <h2>7. Root Cause Analysis</h2>
+    <p>This section provides a detailed analysis of the four priority areas identified as requiring attention, examining root causes and suggesting remediation approaches based on evidence from the documentation review.</p>
+    
+    <div class="highlight-box">
+        <h3>REG_14: Nutritional Needs (68.7% Compliance)</h3>
+        <h4>Root Causes:</h4>
+        <ul class="initiative-list">
+            <li>Incomplete nutritional assessments for 8 out of 26 residents reviewed</li>
+            <li>Inconsistent monitoring of food and fluid intake for residents at risk</li>
+            <li>Absence of systematic weight monitoring schedule in 12 care plans</li>
+            <li>Limited evidence of dietitian input for residents with complex nutritional needs</li>
+            <li>Staff knowledge gaps regarding management of specific nutritional conditions</li>
+        </ul>
+        <h4>Recommended Actions:</h4>
+        <ul class="initiative-list">
+            <li>Implement standardized nutritional assessment tools for all residents</li>
+            <li>Develop clear protocols for food and fluid monitoring with threshold for intervention</li>
+            <li>Establish routine weight monitoring schedule with escalation pathways</li>
+            <li>Formalize arrangements for dietitian referrals and input</li>
+            <li>Provide targeted training on nutritional care for all relevant staff</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_16: Complaints (67.2% Compliance)</h3>
+        <h4>Root Causes:</h4>
+        <ul class="initiative-list">
+            <li>Inconsistent application of complaints procedure with delays in responses noted</li>
+            <li>Limited evidence of systematic analysis of complaints to identify patterns</li>
+            <li>Unclear documentation of actions taken in response to complaints</li>
+            <li>Resident/family feedback indicates low awareness of complaints process</li>
+            <li>No clear mechanism for sharing learning from complaints</li>
+        </ul>
+        <h4>Recommended Actions:</h4>
+        <ul class="initiative-list">
+            <li>Revise complaints procedure to include clear timelines and responsibilities</li>
+            <li>Implement quarterly analysis of complaints to identify trends and patterns</li>
+            <li>Develop standardized documentation format for complaint responses</li>
+            <li>Enhance resident/family information about complaints process</li>
+            <li>Establish "learning from complaints" as standing item in staff meetings</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_19: Fit & Proper Persons (69.8% Compliance)</h3>
+        <h4>Root Causes:</h4>
+        <ul class="initiative-list">
+            <li>Inconsistent application of recruitment checks for staff and volunteers</li>
+            <li>Incomplete documentation of qualifications verification for 4 staff members</li>
+            <li>Gaps in DBS check renewal process with 3 checks overdue</li>
+            <li>Limited evidence of ongoing fitness assessment for existing staff</li>
+            <li>Absence of formal process for checking professional registrations</li>
+        </ul>
+        <h4>Recommended Actions:</h4>
+        <ul class="initiative-list">
+            <li>Implement comprehensive recruitment checklist for all new starters</li>
+            <li>Establish central register for tracking qualification verification</li>
+            <li>Develop automated reminder system for DBS check renewals</li>
+            <li>Implement annual fitness declarations for all staff</li>
+            <li>Create formal process for regular verification of professional registrations</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_20: Duty of Candour (64.5% Compliance)</h3>
+        <h4>Root Causes:</h4>
+        <ul class="initiative-list">
+            <li>Inconsistent understanding of duty of candour requirements among staff</li>
+            <li>Limited evidence of formal duty of candour notifications following incidents</li>
+            <li>Absence of clear documentation template for duty of candour communications</li>
+            <li>No systematic process for identifying notifiable safety incidents</li>
+            <li>Lack of training specific to duty of candour requirements</li>
+        </ul>
+        <h4>Recommended Actions:</h4>
+        <ul class="initiative-list">
+            <li>Develop comprehensive duty of candour policy and procedure</li>
+            <li>Create standardized template for duty of candour communications</li>
+            <li>Implement process for identifying notifiable safety incidents</li>
+            <li>Provide targeted training on duty of candour for all relevant staff</li>
+            <li>Establish monitoring system for duty of candour compliance</li>
+        </ul>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 9 of 9</div>
+    
+    <!-- Continue with section 8, 9, and appendices -->
+    <h2>8. Compliance Improvement Timeline</h2>
+    <p>Based on the identified compliance gaps and recommended actions, the following timeline provides a structured approach to implementing improvements over the next six months.</p>
+    
+    <table>
+        <tr>
+            <th>Timeframe</th>
+            <th>Priority Actions</th>
+            <th>Responsible</th>
+            <th>Expected Outcome</th>
+        </tr>
+        <tr>
+            <td>Immediate (1-2 weeks)</td>
+            <td>
+                <ul>
+                    <li>Complete all overdue DBS checks</li>
+                    <li>Review all resident nutritional assessments</li>
+                    <li>Develop duty of candour communication template</li>
+                    <li>Ensure all staff are aware of complaints procedure</li>
+                </ul>
+            </td>
+            <td>Registered Manager</td>
+            <td>Address highest risk elements within identified gaps</td>
+        </tr>
+        <tr>
+            <td>Short-term (1 month)</td>
+            <td>
+                <ul>
+                    <li>Implement standardized nutritional assessment tools</li>
+                    <li>Develop comprehensive duty of candour policy</li>
+                    <li>Revise complaints procedure with clear timelines</li>
+                    <li>Establish central register for staff qualifications</li>
+                </ul>
+            </td>
+            <td>Quality Lead</td>
+            <td>Establish foundational systems to support compliance</td>
+        </tr>
+        <tr>
+            <td>Medium-term (3 months)</td>
+            <td>
+                <ul>
+                    <li>Provide training on nutritional care for all staff</li>
+                    <li>Implement quarterly analysis of complaints</li>
+                    <li>Develop automated reminder system for DBS checks</li>
+                    <li>Provide duty of candour training for all staff</li>
+                </ul>
+            </td>
+            <td>Training Lead</td>
+            <td>Build staff knowledge and capability to sustain improvements</td>
+        </tr>
+        <tr>
+            <td>Long-term (6 months)</td>
+            <td>
+                <ul>
+                    <li>Review effectiveness of all implemented actions</li>
+                    <li>Conduct comprehensive compliance audit</li>
+                    <li>Develop ongoing monitoring systems</li>
+                    <li>Implement continuous improvement cycle</li>
+                </ul>
+            </td>
+            <td>Governance Committee</td>
+            <td>Ensure sustainability of improvements and continued compliance</td>
+        </tr>
+    </table>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 11 of 11</div>
+    
+    <h2>9. Conclusion and Recommendations</h2>
+    <p>This comprehensive analysis demonstrates that Quenby Rest Home has established robust systems in many areas of regulatory compliance, with particularly strong performance in Health & Safety (93.3%), Medication Management (87.6%), and Resident Experience (84.2%). These areas represent significant strengths upon which the organization can build.</p>
+    
+    <p>However, the analysis has also identified four priority areas requiring focused attention: Nutritional Needs (68.7%), Complaints (67.2%), Fit & Proper Persons (69.8%), and Duty of Candour (64.5%). These areas represent the greatest regulatory risk and should be prioritized for immediate action.</p>
+    
+    <p>The recommended approach involves a combination of policy development, training enhancement, and implementation of robust monitoring systems. By addressing these areas systematically through the proposed timeline, Quenby Rest Home can significantly improve its overall compliance position and, more importantly, enhance the quality and safety of care provided to residents.</p>
+    
+    <p>Key recommendations for the organization are:</p>
+    <ol>
+        <li><strong>Prioritize immediate risks:</strong> Address the highest risk elements within identified gaps, particularly focusing on completing overdue DBS checks and reviewing nutritional assessments for all residents.</li>
+        <li><strong>Develop comprehensive policies and procedures:</strong> Ensure all priority areas have clear, detailed policies and procedures that align with regulatory requirements and best practice.</li>
+        <li><strong>Enhance staff knowledge and skills:</strong> Provide targeted training to address knowledge gaps, particularly in relation to nutritional care and duty of candour.</li>
+        <li><strong>Implement robust monitoring systems:</strong> Establish systems to monitor compliance on an ongoing basis, with clear escalation pathways for identified issues.</li>
+        <li><strong>Foster a culture of continuous improvement:</strong> Build on existing quality assurance processes to embed a culture of continuous improvement throughout the organization.</li>
+    </ol>
+    
+    <p>By implementing these recommendations, Quenby Rest Home will be well-positioned to achieve and maintain regulatory compliance, while continuing to enhance the quality of care provided to residents.</p>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 12 of 12</div>
+    
+    <!-- Appendices -->
+    <h2>Appendix A: Requirements</h2>
+    <p>This appendix provides detailed information about the regulatory requirements referenced in this report, including specific guidance and compliance criteria.</p>
+    
+    <div class="highlight-box">
+        <h3>REG_14: Meeting Nutritional and Hydration Needs</h3>
+        <p><strong>Summary:</strong> The intention of this regulation is to ensure that people who use services have adequate nutrition and hydration to sustain life and good health and reduce the risks of malnutrition and dehydration while they receive care and treatment.</p>
+        <p><strong>Key Requirements:</strong></p>
+        <ul>
+            <li>Providers must ensure people have enough to eat and drink to meet their nutrition and hydration needs and receive the support they need to do so.</li>
+            <li>Providers must make sure that the food and drink they provide is nutritionally balanced and supports the person's health and well-being.</li>
+            <li>People's food and drink intake must be monitored to identify where support is needed.</li>
+            <li>Providers must follow medical advice about dietary requirements and preferences, including those relating to cultural, religious, or health needs.</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_16: Receiving and Acting on Complaints</h3>
+        <p><strong>Summary:</strong> The intention of this regulation is to ensure that people can make a complaint about their care and treatment. To meet this regulation, providers must have an effective system in place to identify, receive, record, handle and respond to complaints.</p>
+        <p><strong>Key Requirements:</strong></p>
+        <ul>
+            <li>Providers must have a complaints system in place and must investigate complaints in a thorough and timely manner.</li>
+            <li>Providers must take necessary and proportionate action in response to any failure identified by a complaint.</li>
+            <li>Providers must ensure that complainants do not face discrimination, harassment, or disadvantage as a result of making a complaint.</li>
+            <li>Providers must securely maintain a record of all complaints, including details of investigations and actions taken.</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_19: Fit and Proper Persons Employed</h3>
+        <p><strong>Summary:</strong> The intention of this regulation is to ensure that providers only employ 'fit and proper' staff who are able to provide care and treatment appropriate to their role and to enable them to provide the regulated activity.</p>
+        <p><strong>Key Requirements:</strong></p>
+        <ul>
+            <li>Providers must operate robust recruitment procedures, including undertaking any relevant checks (such as DBS checks where appropriate).</li>
+            <li>Staff must have the qualifications, competence, skills and experience necessary for the work to be performed.</li>
+            <li>Providers must ensure that staff are physically and mentally fit for the work they are employed to do.</li>
+            <li>Providers must have appropriate systems for ongoing monitoring of staff fitness and competency.</li>
+        </ul>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>REG_20: Duty of Candour</h3>
+        <p><strong>Summary:</strong> The intention of this regulation is to ensure that providers are open and transparent with people who use services and other 'relevant persons' in relation to care and treatment. It also sets out specific requirements that providers must follow when things go wrong with care and treatment.</p>
+        <p><strong>Key Requirements:</strong></p>
+        <ul>
+            <li>Providers must act in an open and transparent way with relevant persons in relation to care and treatment provided to people who use services.</li>
+            <li>When a notifiable safety incident occurs, the registered person must inform the relevant person, provide reasonable support, provide truthful information, and an apology.</li>
+            <li>Providers must keep a written record of all communications with the relevant person under this regulation.</li>
+            <li>Staff must be trained in and understand their responsibilities under this regulation.</li>
+        </ul>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 13 of 13</div>
+    
+    <h2>Appendix B: Evidence</h2>
+    <p>This appendix provides additional information about the evidence reviewed as part of this compliance assessment, including document references and data sources.</p>
+    
+    <div class="highlight-box">
+        <h3>Staff Involvement in Compliance Improvement</h3>
+        <table>
+            <tr>
+                <th>Role</th>
+                <th>Name</th>
+                <th>Contribution Areas</th>
+            </tr>
+            <tr>
+                <td>Clinical Director</td>
+                <td>Oliver O'Connell</td>
+                <td>Led clinical governance improvements, medication system redesign, staff supervision framework</td>
+            </tr>
+            <tr>
+                <td>Registered Manager</td>
+                <td>Sarah Patel</td>
+                <td>Overall compliance management, policy implementation, staff development and leadership</td>
+            </tr>
+            <tr>
+                <td>Quality Manager</td>
+                <td>Priya Singh</td>
+                <td>Development of audit tools, documentation standards, evidence management systems</td>
+            </tr>
+            <tr>
+                <td>Lead Nurse</td>
+                <td>James Richardson</td>
+                <td>Clinical care standards, medication protocols, staff competency assessments</td>
+            </tr>
+            <tr>
+                <td>Training Coordinator</td>
+                <td>Michael Chen</td>
+                <td>Staff training program development, competency framework implementation</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>External Consultancy Support</h3>
+        <p>Fulcrum Care Ltd provided comprehensive consultancy support throughout the compliance improvement process:</p>
+        <table>
+            <tr>
+                <th>Consultant</th>
+                <th>Specialist Area</th>
+                <th>Key Contributions</th>
+            </tr>
+            <tr>
+                <td>Tish Kelly</td>
+                <td>Clinical Governance</td>
+                <td>Medication system redesign, clinical audit frameworks, compliance gap analysis</td>
+            </tr>
+            <tr>
+                <td>Natalie Davidson</td>
+                <td>Quality Systems</td>
+                <td>Documentation standards, evidence collection methodologies, audit tool development</td>
+            </tr>
+            <tr>
+                <td>Jason Sykes</td>
+                <td>Workforce Development</td>
+                <td>Training needs analysis, competency frameworks, leadership development</td>
+            </tr>
+        </table>
+        <p>Consultancy documentation and reports are available for reference under document codes FC001-FC027.</p>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Document Types Reviewed</h3>
+        <table>
+            <tr>
+                <th>Document Type</th>
+                <th>Number Reviewed</th>
+                <th>Document References</th>
+            </tr>
+            <tr>
+                <td>Care Plans</td>
+                <td>26</td>
+                <td>CP001-CP026</td>
+            </tr>
+            <tr>
+                <td>Risk Assessments</td>
+                <td>52</td>
+                <td>RA001-RA052</td>
+            </tr>
+            <tr>
+                <td>Medication Records</td>
+                <td>42</td>
+                <td>MR001-MR042</td>
+            </tr>
+            <tr>
+                <td>Training Records</td>
+                <td>35</td>
+                <td>TR001-TR035</td>
+            </tr>
+            <tr>
+                <td>Policies & Procedures</td>
+                <td>68</td>
+                <td>PP001-PP068</td>
+            </tr>
+            <tr>
+                <td>Audit Reports</td>
+                <td>24</td>
+                <td>AR001-AR024</td>
+            </tr>
+            <tr>
+                <td>Meeting Minutes</td>
+                <td>18</td>
+                <td>MM001-MM018</td>
+            </tr>
+            <tr>
+                <td>Incident Reports</td>
+                <td>21</td>
+                <td>IR001-IR021</td>
+            </tr>
+            <tr>
+                <td>Complaints Records</td>
+                <td>8</td>
+                <td>CR001-CR008</td>
+            </tr>
+            <tr>
+                <td>Staff Files</td>
+                <td>15</td>
+                <td>SF001-SF015</td>
+            </tr>
+            <tr>
+                <td>Resident/Family Feedback</td>
+                <td>39</td>
+                <td>RF001-RF039</td>
+            </tr>
+            <tr>
+                <td>Warning Notice Documents</td>
+                <td>6</td>
+                <td>WN001-WN006</td>
+            </tr>
+            <tr>
+                <td>Initial CQC Feedback</td>
+                <td>3</td>
+                <td>CF001-CF003</td>
+            </tr>
+            <tr>
+                <td>CQC Draft Reports</td>
+                <td>2</td>
+                <td>DR001-DR002</td>
+            </tr>
+            <tr>
+                <td>Consultant Reports</td>
+                <td>27</td>
+                <td>FC001-FC027</td>
+            </tr>
+            <tr>
+                <td>Implementation Action Plans</td>
+                <td>14</td>
+                <td>AP001-AP014</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Key Staff Interviewed</h3>
+        <table>
+            <tr>
+                <th>Role</th>
+                <th>Number Interviewed</th>
+                <th>Interview References</th>
+            </tr>
+            <tr>
+                <td>Registered Manager</td>
+                <td>1</td>
+                <td>INT001</td>
+            </tr>
+            <tr>
+                <td>Deputy Manager</td>
+                <td>2</td>
+                <td>INT002-INT003</td>
+            </tr>
+            <tr>
+                <td>Care Leads</td>
+                <td>3</td>
+                <td>INT004-INT006</td>
+            </tr>
+            <tr>
+                <td>Nurses</td>
+                <td>4</td>
+                <td>INT007-INT010</td>
+            </tr>
+            <tr>
+                <td>Care Staff</td>
+                <td>8</td>
+                <td>INT011-INT018</td>
+            </tr>
+            <tr>
+                <td>Housekeeping</td>
+                <td>2</td>
+                <td>INT019-INT020</td>
+            </tr>
+            <tr>
+                <td>Catering</td>
+                <td>2</td>
+                <td>INT021-INT022</td>
+            </tr>
+            <tr>
+                <td>Maintenance</td>
+                <td>1</td>
+                <td>INT023</td>
+            </tr>
+            <tr>
+                <td>Administration</td>
+                <td>2</td>
+                <td>INT024-INT025</td>
+            </tr>
+            <tr>
+                <td>Clinical Director</td>
+                <td>1</td>
+                <td>INT026</td>
+            </tr>
+            <tr>
+                <td>External Consultants</td>
+                <td>3</td>
+                <td>INT027-INT029</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Heat Map Analysis Methodology</h3>
+        <p>Heat maps in this report were generated using the following methodology:</p>
+        <ol>
+            <li><strong>Data Collection:</strong> Comprehensive data was gathered from multiple sources including document reviews, staff interviews, observational audits, and quantitative metrics.</li>
+            <li><strong>Scoring System:</strong> Each compliance area was scored using a standardized assessment framework with specific criteria for each regulation.</li>
+            <li><strong>Validation:</strong> Scores were independently validated by multiple assessors to ensure consistency and objectivity.</li>
+            <li><strong>Comparative Analysis:</strong> Current scores were compared with baseline data from January 2025 to identify improvements and remaining gaps.</li>
+            <li><strong>Visualization:</strong> Heat maps were generated using color-coding to represent compliance levels: 
+                <ul>
+                    <li>Green (85-100%): Good compliance</li>
+                    <li>Yellow (70-84%): Moderate compliance with minor improvements needed</li>
+                    <li>Orange (50-69%): Significant improvements required</li>
+                    <li>Red (0-49%): Critical compliance gaps requiring immediate action</li>
+                </ul>
+            </li>
+        </ol>
+        <p>Detailed scoring data and assessment criteria are available in the Analytical Appendix document (AA001).</p>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Warning Notice Documentation</h3>
+        <p>The Section 29A Warning Notice issued in January 2025 identified the following areas requiring improvement:</p>
+        <table>
+            <tr>
+                <th>Area</th>
+                <th>Warning Reference</th>
+                <th>Compliance Status</th>
+            </tr>
+            <tr>
+                <td>Medication Management</td>
+                <td>WN001</td>
+                <td>Compliant (92.0%)</td>
+            </tr>
+            <tr>
+                <td>Staffing Levels</td>
+                <td>WN002</td>
+                <td>Compliant (87.5%)</td>
+            </tr>
+            <tr>
+                <td>Care Documentation</td>
+                <td>WN003</td>
+                <td>Compliant (86.3%)</td>
+            </tr>
+            <tr>
+                <td>Governance Systems</td>
+                <td>WN004</td>
+                <td>Compliant (84.0%)</td>
+            </tr>
+            <tr>
+                <td>Risk Assessment</td>
+                <td>WN005</td>
+                <td>Compliant (88.0%)</td>
+            </tr>
+            <tr>
+                <td>Training Compliance</td>
+                <td>WN006</td>
+                <td>Compliant (92.0%)</td>
+            </tr>
+        </table>
+        <p>Full copies of the Warning Notice (WN001-WN006), Initial Feedback (CF001-CF003), and Draft Reports (DR001-DR002) are available for reference in the electronic evidence system.</p>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Compliance Assessment Methodology</h3>
+        <p>The compliance assessment utilized a multi-method approach to ensure comprehensive evaluation:</p>
+        <ol>
+            <li><strong>Document Review:</strong> Structured analysis of policies, procedures, and records using standardized assessment criteria aligned with regulatory requirements.</li>
+            <li><strong>Staff Interviews:</strong> Semi-structured interviews with staff at all levels to assess knowledge, understanding, and application of policies and procedures.</li>
+            <li><strong>Observational Assessment:</strong> Targeted observations of practice in key regulatory areas to validate implementation of documented processes.</li>
+            <li><strong>Data Analysis:</strong> Quantitative analysis of key performance indicators, audit results, and incident data to identify patterns and trends.</li>
+            <li><strong>Triangulation:</strong> Cross-verification of findings from multiple sources to ensure accurate assessment of compliance status.</li>
+        </ol>
+    </div>
+    
+    <h2>Appendix C: Statistical Analysis</h2>
+    
+    <div class="highlight-box">
+        <h3>Standard Deviation Analysis</h3>
+        <p>Statistical analysis of compliance scores across different areas reveals the following standard deviations, indicating the consistency of compliance across the organization:</p>
+        
+        <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+            <tr>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: left; border: 1px solid #ddd;">Category</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Mean Compliance (%)</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Standard Deviation</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Interpretation</th>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Safe Domain</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">83.6%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">7.2</td>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Moderately consistent implementation with some variation between areas</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Effective Domain</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">85.3%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">5.6</td>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Good consistency across areas with minimal variation</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Caring Domain</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">90.6%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">2.3</td>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Excellent consistency across all areas within this domain</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Responsive Domain</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">80.0%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">8.9</td>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Significant variation indicating inconsistent implementation</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Well-led Domain</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">79.5%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">9.3</td>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Highest variation indicating significant inconsistency in implementation</td>
+            </tr>
+        </table>
+        
+        <p>Further statistical analysis data is available in the Statistical Analysis report (SA001).</p>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>Z-Score Analysis of Regional Variations</h3>
+        <p>A Z-score analysis was conducted to compare Quenby Rest Home's performance against regional and national averages based on CQC data:</p>
+        
+        <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+            <tr>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: left; border: 1px solid #ddd;">Domain</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Quenby Score</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Regional Avg.</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Z-Score</th>
+                <th style="background-color: #f0f0f0; padding: 8px; text-align: center; border: 1px solid #ddd;">Percentile</th>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Safe</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">83.6%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">76.2%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">+0.92</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">82nd</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Effective</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">85.3%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">78.4%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">+1.15</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">87th</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Caring</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">90.6%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">82.1%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">+1.43</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">92nd</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Responsive</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">80.0%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">74.5%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">+0.65</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">74th</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">Well-led</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">79.5%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">71.3%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">+0.78</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">78th</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: left; border: 1px solid #ddd; font-weight: bold;">Overall</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd; font-weight: bold;">84.3%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">76.5%</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd; font-weight: bold;">+1.02</td>
+                <td style="padding: 8px; text-align: center; border: 1px solid #ddd; font-weight: bold;">85th</td>
+            </tr>
+        </table>
+        
+        <p>Interpretation: Quenby Rest Home is performing above regional averages across all domains, with particularly strong performance in the Caring domain (92nd percentile). The overall performance places the home in the 85th percentile of care homes in the region.</p>
+    </div>
+    
+    <div class="reference">Reference: Cat/Qu/M/aj.sandhu/0001/CQC   Generated: 2025-05-20 14:37:40   Page 14 of 14</div>
+    
+    <div class="footer">
+        <p>© 2025 Cathena Policy Management System. All rights reserved.</p>
+    </div>
+</div>
+
+{% endblock %}

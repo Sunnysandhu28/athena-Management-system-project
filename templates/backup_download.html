@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Download Interface Backup{% endblock %}
+
+{% block styles %}
+<style>
+    .download-card {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .download-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+    }
+    .download-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: #f8f9fc;
+        border-radius: 50%;
+        font-size: 32px;
+        color: #4e73df;
+    }
+    .file-item {
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid #e3e6f0;
+        margin-bottom: 10px;
+        transition: all 0.2s;
+    }
+    .file-item:hover {
+        background-color: #f8f9fc;
+    }
+    .file-icon {
+        color: #4e73df;
+        margin-right: 10px;
+    }
+    .file-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    .instruction-step {
+        margin-bottom: 15px;
+        display: flex;
+    }
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: #4e73df;
+        color: white;
+        border-radius: 50%;
+        margin-right: 15px;
+        flex-shrink: 0;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-0 text-gray-800">Download Interface Backup</h1>
+            <p class="text-muted">Access your new interface templates for GitHub upload</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Main Download Card -->
+        <div class="col-md-6">
+            <div class="download-card text-center">
+                <div class="download-icon">
+                    <i class="fas fa-cloud-download-alt"></i>
+                </div>
+                <h4 class="mb-3">Interface Templates Backup</h4>
+                <p class="text-muted mb-4">Download all new interface templates as a ZIP file for manual GitHub upload</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="/static/downloads/cathena_interface_backup_20250519_165517.zip" class="btn btn-primary btn-lg">
+                        <i class="fas fa-download me-2"></i> Download ZIP Archive
+                    </a>
+                    <small class="text-muted">Created on May 19, 2025 at 16:55</small>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Included Files</h6>
+                </div>
+                <div class="card-body">
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            policy_workflow_wizard.html
+                        </div>
+                        <span class="badge bg-primary file-badge">Main Dashboard</span>
+                    </div>
+                    
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            policy_format_style.html
+                        </div>
+                        <span class="badge bg-info file-badge">Formatting</span>
+                    </div>
+                    
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            policy_reword.html
+                        </div>
+                        <span class="badge bg-success file-badge">Content Rewording</span>
+                    </div>
+                    
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            policy_version_control.html
+                        </div>
+                        <span class="badge bg-warning text-dark file-badge">Version Control</span>
+                    </div>
+                    
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            policy_direct_edit.html
+                        </div>
+                        <span class="badge bg-danger file-badge">Text Editor</span>
+                    </div>
+                    
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-code file-icon"></i>
+                            ai_enhanced_health_insights.html
+                        </div>
+                        <span class="badge bg-secondary file-badge">NHS Integration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">GitHub Upload Instructions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="instruction-step">
+                        <div class="step-number">1</div>
+                        <div>
+                            <strong>Download the ZIP file</strong>
+                            <p class="text-muted small mb-0">Click the "Download ZIP Archive" button to save the file to your computer.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step">
+                        <div class="step-number">2</div>
+                        <div>
+                            <strong>Access your GitHub repository</strong>
+                            <p class="text-muted small mb-0">Go to your Cathena project repository on GitHub.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step">
+                        <div class="step-number">3</div>
+                        <div>
+                            <strong>Upload the file</strong>
+                            <p class="text-muted small mb-0">Click "Add file" > "Upload files", then drag and drop the ZIP file.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step">
+                        <div class="step-number">4</div>
+                        <div>
+                            <strong>Commit the changes</strong>
+                            <p class="text-muted small mb-0">Add a descriptive commit message and click "Commit changes".</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step">
+                        <div class="step-number">5</div>
+                        <div>
+                            <strong>Extract the files</strong>
+                            <p class="text-muted small mb-0">To extract the ZIP file in GitHub, click on it and follow the extraction prompts.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <div class="d-flex">
+                            <div>
+                                <i class="fas fa-info-circle me-3 mt-1"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading">Alternative Approach</h6>
+                                <p class="small mb-0">You can also extract the ZIP file locally and manually upload each individual template file to the appropriate location in your GitHub repository.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Other Backup Options</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-sync-alt me-2"></i> Create Fresh Backup
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-cloud-upload-alt me-2"></i> Directly Sync with GitHub
+                        </button>
+                        <button class="btn btn-outline-success">
+                            <i class="fas fa-file-export me-2"></i> Export Individual Files
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-light mt-3">
+                        <div class="d-flex">
+                            <div>
+                                <i class="fas fa-lightbulb me-2 text-warning"></i>
+                            </div>
+                            <div>
+                                <p class="small mb-0">For automatic GitHub synchronization, ensure your repository credentials are correctly configured in the system settings.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

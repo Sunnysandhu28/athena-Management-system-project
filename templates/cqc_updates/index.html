@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Updates{% endblock %}
+
+{% block head %}
+<style>
+    .update-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+    .update-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .update-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+    }
+    .update-type-news {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+    }
+    .update-type-guidance {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+    }
+    .update-type-publication {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    .update-type-regulation {
+        background-color: #f3e5f5;
+        color: #4a148c;
+    }
+    .policy-update-card {
+        border-left: 4px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s ease;
+    }
+    .policy-update-card:hover {
+        background-color: #f0f0f0;
+    }
+    .priority-high {
+        border-left-color: #f44336;
+    }
+    .priority-medium {
+        border-left-color: #ff9800;
+    }
+    .priority-low {
+        border-left-color: #4caf50;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .status-pending {
+        background-color: #ffecb3;
+        color: #ff6f00;
+    }
+    .status-in-progress {
+        background-color: #bbdefb;
+        color: #0d47a1;
+    }
+    .status-completed {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .status-ignored {
+        background-color: #e0e0e0;
+        color: #616161;
+    }
+    .scheduler-card {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .scheduler-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+    .scheduler-running {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .scheduler-stopped {
+        background-color: #ffcdd2;
+        color: #b71c1c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">CQC Updates</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="scheduler-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Update Scheduler</h5>
+                        <p class="mb-0">
+                            Status: 
+                            {% if scheduler_status.running %}
+                            <span class="scheduler-status scheduler-running">Running</span>
+                            {% else %}
+                            <span class="scheduler-status scheduler-stopped">Stopped</span>
+                            {% endif %}
+                        </p>
+                        {% if scheduler_status.running and scheduler_status.next_run %}
+                        <p class="mb-0 small">Next scheduled run: {{ scheduler_status.next_run }}</p>
+                        {% endif %}
+                        {% if scheduler_status.last_run %}
+                        <p class="mb-0 small">Last run: {{ scheduler_status.last_run.time }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <form action="{{ url_for('cqc_updates.run_now') }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary btn-sm">Run Now</button>
+                        </form>
+                        <form action="{{ url_for('cqc_updates.scheduler_control') }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {% if scheduler_status.running %}
+                            <input type="hidden" name="action" value="stop">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Stop Scheduler</button>
+                            {% else %}
+                            <input type="hidden" name="action" value="start">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Start Scheduler</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Latest CQC Updates</h5>
+                    <a href="{{ url_for('cqc_updates.updates_list') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if latest_updates %}
+                    {% for update in latest_updates %}
+                    <div class="update-card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ update.title }}</h6>
+                                <div class="mb-2">
+                                    {% if update.content_type == 'News' %}
+                                    <span class="update-type update-type-news">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Guidance' %}
+                                    <span class="update-type update-type-guidance">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Publication' %}
+                                    <span class="update-type update-type-publication">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Regulation' %}
+                                    <span class="update-type update-type-regulation">{{ update.content_type }}</span>
+                                    {% else %}
+                                    <span class="update-type">{{ update.content_type }}</span>
+                                    {% endif %}
+                                    
+                                    {% if update.update_date %}
+                                    <small class="text-muted">{{ update.update_date }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if update.description %}
+                                <p class="mb-1 small">{{ update.description | truncate(150) }}</p>
+                                {% endif %}
+                                {% if update.affected_areas %}
+                                <div class="mt-2">
+                                    {% for area in update.affected_areas[:5] %}
+                                    <span class="badge bg-light text-dark">{{ area }}</span>
+                                    {% endfor %}
+                                    {% if update.affected_areas|length > 5 %}
+                                    <span class="badge bg-light text-dark">+{{ update.affected_areas|length - 5 }} more</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{{ url_for('cqc_updates.view_update', update_id=update.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                                <a href="{{ update.url }}" target="_blank" class="btn btn-sm btn-link">CQC Site</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No updates found. Run the scheduler to fetch updates from the CQC website.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Policies Needing Update</h5>
+                    <a href="{{ url_for('cqc_updates.policies_need_update') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if policies_need_update %}
+                    {% for policy in policies_need_update %}
+                    <div class="policy-update-card priority-{{ policy.priority }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ policy.title }}</h6>
+                                <p class="mb-1">
+                                    <small>{{ policy.reference }}</small>
+                                    {% if policy.status == 'pending' %}
+                                    <span class="status-badge status-pending">Pending</span>
+                                    {% elif policy.status == 'in_progress' %}
+                                    <span class="status-badge status-in-progress">In Progress</span>
+                                    {% elif policy.status == 'completed' %}
+                                    <span class="status-badge status-completed">Completed</span>
+                                    {% elif policy.status == 'ignored' %}
+                                    <span class="status-badge status-ignored">Ignored</span>
+                                    {% endif %}
+                                </p>
+                                {% if policy.reason %}
+                                <p class="mb-1 small">{{ policy.reason | truncate(100) }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{{ url_for('cqc_updates.view_policy_update', policy_id=policy.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No policies needing update found.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">System Health</h5>
+                    <a href="{{ url_for('cqc_updates.system_health') }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around text-center mb-3">
+                        <div>
+                            <h2>{{ latest_updates|length }}</h2>
+                            <p class="mb-0">Updates</p>
+                        </div>
+                        <div>
+                            <h2>{{ policies_need_update|length }}</h2>
+                            <p class="mb-0">Policies to Update</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

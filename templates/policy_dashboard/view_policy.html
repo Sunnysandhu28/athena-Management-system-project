@@ -1,0 +1,769 @@
+{% extends "base.html" %}
+
+{% block title %}{{ original_policy.title }} - Management{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+<style>
+    /* Split view styling */
+    .policy-container {
+        position: relative;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .policy-header {
+        background: linear-gradient(to right, #3498db, #2c3e50);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+    
+    .policy-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    
+    .original-badge {
+        background-color: #e9f7fe;
+        color: #3498db;
+    }
+    
+    .adapted-badge {
+        background-color: #e6f9ee;
+        color: #27ae60;
+    }
+    
+    .policy-content {
+        padding: 1.5rem;
+        background-color: white;
+    }
+    
+    .policy-metadata {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    /* Section styling */
+    .policy-section {
+        margin-bottom: 1.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .section-content {
+        padding: 1.5rem;
+        background-color: white;
+    }
+    
+    /* Dragable sections */
+    .draggable {
+        cursor: move;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #adb5bd;
+        margin-right: 1rem;
+    }
+    
+    .section-placeholder {
+        border: 2px dashed #dee2e6;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        padding: 2rem;
+    }
+    
+    /* Similarity meter */
+    .similarity-meter {
+        width: 100%;
+        height: 6px;
+        background-color: #f1f1f1;
+        border-radius: 3px;
+        margin-top: 0.5rem;
+    }
+    
+    .similarity-value {
+        height: 100%;
+        border-radius: 3px;
+        background-color: #3498db;
+    }
+    
+    .similarity-low {
+        background-color: #2ecc71;
+    }
+    
+    .similarity-medium {
+        background-color: #f39c12;
+    }
+    
+    .similarity-high {
+        background-color: #e74c3c;
+    }
+    
+    .similarity-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.35rem;
+    }
+    
+    /* Buttons and actions */
+    .action-bar {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+    
+    .sticky-bottom {
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+    }
+    
+    /* Tooltips */
+    .tooltip-inner {
+        max-width: 300px;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* AI rewrite modal */
+    .ai-settings {
+        background-color: #f8f9fa;
+        padding: 1.25rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .similarity-target-slider {
+        width: 100%;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 1.5rem;
+        height: 1.5rem;
+        vertical-align: middle;
+        border: 0.2em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner 0.75s linear infinite;
+    }
+    
+    @keyframes spinner {
+        to {transform: rotate(360deg);}
+    }
+    
+    /* Edit title modal */
+    .title-editor {
+        font-size: 1.5rem;
+        padding: 0.75rem;
+        width: 100%;
+    }
+    
+    /* Section title editing */
+    .section-title-edit {
+        background-color: transparent;
+        border: none;
+        border-bottom: 1px dashed #adb5bd;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #2c3e50;
+        width: auto;
+        min-width: 150px;
+        padding: 0.25rem;
+    }
+    
+    .section-title-edit:focus {
+        outline: none;
+        border-bottom: 1px solid #3498db;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <!-- Breadcrumbs -->
+    <div class="d-flex align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('policy_dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">{{ original_policy.code }} - {{ original_policy.title }}</li>
+            </ol>
+        </nav>
+        <div class="ms-auto">
+            <a href="{{ url_for('policy_dashboard.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="d-flex align-items-center">
+                <span class="me-2">{{ original_policy.title }}</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTitleModal">
+                    <i class="fas fa-pencil"></i>
+                </button>
+            </h1>
+            <p class="text-muted">
+                <span class="badge bg-primary">{{ original_policy.code }}</span>
+                {% if original_policy.category %}
+                <span class="mx-2">|</span>
+                <span>{{ original_policy.category }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button id="saveChangesBtn" class="btn btn-success me-2" style="display: none;">
+                <i class="fas fa-save me-1"></i> Save Changes
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sectionOrderModal">
+                <i class="fas fa-sort me-1"></i> Manage Sections
+            </button>
+        </div>
+    </div>
+
+    <!-- Policy Views Row -->
+    <div class="row">
+        <!-- Original Policy -->
+        <div class="col-md-6">
+            <div class="policy-container">
+                <div class="policy-header">
+                    <h2 class="mb-0">Original QCS Policy</h2>
+                    <span class="policy-badge original-badge">
+                        <i class="fas fa-file-alt me-1"></i> Original
+                    </span>
+                </div>
+                <div class="policy-content">
+                    {% for section_name in section_order %}
+                        {% if section_name in original_policy.sections %}
+                            <div class="policy-section" id="original-section-{{ section_name|lower|replace(' ', '-') }}">
+                                <div class="section-header">
+                                    <h3 class="mb-0">{{ section_name }}</h3>
+                                </div>
+                                <div class="section-content">
+                                    {{ original_policy.sections[section_name]|markdown|safe }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Adapted Policy -->
+        <div class="col-md-6">
+            <div class="policy-container">
+                <div class="policy-header">
+                    <h2 class="mb-0">
+                        Company Adapted Policy
+                    </h2>
+                    <span class="policy-badge adapted-badge">
+                        {% if has_adapted %}
+                        <i class="fas fa-check-circle me-1"></i> Adapted
+                        {% else %}
+                        <i class="fas fa-pencil-alt me-1"></i> Draft
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="policy-content">
+                    <form id="adaptedPolicyForm">
+                        <input type="hidden" name="title" id="adaptedTitle" value="{{ adapted_policy.title }}">
+                        <input type="hidden" name="section_order" id="sectionOrder" value='{{ section_order|tojson }}'>
+                        
+                        <div id="adaptedSections" class="sortable-sections">
+                            {% for section_name in section_order %}
+                                {% if section_name in adapted_policy.sections %}
+                                    <div class="policy-section draggable" data-section-name="{{ section_name }}">
+                                        <div class="section-header">
+                                            <div class="d-flex align-items-center">
+                                                <span class="drag-handle"><i class="fas fa-grip-lines"></i></span>
+                                                <input type="text" class="section-title-edit" 
+                                                       data-original-title="{{ section_name }}" 
+                                                       value="{{ section_name }}" 
+                                                       onchange="sectionTitleChanged(this)">
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-1 rewrite-btn"
+                                                        data-section-name="{{ section_name }}"
+                                                        data-bs-toggle="modal" data-bs-target="#aiRewriteModal">
+                                                    <i class="fas fa-magic me-1"></i> Rewrite
+                                                </button>
+                                                
+                                                {% if section_name in similarities %}
+                                                    <span class="badge {% if similarities[section_name] <= 5 %}bg-success{% elif similarities[section_name] <= 20 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                        {{ similarities[section_name]|round(1) }}% similar
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="section-content">
+                                            <textarea name="section_{{ section_name }}" class="form-control" rows="10" style="border: none;">{{ adapted_policy.sections[section_name] }}</textarea>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <div class="action-bar">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if has_adapted %}
+                            <span class="text-muted">Last edited: <span id="lastEditedTime">Today</span></span>
+                            {% else %}
+                            <span class="text-muted">New adaptation</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <button type="button" id="cancelChangesBtn" class="btn btn-outline-secondary me-2" style="display: none;">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="button" id="saveAdaptedBtn" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Save Adapted Policy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Title Modal -->
+<div class="modal fade" id="editTitleModal" tabindex="-1" aria-labelledby="editTitleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTitleModalLabel">Edit Policy Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="policyTitle" class="form-label">Policy Title</label>
+                    <input type="text" class="form-control title-editor" id="policyTitle" value="{{ adapted_policy.title }}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveTitleBtn">Save Title</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Order Modal -->
+<div class="modal fade" id="sectionOrderModal" tabindex="-1" aria-labelledby="sectionOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sectionOrderModalLabel">Manage Policy Sections</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Drag and drop sections to reorder them. Changes to section order will apply to all policies.</p>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Section Order</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="globalSectionOrder">
+                            {% for section_name in section_order %}
+                            <li class="list-group-item d-flex align-items-center" data-section="{{ section_name }}">
+                                <span class="drag-handle me-3"><i class="fas fa-grip-vertical"></i></span>
+                                <div class="flex-grow-1">
+                                    <input type="text" class="form-control section-name-input" value="{{ section_name }}">
+                                </div>
+                                <div class="ms-3">
+                                    <button class="btn btn-sm btn-outline-danger remove-section-btn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" id="addSectionBtn">
+                        <i class="fas fa-plus me-1"></i> Add New Section
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="resetSectionOrderBtn">
+                        <i class="fas fa-undo me-1"></i> Reset to Default
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSectionOrderBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Rewrite Modal -->
+<div class="modal fade" id="aiRewriteModal" tabindex="-1" aria-labelledby="aiRewriteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="aiRewriteModalLabel">AI Rewrite Tool</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="ai-settings">
+                    <h6>Rewrite Settings</h6>
+                    <div class="mb-3">
+                        <label for="similarityTarget" class="form-label d-flex justify-content-between">
+                            <span>Target Similarity: <span id="similarityTargetValue">5</span>%</span>
+                            <small class="text-muted">(Lower = More Different)</small>
+                        </label>
+                        <input type="range" class="form-range similarity-target-slider" id="similarityTarget" min="0" max="20" value="5">
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary" id="generateRewriteBtn">
+                            <i class="fas fa-wand-magic-sparkles me-1"></i> Generate Rewrite
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="rewriteLoading" style="display: none;" class="text-center py-5">
+                    <div class="loading-spinner mb-3"></div>
+                    <p class="text-muted">Rewriting content with AI...</p>
+                    <p class="text-muted small">This may take a few moments</p>
+                </div>
+                
+                <div id="rewriteResult" style="display: none;">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Original Content</h6>
+                            <span class="badge bg-secondary">Original</span>
+                        </div>
+                        <div class="card">
+                            <div class="card-body bg-light">
+                                <div id="originalContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Rewritten Content</h6>
+                            <div>
+                                <span id="similarityBadge" class="badge bg-success me-1"></span>
+                                <span class="badge bg-primary">AI Generated</span>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <textarea id="rewrittenContent" class="form-control" rows="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rewriteError" style="display: none;" class="alert alert-danger"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="useRewrittenBtn" style="display: none;">
+                    <i class="fas fa-check me-1"></i> Use Rewritten Content
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    let hasChanges = false;
+    let currentSectionName = ''; // For AI rewrite
+    let sectionTitles = {}; // Store section title changes
+    
+    // Flag changes and show save button
+    function flagChanges() {
+        hasChanges = true;
+        $('#saveChangesBtn, #cancelChangesBtn').show();
+    }
+    
+    // Handle section title changes
+    function sectionTitleChanged(inputElement) {
+        const originalTitle = $(inputElement).data('original-title');
+        const newTitle = $(inputElement).val();
+        
+        if (originalTitle !== newTitle) {
+            sectionTitles[originalTitle] = newTitle;
+            flagChanges();
+        }
+    }
+    
+    $(document).ready(function() {
+        // Make sections sortable (drag and drop)
+        $('#adaptedSections').sortable({
+            handle: '.drag-handle',
+            placeholder: 'section-placeholder',
+            tolerance: 'pointer',
+            update: function(event, ui) {
+                // Update section order when dragging completes
+                const newOrder = [];
+                $('.draggable').each(function() {
+                    newOrder.push($(this).data('section-name'));
+                });
+                $('#sectionOrder').val(JSON.stringify(newOrder));
+                flagChanges();
+            }
+        });
+        
+        // Make global section order sortable
+        $('#globalSectionOrder').sortable({
+            handle: '.drag-handle',
+            placeholder: 'section-placeholder',
+            tolerance: 'pointer'
+        });
+        
+        // Edit policy title
+        $('#saveTitleBtn').click(function() {
+            const newTitle = $('#policyTitle').val();
+            $('#adaptedTitle').val(newTitle);
+            $('.policy-header h2').first().next().text(newTitle);
+            $('#editTitleModal').modal('hide');
+            flagChanges();
+        });
+        
+        // AI rewrite functionality
+        $('.rewrite-btn').click(function() {
+            currentSectionName = $(this).data('section-name');
+            $('#aiRewriteModalLabel').text(`Rewrite: ${currentSectionName}`);
+            
+            // Reset the modal state
+            $('#rewriteResult, #rewriteLoading, #rewriteError, #useRewrittenBtn').hide();
+            $('#originalContent').html('');
+            $('#rewrittenContent').val('');
+        });
+        
+        // Update similarity slider value
+        $('#similarityTarget').on('input', function() {
+            $('#similarityTargetValue').text($(this).val());
+        });
+        
+        // Generate rewrite with AI
+        $('#generateRewriteBtn').click(function() {
+            // Show loading state
+            $('#rewriteLoading').show();
+            $('#rewriteResult, #rewriteError, #useRewrittenBtn').hide();
+            
+            // Get the original content for the current section
+            const sectionSelector = `textarea[name="section_${currentSectionName}"]`;
+            const originalContent = $(sectionSelector).val();
+            
+            // Get similarity target
+            const similarityTarget = $('#similarityTarget').val();
+            
+            // Make AJAX request to server
+            $.ajax({
+                url: `{{ url_for('policy_dashboard.rewrite_section', policy_code=original_policy.code) }}`,
+                method: 'POST',
+                data: {
+                    section_name: currentSectionName,
+                    similarity_target: similarityTarget
+                },
+                success: function(response) {
+                    // Hide loading state
+                    $('#rewriteLoading').hide();
+                    
+                    if (response.success) {
+                        // Show result
+                        $('#rewriteResult').show();
+                        $('#originalContent').text(response.original_content);
+                        $('#rewrittenContent').val(response.rewritten_content);
+                        
+                        // Update similarity badge
+                        const similarity = response.similarity.toFixed(1);
+                        let badgeClass = 'bg-success';
+                        if (similarity > 10) badgeClass = 'bg-warning';
+                        if (similarity > 25) badgeClass = 'bg-danger';
+                        
+                        $('#similarityBadge')
+                            .text(`${similarity}% similar`)
+                            .removeClass('bg-success bg-warning bg-danger')
+                            .addClass(badgeClass);
+                        
+                        // Show use button
+                        $('#useRewrittenBtn').show();
+                    } else {
+                        // Show error
+                        $('#rewriteError').show().text(response.error);
+                    }
+                },
+                error: function(xhr) {
+                    // Hide loading state
+                    $('#rewriteLoading').hide();
+                    
+                    // Show error
+                    $('#rewriteError').show().text('An error occurred: ' + (xhr.responseJSON?.error || 'Could not connect to server'));
+                }
+            });
+        });
+        
+        // Use rewritten content
+        $('#useRewrittenBtn').click(function() {
+            const rewrittenContent = $('#rewrittenContent').val();
+            const sectionSelector = `textarea[name="section_${currentSectionName}"]`;
+            
+            // Update the content
+            $(sectionSelector).val(rewrittenContent);
+            
+            // Close the modal
+            $('#aiRewriteModal').modal('hide');
+            
+            // Flag changes
+            flagChanges();
+        });
+        
+        // Save adapted policy
+        $('#saveAdaptedBtn').click(function() {
+            // Disable button to prevent multiple submissions
+            $(this).prop('disabled', true).html('<i class="loading-spinner"></i> Saving...');
+            
+            // Get form data
+            const formData = new FormData(document.getElementById('adaptedPolicyForm'));
+            
+            // Add section titles if changed
+            if (Object.keys(sectionTitles).length > 0) {
+                formData.append('section_titles', JSON.stringify(sectionTitles));
+            }
+            
+            // Send AJAX request
+            $.ajax({
+                url: `{{ url_for('policy_dashboard.save_adapted', policy_code=original_policy.code) }}`,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Redirect to the policy view page
+                        window.location.href = response.redirect;
+                    } else {
+                        alert('Error: ' + response.error);
+                        // Re-enable button
+                        $('#saveAdaptedBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Save Adapted Policy');
+                    }
+                },
+                error: function(xhr) {
+                    alert('An error occurred while saving: ' + (xhr.responseJSON?.error || 'Unknown error'));
+                    // Re-enable button
+                    $('#saveAdaptedBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Save Adapted Policy');
+                }
+            });
+        });
+        
+        // Add new section button
+        $('#addSectionBtn').click(function() {
+            const newSectionItem = `
+                <li class="list-group-item d-flex align-items-center" data-section="New Section">
+                    <span class="drag-handle me-3"><i class="fas fa-grip-vertical"></i></span>
+                    <div class="flex-grow-1">
+                        <input type="text" class="form-control section-name-input" value="New Section">
+                    </div>
+                    <div class="ms-3">
+                        <button class="btn btn-sm btn-outline-danger remove-section-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </li>
+            `;
+            $('#globalSectionOrder').append(newSectionItem);
+        });
+        
+        // Remove section button
+        $(document).on('click', '.remove-section-btn', function() {
+            $(this).closest('li').remove();
+        });
+        
+        // Reset to default section order
+        $('#resetSectionOrderBtn').click(function() {
+            const defaultSections = [
+                "Purpose",
+                "Scope",
+                "Objectives",
+                "Policy",
+                "Procedure",
+                "Definitions",
+                "Key Facts - Professionals",
+                "Key Facts - People Affected by The Service",
+                "Further Reading"
+            ];
+            
+            // Clear and rebuild the list
+            $('#globalSectionOrder').empty();
+            
+            defaultSections.forEach(function(section) {
+                const sectionItem = `
+                    <li class="list-group-item d-flex align-items-center" data-section="${section}">
+                        <span class="drag-handle me-3"><i class="fas fa-grip-vertical"></i></span>
+                        <div class="flex-grow-1">
+                            <input type="text" class="form-control section-name-input" value="${section}">
+                        </div>
+                        <div class="ms-3">
+                            <button class="btn btn-sm btn-outline-danger remove-section-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </li>
+                `;
+                $('#globalSectionOrder').append(sectionItem);
+            });
+        });
+        
+        // Save section order changes
+        $('#saveSectionOrderBtn').click(function() {
+            // Get the new section order
+            const newSectionOrder = [];
+            $('#globalSectionOrder li').each(function() {
+                newSectionOrder.push($(this).find('.section-name-input').val());
+            });
+            
+            // Update the hidden input
+            $('#sectionOrder').val(JSON.stringify(newSectionOrder));
+            
+            // Close the modal
+            $('#sectionOrderModal').modal('hide');
+            
+            // Flag changes
+            flagChanges();
+            
+            // Show notification
+            alert('Section order updated. Save the policy to apply changes.');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Page Monitor | Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Page Monitor</h5>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Page Monitor</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="card-body">
+                    <p class="lead">This tool allows you to monitor pages, resources, and form submissions in the application.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Select a page to monitor from the dropdown below or type a custom path.
+                    </div>
+                    
+                    <form action="{{ url_for('dashboard.page_monitor') }}" method="POST" id="monitorForm" class="row g-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        
+                        <div class="col-md-8">
+                            <label for="pageSelect" class="form-label">Select a page</label>
+                            <select class="form-select" id="pageSelect" onchange="updatePageInput()">
+                                <option value="">-- Select a page --</option>
+                                {% for route in routes %}
+                                <option value="{{ route.path }}" data-methods="{{ route.methods }}">
+                                    {{ route.path }} ({{ route.endpoint }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="page" class="form-label">Page path</label>
+                            <input type="text" class="form-control" id="page" name="page" placeholder="/dashboard/policy-import" value="{{ target_page or '' }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" id="monitorBtn">
+                                <i class="fas fa-search me-2"></i> Monitor Page
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if monitoring_results %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Monitoring Results for {{ target_page }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Page Information -->
+                    {% if monitoring_results.pages %}
+                        {% for path, page_data in monitoring_results.pages.items() %}
+                        <div class="mb-4">
+                            <h6>Page Information</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if page_data.status_code == 200 else 'danger' }}">
+                                                    {{ page_data.status_code }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Title</th>
+                                            <td>{{ page_data.title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Load Time</th>
+                                            <td>{{ page_data.load_time_ms }}ms</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <td>{{ page_data.timestamp }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Forms -->
+                            {% if page_data.forms %}
+                            <h6 class="mt-4">Forms ({{ page_data.forms|length }})</h6>
+                            <div class="accordion" id="formsAccordion">
+                                {% for form in page_data.forms %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="formHeading{{ loop.index }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#formCollapse{{ loop.index }}" aria-expanded="false" 
+                                                aria-controls="formCollapse{{ loop.index }}">
+                                            Form: {{ form.id or 'unnamed' }} - Action: {{ form.action or 'current page' }} ({{ form.method }})
+                                        </button>
+                                    </h2>
+                                    <div id="formCollapse{{ loop.index }}" class="accordion-collapse collapse" 
+                                         aria-labelledby="formHeading{{ loop.index }}" data-bs-parent="#formsAccordion">
+                                        <div class="accordion-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Input Name</th>
+                                                            <th>Type</th>
+                                                            <th>ID</th>
+                                                            <th>Required</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for input in form.inputs %}
+                                                        <tr>
+                                                            <td>{{ input.name }}</td>
+                                                            <td>{{ input.type }}</td>
+                                                            <td>{{ input.id }}</td>
+                                                            <td>
+                                                                {% if input.required %}
+                                                                <span class="badge bg-danger">Required</span>
+                                                                {% else %}
+                                                                <span class="badge bg-secondary">Optional</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                            <div class="mt-3">
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        onclick="testFormSubmission('{{ path }}', '{{ form.id }}', '{{ form.action }}', '{{ form.method }}')">
+                                                    <i class="fas fa-paper-plane me-1"></i> Test Form Submission
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i> No forms found on this page.
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Links -->
+                            {% if page_data.links %}
+                            <h6 class="mt-4">Links ({{ page_data.links|length }})</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Text</th>
+                                            <th>URL</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for link in page_data.links %}
+                                        <tr>
+                                            <td>{{ link.text or '(No text)' }}</td>
+                                            <td>{{ link.href }}</td>
+                                            <td>
+                                                <form action="{{ url_for('dashboard.page_monitor') }}" method="POST" style="display: inline;">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                                    <input type="hidden" name="page" value="{{ link.href }}" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-search me-1"></i> Monitor
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i> No links found on this page.
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Resources -->
+                            {% if page_data.resources %}
+                            <h6 class="mt-4">Resources ({{ page_data.resources|length }})</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>URL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for resource in page_data.resources %}
+                                        <tr>
+                                            <td>{{ resource.type }}</td>
+                                            <td>{{ resource.src or resource.href }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i> No resources found on this page.
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> No page data found.
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Form Submission Results -->
+                    {% if monitoring_results.forms %}
+                    <div class="mb-4">
+                        <h6>Form Submission Results</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Form</th>
+                                        <th>Status</th>
+                                        <th>Redirect URL</th>
+                                        <th>Response Time</th>
+                                        <th>Alerts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form_key, form_data in monitoring_results.forms.items() %}
+                                    <tr>
+                                        <td>{{ form_key }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if form_data.status_code == 200 or form_data.status_code == 302 else 'danger' }}">
+                                                {{ form_data.status_code }}
+                                            </span>
+                                        </td>
+                                        <td>{{ form_data.redirect_url }}</td>
+                                        <td>{{ form_data.response_time_ms }}ms</td>
+                                        <td>
+                                            {% if form_data.alerts %}
+                                            <ul class="mb-0">
+                                                {% for alert in form_data.alerts %}
+                                                <li>{{ alert }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% else %}
+                                            <span class="text-muted">No alerts</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Errors and Warnings -->
+                    {% if monitoring_results.errors or monitoring_results.warnings %}
+                    <div class="mb-4">
+                        <h6>Errors and Warnings</h6>
+                        
+                        {% if monitoring_results.errors %}
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading">Errors ({{ monitoring_results.errors|length }})</h6>
+                            <ul class="mb-0">
+                                {% for error in monitoring_results.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if monitoring_results.warnings %}
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">Warnings ({{ monitoring_results.warnings|length }})</h6>
+                            <ul class="mb-0">
+                                {% for warning in monitoring_results.warnings %}
+                                <li>{{ warning }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const monitorForm = document.getElementById('monitorForm');
+        const monitorBtn = document.getElementById('monitorBtn');
+        
+        if (monitorForm) {
+            monitorForm.addEventListener('submit', function() {
+                // Show spinner
+                monitorBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Monitoring...';
+                monitorBtn.disabled = true;
+            });
+        }
+    });
+    
+    function updatePageInput() {
+        const pageSelect = document.getElementById('pageSelect');
+        const pageInput = document.getElementById('page');
+        
+        if (pageSelect.value) {
+            pageInput.value = pageSelect.value;
+        }
+    }
+    
+    function testFormSubmission(path, formId, formAction, formMethod) {
+        // Create a modal to allow users to test form submission
+        const modalId = 'formSubmissionModal';
+        let modalHtml = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="${modalId}Label">Test Form Submission</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>This will submit the form with the following parameters:</p>
+                            <ul>
+                                <li><strong>Path:</strong> ${path}</li>
+                                <li><strong>Form ID:</strong> ${formId || 'unnamed'}</li>
+                                <li><strong>Action:</strong> ${formAction || 'current page'}</li>
+                                <li><strong>Method:</strong> ${formMethod}</li>
+                            </ul>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i> 
+                                This is a testing feature that may submit actual form data. Use with caution.
+                            </div>
+                            <form id="testSubmissionForm">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <div class="mb-3">
+                                    <label class="form-label">Form Data (JSON)</label>
+                                    <textarea class="form-control" rows="5" id="formData" placeholder='{"field1": "value1", "field2": "value2"}'></textarea>
+                                    <div class="form-text">Enter the form data as JSON</div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="submitTestForm">
+                                <i class="fas fa-paper-plane me-1"></i> Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to the page if it doesn't exist
+        if (!document.getElementById(modalId)) {
+            const modalDiv = document.createElement('div');
+            modalDiv.innerHTML = modalHtml;
+            document.body.appendChild(modalDiv);
+        }
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById(modalId));
+        modal.show();
+        
+        // Handle form submission
+        document.getElementById('submitTestForm').addEventListener('click', function() {
+            const formDataText = document.getElementById('formData').value;
+            
+            try {
+                // Try to parse JSON data
+                const formData = formDataText ? JSON.parse(formDataText) : {};
+                
+                // Create form submission
+                const form = document.createElement('form');
+                form.method = formMethod;
+                form.action = formAction || path;
+                form.style.display = 'none';
+                
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.name = 'csrf_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+                
+                // Add form fields
+                for (const key in formData) {
+                    const input = document.createElement('input');
+                    input.name = key;
+                    input.value = formData[key];
+                    form.appendChild(input);
+                }
+                
+                // Add form to document and submit
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Hide modal
+                modal.hide();
+                
+            } catch (error) {
+                alert('Error parsing form data: ' + error.message);
+            }
+        });
+    }
+</script>
+{% endblock %}

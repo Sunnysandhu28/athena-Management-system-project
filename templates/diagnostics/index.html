@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}System Diagnostics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">System Diagnostics</h1>
+                <div>
+                    <button id="run-diagnostics-btn" class="btn btn-primary">
+                        <i class="fas fa-play me-2"></i> Run Diagnostics
+                    </button>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Diagnostic Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="parallel-testing" checked>
+                                <label class="form-check-label" for="parallel-testing">Parallel Testing</label>
+                                <small class="form-text text-muted d-block">Run all tests simultaneously for faster results</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="comprehensive-mode" checked>
+                                <label class="form-check-label" for="comprehensive-mode">Comprehensive Mode</label>
+                                <small class="form-text text-muted d-block">Test all pages, forms, and API endpoints</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="detailed-reports" checked>
+                                <label class="form-check-label" for="detailed-reports">Detailed Reports</label>
+                                <small class="form-text text-muted d-block">Include detailed error information in reports</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="test-depth">Test Depth</label>
+                                <select class="form-select" id="test-depth">
+                                    <option value="basic">Basic (Quick Check)</option>
+                                    <option value="standard" selected>Standard (Recommended)</option>
+                                    <option value="deep">Deep (Thorough Testing)</option>
+                                </select>
+                                <small class="form-text text-muted">Determines how thorough the testing will be</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="worker-count">Max Worker Threads</label>
+                                <input type="number" class="form-control" id="worker-count" value="10" min="1" max="50">
+                                <small class="form-text text-muted">Number of parallel tests to run (1-50)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Diagnostic Status</h5>
+                </div>
+                <div class="card-body">
+                    <div id="status-container" class="mb-3">
+                        <div class="alert alert-info" id="status-message">
+                            <i class="fas fa-info-circle me-2"></i> Ready to run diagnostics. Click "Run Diagnostics" to begin.
+                        </div>
+                        <div id="progress-container" class="d-none">
+                            <div class="progress mb-2">
+                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small id="progress-text" class="text-muted">Initializing diagnostics...</small>
+                        </div>
+                    </div>
+                    
+                    <div id="results-summary" class="d-none">
+                        <h5>Results Summary</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card text-white bg-success mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Passed</h5>
+                                        <h3 id="pass-count">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-danger mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Failed</h5>
+                                        <h3 id="fail-count">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-warning mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Warnings</h5>
+                                        <h3 id="warning-count">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-info mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Duration</h5>
+                                        <h3 id="duration">0s</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="critical-issues-container" class="mt-3 d-none">
+                            <h5 class="text-danger">Critical Issues</h5>
+                            <ul id="critical-issues-list" class="list-group">
+                                <!-- Critical issues will be displayed here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Diagnostic Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if reports %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Report</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                    <tr>
+                                        <td>{{ report.filename }}</td>
+                                        <td>{{ report.timestamp|format_datetime }}</td>
+                                        <td>
+                                            {% if report.status == 'success' %}
+                                                <span class="badge bg-success">Success</span>
+                                            {% elif report.status == 'warning' %}
+                                                <span class="badge bg-warning">Warnings</span>
+                                            {% elif report.status == 'error' %}
+                                                <span class="badge bg-danger">Errors</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Unknown</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('diagnostics.view_report', filename=report.filename) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{{ url_for('diagnostics.download_report', filename=report.filename) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No diagnostic reports available yet. Run diagnostics to generate a report.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const runDiagnosticsBtn = document.getElementById('run-diagnostics-btn');
+        const statusMessage = document.getElementById('status-message');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const resultsSummary = document.getElementById('results-summary');
+        const passCount = document.getElementById('pass-count');
+        const failCount = document.getElementById('fail-count');
+        const warningCount = document.getElementById('warning-count');
+        const duration = document.getElementById('duration');
+        const criticalIssuesContainer = document.getElementById('critical-issues-container');
+        const criticalIssuesList = document.getElementById('critical-issues-list');
+        
+        let statusCheckInterval;
+        
+        runDiagnosticsBtn.addEventListener('click', function() {
+            // Update UI to show diagnostics are running
+            runDiagnosticsBtn.disabled = true;
+            statusMessage.classList.remove('alert-info', 'alert-success', 'alert-danger');
+            statusMessage.classList.add('alert-warning');
+            statusMessage.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Initializing diagnostic tests...';
+            progressContainer.classList.remove('d-none');
+            progressBar.style.width = '0%';
+            progressBar.setAttribute('aria-valuenow', 0);
+            progressText.textContent = 'Initializing diagnostics...';
+            resultsSummary.classList.add('d-none');
+            
+            // Get diagnostic options
+            const options = {
+                parallel: document.getElementById('parallel-testing').checked,
+                comprehensive: document.getElementById('comprehensive-mode').checked,
+                detailed: document.getElementById('detailed-reports').checked,
+                test_depth: document.getElementById('test-depth').value,
+                workers: parseInt(document.getElementById('worker-count').value)
+            };
+            
+            // Start diagnostics
+            fetch('{{ url_for("diagnostics.start_diagnostics") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(options)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'started') {
+                    // Update UI to show diagnostics are running
+                    statusMessage.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Running diagnostic tests...';
+                    progressBar.style.width = '10%';
+                    progressBar.setAttribute('aria-valuenow', 10);
+                    progressText.textContent = 'Running tests...';
+                    
+                    // Start checking status
+                    statusCheckInterval = setInterval(checkStatus, 2000);
+                } else {
+                    // Update UI to show diagnostics failed to start
+                    runDiagnosticsBtn.disabled = false;
+                    statusMessage.classList.remove('alert-warning');
+                    statusMessage.classList.add('alert-danger');
+                    statusMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> Failed to start diagnostics: ${data.message}`;
+                    progressContainer.classList.add('d-none');
+                }
+            })
+            .catch(error => {
+                // Update UI to show error
+                runDiagnosticsBtn.disabled = false;
+                statusMessage.classList.remove('alert-warning');
+                statusMessage.classList.add('alert-danger');
+                statusMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> Error starting diagnostics: ${error.message}`;
+                progressContainer.classList.add('d-none');
+            });
+        });
+        
+        function checkStatus() {
+            fetch('{{ url_for("ai_document_processing.check_status") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'running') {
+                    // Update progress
+                    const progress = data.progress || 0;
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.setAttribute('aria-valuenow', progress);
+                    progressText.textContent = data.message || 'Running tests...';
+                } else if (data.status === 'complete') {
+                    // Stop checking status
+                    clearInterval(statusCheckInterval);
+                    
+                    // Update UI to show diagnostics are complete
+                    runDiagnosticsBtn.disabled = false;
+                    statusMessage.classList.remove('alert-warning');
+                    statusMessage.classList.add('alert-success');
+                    statusMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i> Diagnostics complete!';
+                    progressContainer.classList.add('d-none');
+                    
+                    // Show results summary
+                    resultsSummary.classList.remove('d-none');
+                    passCount.textContent = data.pass_count || 0;
+                    failCount.textContent = data.fail_count || 0;
+                    warningCount.textContent = data.warning_count || 0;
+                    duration.textContent = data.duration || '0s';
+                    
+                    // Show critical issues if any
+                    if (data.critical_issues && data.critical_issues.length > 0) {
+                        criticalIssuesContainer.classList.remove('d-none');
+                        criticalIssuesList.innerHTML = '';
+                        
+                        data.critical_issues.forEach(issue => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item list-group-item-danger';
+                            li.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> ${issue}`;
+                            criticalIssuesList.appendChild(li);
+                        });
+                    } else {
+                        criticalIssuesContainer.classList.add('d-none');
+                    }
+                    
+                    // Reload page to show new report in list
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else if (data.status === 'error') {
+                    // Stop checking status
+                    clearInterval(statusCheckInterval);
+                    
+                    // Update UI to show error
+                    runDiagnosticsBtn.disabled = false;
+                    statusMessage.classList.remove('alert-warning');
+                    statusMessage.classList.add('alert-danger');
+                    statusMessage.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> Error during diagnostics: ${data.message}`;
+                    progressContainer.classList.add('d-none');
+                }
+            })
+            .catch(error => {
+                // Log error but continue checking
+                console.error('Error checking status:', error);
+            });
+        }
+    });
+</script>
+{% endblock %}

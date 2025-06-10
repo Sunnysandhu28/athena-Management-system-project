@@ -1,0 +1,28 @@
+
+{% extends "base.html" %}
+
+{% block title %}All Learning Paths{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>All Learning Paths</h2>
+        
+        <a href="/" class="btn">Create New Learning Path</a>
+        
+        {% if learning_paths %}
+            <div class="grid">
+                {% for path in learning_paths %}
+                <div class="card">
+                    <h3>{{ path.user_name }}</h3>
+                    <p>Generated: {{ path.created_at }}</p>
+                    <p>Overall Completion: {{ path.overall_completion }}%</p>
+                    <a href="/learning-path/{{ path.id }}" class="btn">View Details</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No learning paths have been generated yet.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+            

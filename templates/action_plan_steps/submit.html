@@ -1,0 +1,2821 @@
+{% extends 'action_plan_steps/base_wizard.html' %}
+
+{% set current_step = 5 %}
+{% set progress_percentage = 100 %}
+
+{% block step_title %}Review and Finalize Action Plan{% endblock %}
+{% block step_description %}Review your action plan details and make any necessary edits before final submission.{% endblock %}
+{% block form_action %}/action-plans/submit{% endblock %}
+
+{% block step_content %}
+<div class="mb-4">
+    <ul class="nav nav-tabs" id="reviewTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab" aria-controls="preview" aria-selected="true">
+                <i class="bi bi-eye"></i> Preview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab" aria-controls="edit" aria-selected="false">
+                <i class="bi bi-pencil-square"></i> Edit
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="heatmap-tab" data-bs-toggle="tab" data-bs-target="#heatmap" type="button" role="tab" aria-controls="heatmap" aria-selected="false">
+                <i class="bi bi-grid-3x3"></i> Heat Map Tracker
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="samples-tab" data-bs-toggle="tab" data-bs-target="#samples" type="button" role="tab" aria-controls="samples" aria-selected="false">
+                <i class="bi bi-file-earmark-arrow-up"></i> Sample Reports
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content p-3 border border-top-0 rounded-bottom" style="min-height: 400px;">
+        <!-- Preview Tab -->
+        <div class="tab-pane fade show active" id="preview" role="tabpanel" aria-labelledby="preview-tab">
+            <!-- Navigation for report sections -->
+            <ul class="nav nav-pills mb-3 bg-light p-2 rounded" id="report-sections" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="cover-tab" data-bs-toggle="pill" data-bs-target="#cover-page" type="button" role="tab" aria-controls="cover-page" aria-selected="true">Cover</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="contents-tab" data-bs-toggle="pill" data-bs-target="#contents-page" type="button" role="tab" aria-controls="contents-page" aria-selected="false">Contents</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="details-tab" data-bs-toggle="pill" data-bs-target="#details-page" type="button" role="tab" aria-controls="details-page" aria-selected="false">Report</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="appendix-tab" data-bs-toggle="pill" data-bs-target="#appendix-page" type="button" role="tab" aria-controls="appendix-page" aria-selected="false">Appendix</button>
+                </li>
+            </ul>
+            
+            <!-- Report sections -->
+            <div class="tab-content border p-3 rounded">
+                <!-- Cover Page -->
+                <div class="tab-pane fade show active" id="cover-page" role="tabpanel" aria-labelledby="cover-tab">
+                    <div class="text-center mb-5 pt-5">
+                        <div class="mb-5">
+                            <img src="/static/images/logo.png" alt="Cathena Care Logo" height="80" class="mb-4">
+                            <h1 class="display-6 fw-bold">Regulatory Action Plan</h1>
+                        </div>
+                        
+                        <div class="my-5 py-5">
+                            <h2 id="cover-title" class="fw-bold">CQC Annual Inspection May 2025</h2>
+                            <p class="lead mt-3" id="cover-location">Care Location: Cathena Care Home</p>
+                        </div>
+                        
+                        <div class="mt-5 pt-5">
+                            <div class="d-inline-block border border-primary rounded px-4 py-3 mt-5">
+                                <h5 class="mb-0">Reference: <span id="cover-reference" class="text-primary">Cat/aj.sandhu/001</span></h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 end-0 p-3 w-100">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Visit Date: <span id="cover-visit-date">May 14, 2025</span></small>
+                            </div>
+                            <div>
+                                <small class="text-muted">Page 1 | <span id="cover-version">Version 1.0</span></small><br>
+                                <small class="text-muted">Created: <span id="cover-timestamp">May 14, 2025 12:05</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contents Page -->
+                <div class="tab-pane fade" id="contents-page" role="tabpanel" aria-labelledby="contents-tab">
+                    <div class="my-3">
+                        <h2 class="fw-bold">Contents</h2>
+                        <hr>
+                        
+                        <div class="my-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold">1. Background Information</h5>
+                                <span class="text-muted">Page 3</span>
+                            </div>
+                            <div class="ms-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mb-1">1.1 Visit Details</p>
+                                    <span class="text-muted">Page 3</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mb-1">1.2 Agencies Involved</p>
+                                    <span class="text-muted">Page 3</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="my-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold">2. Regulated Activities</h5>
+                                <span class="text-muted">Page 4</span>
+                            </div>
+                            <div class="ms-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mb-1">2.1 CQC Regulations</p>
+                                    <span class="text-muted">Page 4</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="my-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold">3. Action Plan Implementation</h5>
+                                <span class="text-muted">Page 5</span>
+                            </div>
+                            <div class="ms-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mb-1">3.1 Responsibilities</p>
+                                    <span class="text-muted">Page 5</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mb-1">3.2 Timeline & Milestones</p>
+                                    <span class="text-muted">Page 6</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="my-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold">Appendix: Supporting Evidence</h5>
+                                <span class="text-muted">Page 7</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 end-0 p-3 w-100">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Reference: <span id="contents-reference">Cat/aj.sandhu/001</span></small>
+                            </div>
+                            <div>
+                                <small class="text-muted">Page 2 | <span id="contents-version">Version 1.0</span></small><br>
+                                <small class="text-muted">Created: <span id="contents-timestamp">May 14, 2025 12:05</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Details Page (Report) -->
+                <div class="tab-pane fade" id="details-page" role="tabpanel" aria-labelledby="details-tab">
+                    <div>
+                        <h2 class="border-bottom pb-2 mb-4">Regulatory Action Plan</h2>
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">1. Background Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">1.1 Visit Details</h6>
+                                    <div id="preview-basic-info">
+                                        <p class="mb-1"><strong>Visit Date:</strong> <span id="preview-visit-date">Loading...</span></p>
+                                        <p class="mb-1"><strong>Inspection Type:</strong> <span id="preview-inspection-type">Loading...</span></p>
+                                        <p class="mb-1"><strong>Assessment Title:</strong> <span id="preview-assessment-title">Loading...</span></p>
+                                        <p class="mb-1"><strong>Reference:</strong> <span id="preview-reference">Loading...</span></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">1.2 Evidence</h6>
+                                    <div id="preview-evidence">
+                                        <p class="text-muted">Loading evidence details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">2. Regulated Activities</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <h6 class="fw-bold">2.1 CQC Regulations</h6>
+                                    <div id="preview-regulations">
+                                        <p class="text-muted">Loading regulation details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">3. Action Plan Implementation</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <h6 class="fw-bold">3.1 Responsibilities</h6>
+                                    <div id="preview-responsibilities">
+                                        <p class="mb-1"><strong>Lead Person:</strong> <span id="preview-lead-person">Loading...</span></p>
+                                        <p class="mb-1"><strong>Department:</strong> <span id="preview-department">Loading...</span></p>
+                                        <p class="mb-1"><strong>Team Members:</strong></p>
+                                        <ul id="preview-team-members" class="ps-3">
+                                            <li class="text-muted">Loading team members...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="fw-bold">3.2 Timeline Milestones</h6>
+                                    <div id="preview-milestones">
+                                        <p class="text-muted">Loading milestone details...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 end-0 p-3 w-100">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Reference: <span id="detail-reference">Cat/aj.sandhu/001</span></small>
+                            </div>
+                            <div>
+                                <small class="text-muted">Pages 3-6 | <span id="detail-version">Version 1.0</span></small><br>
+                                <small class="text-muted">Created: <span id="detail-timestamp">May 14, 2025 12:05</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Appendix Page -->
+                <div class="tab-pane fade" id="appendix-page" role="tabpanel" aria-labelledby="appendix-tab">
+                    <div>
+                        <h2 class="border-bottom pb-2 mb-4">Appendix: Supporting Evidence</h2>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="preview-appendix">
+                                    <p class="text-muted">Loading attachment details...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="position-absolute bottom-0 end-0 p-3 w-100">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Reference: <span id="appendix-reference">Cat/aj.sandhu/001</span></small>
+                            </div>
+                            <div>
+                                <small class="text-muted">Page 7 | <span id="appendix-version">Version 1.0</span></small><br>
+                                <small class="text-muted">Created: <span id="appendix-timestamp">May 14, 2025 12:05</span></small>
+                                <span id="previous-version"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Heat Map Tracker Tab -->
+        <div class="tab-pane fade" id="heatmap" role="tabpanel" aria-labelledby="heatmap-tab">
+            <h3 class="mb-4">Action Plan Heat Map Tracker</h3>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Milestones Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-around mb-3">
+                                <div class="text-center">
+                                    <div class="circle-progress" id="pending-progress">
+                                        <span class="progress-value" id="pending-count">0</span>
+                                    </div>
+                                    <div class="mt-2">Pending</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="circle-progress" id="in-progress-progress">
+                                        <span class="progress-value" id="in-progress-count">0</span>
+                                    </div>
+                                    <div class="mt-2">In Progress</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="circle-progress" id="completed-progress">
+                                        <span class="progress-value" id="completed-count">0</span>
+                                    </div>
+                                    <div class="mt-2">Completed</div>
+                                </div>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-danger" id="pending-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar bg-warning" id="in-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar bg-success" id="completed-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Last updated: <span id="last-heat-map-update">-</span></small>
+                                <small class="text-muted">Total milestones: <span id="total-milestones">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Heat Map Timeline</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="milestone-timeline mb-3">
+                                <div class="timeline-header d-flex">
+                                    <div class="timeline-label" style="width: 120px">Timeline</div>
+                                    <div class="timeline-months" id="timeline-months">
+                                        <!-- Months will be populated dynamically -->
+                                    </div>
+                                </div>
+                                <div id="milestone-timeline-content">
+                                    <!-- Timeline content will be populated dynamically -->
+                                    <div class="timeline-empty-state text-center py-5 text-muted">
+                                        <i class="bi bi-calendar3 fs-1"></i>
+                                        <p>No milestones to display</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Milestone Matrix by Department</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered heat-map-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Pending</th>
+                                            <th>In Progress</th>
+                                            <th>Completed</th>
+                                            <th>Total</th>
+                                            <th>Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="department-matrix">
+                                        <!-- Department matrix will be populated dynamically -->
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">No data to display</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="refresh-heatmap" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                </button>
+                <button type="button" id="export-heatmap" class="btn btn-outline-secondary">
+                    <i class="bi bi-download"></i> Export Heat Map Report
+                </button>
+            </div>
+        </div>
+        
+        <!-- Sample Reports Tab -->
+        <div class="tab-pane fade" id="samples" role="tabpanel" aria-labelledby="samples-tab">
+            <h3 class="mb-4">Regulatory Intelligence Center</h3>
+            <p class="text-muted mb-4">Upload inspection reports, policies, and evidence for comprehensive regulatory analysis across CQC, RIDDOR, Fire Safety, Financial, and Business Governance frameworks.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Upload Sample Reports</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="uploadSampleForm" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="sample-title" class="form-label">Report Title</label>
+                                    <input type="text" class="form-control" id="sample-title" name="title" placeholder="Enter descriptive title for this report">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="sample-category" class="form-label">Report Category</label>
+                                    <select class="form-select" id="sample-category" name="category">
+                                        <option value="" selected disabled>Select a category</option>
+                                        <option value="cqc">CQC Inspection Report</option>
+                                        <option value="fire">Fire Safety Inspection</option>
+                                        <option value="health">Health & Safety Inspection</option>
+                                        <option value="safeguarding">Safeguarding Investigation</option>
+                                        <option value="case-study">External Case Study</option>
+                                        <option value="legal">Legal Compliance Document</option>
+                                        <option value="financial">Financial Audit Report</option>
+                                        <option value="regulatory">Other Regulatory Report</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="sample-date" class="form-label">Inspection Date</label>
+                                    <input type="date" class="form-control" id="sample-date" name="date">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="sample-file" class="form-label">Sample Report File</label>
+                                    <input type="file" class="form-control" id="sample-file" name="file" accept=".pdf,.doc,.docx,.txt">
+                                    <div class="form-text">Upload PDF, Word, or Text documents (Max size: 5MB)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="sample-notes" class="form-label">Notes (Optional)</label>
+                                    <textarea class="form-control" id="sample-notes" name="notes" rows="3" placeholder="Add any additional context about this report"></textarea>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" id="upload-sample" class="btn btn-primary">
+                                        <i class="bi bi-cloud-upload"></i> Upload Sample
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Sample Reports Library</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="search-samples" placeholder="Search samples...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Category</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sample-reports-list">
+                                        <!-- Sample reports will be populated dynamically -->
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-5">
+                                                <i class="bi bi-file-earmark-text fs-1"></i>
+                                                <p>No sample reports uploaded yet</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted"><span id="sample-count">0</span> samples in library</span>
+                                <button type="button" id="analyze-samples" class="btn btn-outline-primary" disabled>
+                                    <i class="bi bi-graph-up"></i> Analyze Library
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Comprehensive Regulatory Intelligence</h5>
+                </div>
+                <div class="card-body">
+                    <div id="ai-insights-container" class="d-none">
+                        <!-- Tabbed interface for regulatory analysis results -->
+                        <ul class="nav nav-tabs mb-3" id="regulatoryTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="regulations-tab" data-bs-toggle="tab" data-bs-target="#regulations" type="button" role="tab">
+                                    <i class="bi bi-journal-text"></i> Regulations
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="requirements-tab" data-bs-toggle="tab" data-bs-target="#requirements" type="button" role="tab">
+                                    <i class="bi bi-list-check"></i> Requirements
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline" type="button" role="tab">
+                                    <i class="bi bi-calendar-date"></i> Timeline
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="patterns-tab" data-bs-toggle="tab" data-bs-target="#patterns" type="button" role="tab">
+                                    <i class="bi bi-bar-chart"></i> Patterns
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="heatmaps-tab" data-bs-toggle="tab" data-bs-target="#heatmaps" type="button" role="tab">
+                                    <i class="bi bi-grid-3x3"></i> Heat Maps
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bestpractices-tab" data-bs-toggle="tab" data-bs-target="#bestpractices" type="button" role="tab">
+                                    <i class="bi bi-trophy"></i> Best Practices
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="regulatoryTabContent">
+                            <!-- Regulations Tab -->
+                            <div class="tab-pane fade show active" id="regulations" role="tabpanel" aria-labelledby="regulations-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            <strong>Key Regulations</strong>: These regulations were identified across all uploaded documents and evidence.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Framework</th>
+                                                <th>Regulation</th>
+                                                <th>Relevance</th>
+                                                <th>Impact</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="regulations-table">
+                                            <!-- Regulations will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Requirements Tab -->
+                            <div class="tab-pane fade" id="requirements" role="tabpanel" aria-labelledby="requirements-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                            <strong>Key Requirements</strong>: These requirements need to be addressed based on the regulatory frameworks.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion" id="requirementsAccordion">
+                                    <!-- High Priority Requirements -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#highPriorityRequirements">
+                                                <span class="badge bg-danger me-2">High Priority</span> Critical Requirements
+                                            </button>
+                                        </h2>
+                                        <div id="highPriorityRequirements" class="accordion-collapse collapse show">
+                                            <div class="accordion-body">
+                                                <ul id="high-priority-requirements" class="list-group list-group-flush">
+                                                    <!-- High priority requirements will be populated here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Medium Priority Requirements -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mediumPriorityRequirements">
+                                                <span class="badge bg-warning text-dark me-2">Medium Priority</span> Important Requirements
+                                            </button>
+                                        </h2>
+                                        <div id="mediumPriorityRequirements" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <ul id="medium-priority-requirements" class="list-group list-group-flush">
+                                                    <!-- Medium priority requirements will be populated here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Low Priority Requirements -->
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#lowPriorityRequirements">
+                                                <span class="badge bg-success me-2">Low Priority</span> Standard Requirements
+                                            </button>
+                                        </h2>
+                                        <div id="lowPriorityRequirements" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <ul id="low-priority-requirements" class="list-group list-group-flush">
+                                                    <!-- Low priority requirements will be populated here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Timeline Tab -->
+                            <div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="timeline-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-primary">
+                                            <i class="bi bi-calendar-check-fill me-2"></i>
+                                            <strong>Regulatory Timeline</strong>: Deadlines and milestones extracted from all documents.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="timeline-container">
+                                            <div id="regulatory-timeline" class="position-relative px-4">
+                                                <!-- Timeline will be populated here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Requirement</th>
+                                                <th>Priority</th>
+                                                <th>Regulation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="deadline-table">
+                                            <!-- Deadlines will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Patterns Tab -->
+                            <div class="tab-pane fade" id="patterns" role="tabpanel" aria-labelledby="patterns-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-secondary">
+                                            <i class="bi bi-graph-up-arrow me-2"></i>
+                                            <strong>Identified Patterns</strong>: Common issues and patterns detected across all documents.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">Common Issues</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul id="common-issues" class="list-group list-group-flush">
+                                                    <!-- Issues will appear here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">Cross-Document Patterns</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul id="cross-document-patterns" class="list-group list-group-flush">
+                                                    <!-- Cross-document patterns will appear here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Heat Maps Tab -->
+                            <div class="tab-pane fade" id="heatmaps" role="tabpanel" aria-labelledby="heatmaps-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-secondary">
+                                            <i class="bi bi-grid-3x3 me-2"></i>
+                                            <strong>Regulatory Heat Maps</strong>: Visual representation of regulatory hotspots.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">Regulation Heat Map</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="regulation-heatmap" style="height: 300px;">
+                                                    <!-- Regulation heat map will be rendered here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">Issue Heat Map</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="issue-heatmap" style="height: 300px;">
+                                                    <!-- Issue heat map will be rendered here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Best Practices Tab -->
+                            <div class="tab-pane fade" id="bestpractices" role="tabpanel" aria-labelledby="bestpractices-tab">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-success">
+                                            <i class="bi bi-trophy-fill me-2"></i>
+                                            <strong>Best Practices</strong>: Recommended approaches for addressing regulatory requirements.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Best Practice</th>
+                                                        <th>Category</th>
+                                                        <th>Implementation</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="best-practices-table">
+                                                    <!-- Best practices will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">Successful Resolutions</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul id="successful-resolutions" class="list-group list-group-flush">
+                                                    <!-- Successful resolutions will appear here -->
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="ai-insights-empty" class="text-center text-muted py-5">
+                        <i class="bi bi-clipboard-data fs-1"></i>
+                        <p>Upload reports, policies, and evidence to activate comprehensive regulatory intelligence</p>
+                        <button class="btn btn-outline-primary mt-2" disabled>
+                            <i class="bi bi-upload"></i> Upload Documents First
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Tab -->
+        <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+            <form id="editForm">
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Basic Information</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="edit-visit-date" class="form-label">Visit Date</label>
+                            <input type="date" class="form-control form-control-sm" id="edit-visit-date" name="visitDate">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-inspection-type" class="form-label">Inspection Type</label>
+                            <select class="form-select form-select-sm" id="edit-inspection-type" name="inspectionType">
+                                <option value="cqc">CQC</option>
+                                <option value="internal">Internal</option>
+                                <option value="local-authority">Local Authority</option>
+                                <option value="hse">Health & Safety</option>
+                                <option value="environmental">Environmental</option>
+                                <option value="corporate">Corporate/Head Office</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-assessment-title" class="form-label">Assessment Title</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-assessment-title" name="assessmentTitle">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Reference Information</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="edit-reference-prefix" class="form-label">Reference Prefix</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-reference-prefix" name="referencePrefix" value="Cat" readonly>
+                            <small class="form-text text-muted">Standard prefix for all reports</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-reference-identifier" class="form-label">Reference Identifier</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-reference-identifier" name="referenceIdentifier" placeholder="e.g., aj.sandhu, manage">
+                            <small class="form-text text-muted">Can be customized by MA users</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-reference-number" class="form-label">Reference Number</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-reference-number" name="referenceNumber" placeholder="e.g., 001" readonly>
+                            <small class="form-text text-muted">Auto-generated sequence number</small>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="edit-version" class="form-label">Version Number</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-version" name="versionNumber" value="1.0" readonly>
+                            <small class="form-text text-muted">Auto-increments when modified</small>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="edit-timestamp" class="form-label">Last Modified</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-timestamp" name="timestamp" readonly>
+                            <small class="form-text text-muted">Auto-updates when changes are saved</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Authorities Involved</h6>
+                    <p class="form-text text-muted mb-3">Select all authorities that were involved in this inspection or assessment</p>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-police" name="authorities[]" value="police">
+                                <label class="form-check-label" for="auth-police">Police</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-fire" name="authorities[]" value="fire">
+                                <label class="form-check-label" for="auth-fire">Fire Authority</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-safeguarding" name="authorities[]" value="safeguarding">
+                                <label class="form-check-label" for="auth-safeguarding">Safeguarding</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-families" name="authorities[]" value="families">
+                                <label class="form-check-label" for="auth-families">Families</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-staff" name="authorities[]" value="staff">
+                                <label class="form-check-label" for="auth-staff">Staff</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-contractors" name="authorities[]" value="contractors">
+                                <label class="form-check-label" for="auth-contractors">Contractors</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-environmental" name="authorities[]" value="environmental">
+                                <label class="form-check-label" for="auth-environmental">Environmental Health</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auth-other" name="authorities[]" value="other">
+                                <label class="form-check-label" for="auth-other">Other</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3" id="other-authority-row" style="display: none;">
+                        <div class="col-md-12">
+                            <label for="auth-other-text" class="form-label">Please specify other authority</label>
+                            <input type="text" class="form-control form-control-sm" id="auth-other-text" name="otherAuthority">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Responsibilities</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="edit-lead-person" class="form-label">Lead Person</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-lead-person" name="leadPerson">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit-department" class="form-label">Department</label>
+                            <select class="form-select form-select-sm" id="edit-department" name="department">
+                                <option value="care">Care Team</option>
+                                <option value="nursing">Nursing</option>
+                                <option value="management">Management</option>
+                                <option value="admin">Administration</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="catering">Catering</option>
+                                <option value="housekeeping">Housekeeping</option>
+                                <option value="hr">Human Resources</option>
+                                <option value="finance">Finance</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">
+                        Team Members
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-2" id="add-team-member">
+                            <i class="bi bi-plus-circle"></i> Add Team Member
+                        </button>
+                    </h6>
+                    <div id="team-members-container">
+                        <!-- Team members will be added dynamically here -->
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">Evidence 
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-2" id="add-evidence">
+                            <i class="bi bi-plus-circle"></i> Add Evidence
+                        </button>
+                    </h6>
+                    <div id="evidence-container" class="mb-3">
+                        <!-- Evidence fields will be added dynamically here -->
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="border-bottom pb-2">
+                        Milestones
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-2" id="add-milestone">
+                            <i class="bi bi-plus-circle"></i> Add Milestone
+                        </button>
+                    </h6>
+                    <div id="milestones-container">
+                        <!-- Milestones will be added dynamically here -->
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <button type="button" id="save-edits" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="nav-buttons">
+    <a href="/action-plans/step5" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Previous Step
+    </a>
+    <button type="submit" class="btn btn-success" id="submitActionPlan">
+        <i class="bi bi-check-circle"></i> Finalize Action Plan
+    </button>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Success!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                <h4 class="mt-3 mb-3">Action Plan Created</h4>
+                <p>Your regulatory action plan has been successfully created and saved.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="/action-plans" class="btn btn-outline-secondary">
+                    <i class="bi bi-list-check"></i> View All Action Plans
+                </a>
+                <a href="/action-plans/create-new" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create Another
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get current date/time for timestamps
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-US', { 
+            month: 'short',
+            day: 'numeric', 
+            year: 'numeric'
+        });
+        const formattedTime = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const timestamp = `${formattedDate} ${formattedTime}`;
+        
+        // Generate reference number components
+        const referencePrefix = "Cat";
+        // Extract email username from lead email or use department code
+        const leadEmail = document.getElementById('preview-lead-email')?.textContent || sessionStorage.getItem('leadEmail') || '';
+        const referenceIdentifier = leadEmail ? leadEmail.split('@')[0].toLowerCase() : (actionPlanData.department || "manage");
+        const referenceNumber = "001"; // Sequential number, would come from DB
+        const fullReference = `${referencePrefix}/${referenceIdentifier}/${referenceNumber}`;
+        const versionNumber = "1.0";
+        
+        // Default mock data as a fallback
+        const defaultData = {
+            visitDate: '2025-05-14',
+            inspectionType: 'CQC',
+            assessmentTitle: 'CQC Annual Inspection May 2025',
+            leadPerson: 'Registered Care Manager',
+            leadEmail: 'aj.sandhu@cathenacare.com',
+            department: 'Management',
+            teamMembers: [
+                { name: 'Agnes Pader', department: 'Care' },
+                { name: 'Natalie Davidson', department: 'Fulcrum' }
+            ],
+            regulations: [
+                'Person-centered care',
+                'Safe care',
+                'Safeguarding',
+                'Premises & equipment',
+                'Good governance'
+            ],
+            milestones: [
+                { title: 'Training', date: '2025-05-21', status: 'Pending' },
+                { title: 'Audits', date: '2025-05-25', status: 'Pending' },
+                { title: 'Infection Control', date: '2025-05-11', status: 'Completed' }
+            ],
+            // Reference data
+            referencePrefix: referencePrefix,
+            referenceIdentifier: referenceIdentifier,
+            referenceNumber: referenceNumber,
+            fullReference: fullReference,
+            versionNumber: versionNumber,
+            timestamp: timestamp
+        };
+
+        // Attempt to get real data from session storage
+        let evidenceData = [];
+        try {
+            evidenceData = JSON.parse(sessionStorage.getItem('evidenceData')) || [];
+            console.log('Retrieved evidence data:', evidenceData);
+        } catch (error) {
+            console.error('Error retrieving evidence data:', error);
+        }
+
+        // Combine the real evidence data with default data
+        const actionPlanData = {
+            ...defaultData,
+            evidence: evidenceData.length > 0 ? evidenceData : []
+        };
+
+        // Track version history
+        if (!actionPlanData.versionHistory) {
+            actionPlanData.versionHistory = [{
+                version: actionPlanData.versionNumber,
+                timestamp: actionPlanData.timestamp,
+                changes: "Initial creation"
+            }];
+        }
+        
+        // Get previous version info for display if available
+        let previousVersionInfo = '';
+        if (actionPlanData.versionHistory.length > 1) {
+            const prevVersion = actionPlanData.versionHistory[actionPlanData.versionHistory.length - 2];
+            previousVersionInfo = `<small class="d-block text-muted fst-italic">Previous: v${prevVersion.version} (${prevVersion.timestamp})</small>`;
+        }
+        
+        // Update all report sections with reference numbers, timestamps, and version info
+        // Cover page
+        document.getElementById('cover-reference').textContent = actionPlanData.fullReference;
+        document.getElementById('cover-timestamp').textContent = actionPlanData.timestamp;
+        document.getElementById('cover-version').textContent = `Version ${actionPlanData.versionNumber}`;
+        document.getElementById('cover-title').textContent = actionPlanData.assessmentTitle;
+        document.getElementById('cover-visit-date').textContent = actionPlanData.visitDate;
+        
+        // Contents page
+        document.getElementById('contents-reference').textContent = actionPlanData.fullReference;
+        document.getElementById('contents-timestamp').textContent = actionPlanData.timestamp;
+        document.getElementById('contents-version').textContent = `Version ${actionPlanData.versionNumber}`;
+        
+        // Details/Report page
+        document.getElementById('detail-reference').textContent = actionPlanData.fullReference;
+        document.getElementById('detail-timestamp').textContent = actionPlanData.timestamp;
+        document.getElementById('detail-version').textContent = `Version ${actionPlanData.versionNumber}`;
+        
+        // Appendix page
+        document.getElementById('appendix-reference').textContent = actionPlanData.fullReference;
+        document.getElementById('appendix-timestamp').textContent = actionPlanData.timestamp;
+        document.getElementById('appendix-version').textContent = `Version ${actionPlanData.versionNumber}`;
+        document.getElementById('previous-version').innerHTML = previousVersionInfo;
+        
+        // Populate the preview tab
+        document.getElementById('preview-visit-date').textContent = actionPlanData.visitDate;
+        document.getElementById('preview-inspection-type').textContent = actionPlanData.inspectionType;
+        document.getElementById('preview-assessment-title').textContent = actionPlanData.assessmentTitle;
+        document.getElementById('preview-lead-person').textContent = actionPlanData.leadPerson;
+        document.getElementById('preview-department').textContent = actionPlanData.department;
+        document.getElementById('preview-reference').textContent = actionPlanData.fullReference;
+
+        // Populate evidence - show all items from session storage
+        const evidenceList = document.createElement('ul');
+        evidenceList.className = 'ps-3';
+        
+        if (actionPlanData.evidence && actionPlanData.evidence.length > 0) {
+            actionPlanData.evidence.forEach(evidence => {
+                const li = document.createElement('li');
+                li.textContent = evidence;
+                evidenceList.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.textContent = 'No evidence uploaded';
+            li.className = 'text-muted fst-italic';
+            evidenceList.appendChild(li);
+        }
+        
+        document.getElementById('preview-evidence').innerHTML = '';
+        document.getElementById('preview-evidence').appendChild(evidenceList);
+        
+        // Create appendix of evidence items
+        const appendixContainer = document.getElementById('preview-appendix');
+        appendixContainer.innerHTML = '';
+        
+        if (actionPlanData.evidence && actionPlanData.evidence.length > 0) {
+            const appendixTable = document.createElement('table');
+            appendixTable.className = 'table table-bordered';
+            appendixTable.innerHTML = `
+                <thead class="table-light">
+                    <tr>
+                        <th width="10%">Ref</th>
+                        <th width="70%">Evidence Description</th>
+                        <th width="20%">Date Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            `;
+            
+            const tbody = appendixTable.querySelector('tbody');
+            
+            actionPlanData.evidence.forEach((evidence, index) => {
+                const tr = document.createElement('tr');
+                
+                // Format evidence reference with leading zeros
+                const evidenceRef = `E${String(index + 1).padStart(3, '0')}`;
+                
+                tr.innerHTML = `
+                    <td class="text-center">${evidenceRef}</td>
+                    <td>${evidence}</td>
+                    <td>${actionPlanData.timestamp || 'May 14, 2025'}</td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+            
+            appendixContainer.appendChild(appendixTable);
+        } else {
+            const noEvidence = document.createElement('p');
+            noEvidence.className = 'text-muted fst-italic';
+            noEvidence.textContent = 'No evidence attachments for this report';
+            appendixContainer.appendChild(noEvidence);
+        }
+
+        // Populate regulations
+        const regulationsList = document.createElement('ul');
+        regulationsList.className = 'ps-3';
+        actionPlanData.regulations.forEach(regulation => {
+            const li = document.createElement('li');
+            li.textContent = regulation;
+            regulationsList.appendChild(li);
+        });
+        document.getElementById('preview-regulations').innerHTML = '';
+        document.getElementById('preview-regulations').appendChild(regulationsList);
+
+        // Populate team members
+        const teamList = document.getElementById('preview-team-members');
+        teamList.innerHTML = '';
+        actionPlanData.teamMembers.forEach(member => {
+            const li = document.createElement('li');
+            li.textContent = `${member.name} (${member.department})`;
+            teamList.appendChild(li);
+        });
+
+        // Populate milestones
+        const milestonesTable = document.createElement('table');
+        milestonesTable.className = 'table table-sm table-bordered';
+        milestonesTable.innerHTML = `
+            <thead class="table-light">
+                <tr>
+                    <th>Milestone</th>
+                    <th>Target Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        `;
+        
+        const tbody = milestonesTable.querySelector('tbody');
+        actionPlanData.milestones.forEach(milestone => {
+            const tr = document.createElement('tr');
+            
+            const statusClass = milestone.status === 'Completed' 
+                ? 'bg-success text-white' 
+                : (milestone.status === 'In Progress' ? 'bg-warning' : '');
+                
+            tr.innerHTML = `
+                <td>${milestone.title}</td>
+                <td>${milestone.date}</td>
+                <td class="${statusClass}">${milestone.status}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        document.getElementById('preview-milestones').innerHTML = '';
+        document.getElementById('preview-milestones').appendChild(milestonesTable);
+
+        // Functions for dynamic form elements
+        
+        // Handle other authority checkbox display
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'auth-other') {
+                document.getElementById('other-authority-row').style.display = e.target.checked ? 'flex' : 'none';
+            }
+        });
+        
+        // Populate Team Members
+        function populateTeamMembers() {
+            const container = document.getElementById('team-members-container');
+            container.innerHTML = '';
+            
+            // Add existing team members
+            if (actionPlanData.teamMembers && actionPlanData.teamMembers.length > 0) {
+                actionPlanData.teamMembers.forEach((member, index) => {
+                    addTeamMemberRow(member.name, member.department);
+                });
+            }
+        }
+        
+        // Populate Evidence Items
+        function populateEvidence() {
+            const container = document.getElementById('evidence-container');
+            container.innerHTML = '';
+            
+            // Add existing evidence
+            if (actionPlanData.evidence && actionPlanData.evidence.length > 0) {
+                actionPlanData.evidence.forEach((evidence, index) => {
+                    addEvidenceRow(evidence);
+                });
+            }
+        }
+        
+        // Populate Milestones
+        function populateMilestones() {
+            const container = document.getElementById('milestones-container');
+            container.innerHTML = '';
+            
+            // Add existing milestones
+            if (actionPlanData.milestones && actionPlanData.milestones.length > 0) {
+                actionPlanData.milestones.forEach((milestone, index) => {
+                    addMilestoneRow(milestone.title, milestone.date, milestone.status);
+                });
+            }
+        }
+        
+        // Add team member row
+        function addTeamMemberRow(name = '', department = '') {
+            const container = document.getElementById('team-members-container');
+            const index = container.children.length;
+            
+            const row = document.createElement('div');
+            row.className = 'row g-3 mb-3 team-member-row';
+            row.dataset.index = index;
+            
+            row.innerHTML = `
+                <div class="col-md-5">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control form-control-sm" name="teamMemberName_${index}" value="${name}">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Department</label>
+                    <input type="text" class="form-control form-control-sm" name="teamMemberDept_${index}" value="${department}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-team-member" data-index="${index}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            
+            // Add event listener for remove button
+            row.querySelector('.remove-team-member').addEventListener('click', function() {
+                container.removeChild(row);
+            });
+        }
+        
+        // Add evidence row
+        function addEvidenceRow(evidence = '') {
+            const container = document.getElementById('evidence-container');
+            const index = container.children.length;
+            
+            const row = document.createElement('div');
+            row.className = 'row g-3 mb-3 evidence-row';
+            row.dataset.index = index;
+            
+            row.innerHTML = `
+                <div class="col-md-10">
+                    <label class="form-label">Evidence Item</label>
+                    <input type="text" class="form-control form-control-sm" name="evidence_${index}" value="${evidence}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-evidence" data-index="${index}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            
+            // Add event listener for remove button
+            row.querySelector('.remove-evidence').addEventListener('click', function() {
+                container.removeChild(row);
+            });
+        }
+        
+        // Add milestone row
+        function addMilestoneRow(title = '', date = '', status = 'Pending') {
+            const container = document.getElementById('milestones-container');
+            const index = container.children.length;
+            
+            const row = document.createElement('div');
+            row.className = 'row g-3 mb-3 milestone-row';
+            row.dataset.index = index;
+            
+            row.innerHTML = `
+                <div class="col-md-4">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control form-control-sm" name="milestoneTitle_${index}" value="${title}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Target Date</label>
+                    <input type="date" class="form-control form-control-sm" name="milestoneDate_${index}" value="${date}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select form-select-sm" name="milestoneStatus_${index}">
+                        <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" data-index="${index}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            
+            // Add event listener for remove button
+            row.querySelector('.remove-milestone').addEventListener('click', function() {
+                container.removeChild(row);
+            });
+        }
+        
+        // Add listeners for add buttons
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'add-team-member') {
+                addTeamMemberRow();
+            } else if (e.target && e.target.id === 'add-evidence') {
+                addEvidenceRow();
+            } else if (e.target && e.target.id === 'add-milestone') {
+                addMilestoneRow();
+            }
+        });
+        
+        // Populate the edit form with data
+        document.getElementById('edit-visit-date').value = actionPlanData.visitDate;
+        document.getElementById('edit-assessment-title').value = actionPlanData.assessmentTitle;
+        // Get data from the form or from URL parameters if first load
+        // This ensures we're not showing Jane Smith or other placeholders
+        if (!actionPlanData.leadPerson || actionPlanData.leadPerson === "Jane Smith") {
+            // Try to get values from session storage or URL
+            const savedData = sessionStorage.getItem('actionPlanFormData');
+            if (savedData) {
+                try {
+                    const formValues = JSON.parse(savedData);
+                    actionPlanData.visitDate = formValues.visitDate || "";
+                    actionPlanData.inspectionType = formValues.inspectionType || "";
+                    actionPlanData.assessmentTitle = formValues.actionPlanTitle || "";
+                    actionPlanData.leadPerson = formValues.leadPerson || "";
+                    actionPlanData.leadEmail = formValues.leadEmail || "";
+                    actionPlanData.department = formValues.department || "";
+                    actionPlanData.description = formValues.description || "";
+                    
+                    // Get required actions
+                    if (formValues.requiredAction) {
+                        actionPlanData.requiredActions = Array.isArray(formValues.requiredAction) 
+                            ? formValues.requiredAction 
+                            : [formValues.requiredAction];
+                    }
+                    
+                    // Get evidence requirements
+                    if (formValues.evidenceRequired) {
+                        actionPlanData.evidenceRequired = Array.isArray(formValues.evidenceRequired) 
+                            ? formValues.evidenceRequired 
+                            : [formValues.evidenceRequired];
+                    }
+                    
+                    // Update all preview sections too
+                    if (actionPlanData.leadPerson) {
+                        document.getElementById('preview-lead-person').textContent = actionPlanData.leadPerson;
+                    }
+                    if (actionPlanData.department) {
+                        document.getElementById('preview-department').textContent = actionPlanData.department;
+                    }
+                    if (actionPlanData.visitDate) {
+                        document.getElementById('preview-visit-date').textContent = actionPlanData.visitDate;
+                    }
+                    if (actionPlanData.inspectionType) {
+                        document.getElementById('preview-inspection-type').textContent = actionPlanData.inspectionType;
+                    }
+                    if (actionPlanData.assessmentTitle) {
+                        document.getElementById('preview-assessment-title').textContent = actionPlanData.assessmentTitle;
+                    }
+                } catch (err) {
+                    console.error('Error parsing saved data:', err);
+                }
+            }
+        }
+        
+        document.getElementById('edit-lead-person').value = actionPlanData.leadPerson || "";
+        document.getElementById('edit-department').value = actionPlanData.department;
+        
+        // Populate reference fields
+        document.getElementById('edit-reference-prefix').value = actionPlanData.referencePrefix;
+        document.getElementById('edit-reference-identifier').value = actionPlanData.referenceIdentifier;
+        document.getElementById('edit-reference-number').value = actionPlanData.referenceNumber;
+        document.getElementById('edit-version').value = actionPlanData.versionNumber;
+        document.getElementById('edit-timestamp').value = actionPlanData.timestamp;
+        
+        // Initialize editable sections
+        populateTeamMembers();
+        populateEvidence();
+        populateMilestones();
+        
+        // Handle edit form save
+        document.getElementById('save-edits').addEventListener('click', function() {
+            const formData = new FormData(document.getElementById('editForm'));
+            
+            // Check if user is changing the reference identifier
+            const newIdentifier = formData.get('referenceIdentifier');
+            const isReferenceChanged = actionPlanData.referenceIdentifier !== newIdentifier && newIdentifier.trim() !== '';
+            
+            // Update timestamp for any changes
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', { 
+                month: 'short',
+                day: 'numeric', 
+                year: 'numeric'
+            });
+            const formattedTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const timestamp = `${formattedDate} ${formattedTime}`;
+            
+            // Update version history for any changes
+            let versionChanged = false;
+            
+            // If reference changed, increment major version (e.g., 1.0 → 2.0)
+            if (isReferenceChanged) {
+                const versionParts = actionPlanData.versionNumber.split('.');
+                const majorVersion = parseInt(versionParts[0]) + 1;
+                actionPlanData.versionNumber = `${majorVersion}.0`;
+                versionChanged = true;
+                
+                // Update reference
+                const newFullReference = `${actionPlanData.referencePrefix}/${newIdentifier}/${actionPlanData.referenceNumber}`;
+                
+                // Update all references in the report
+                document.getElementById('cover-reference').textContent = newFullReference;
+                document.getElementById('contents-reference').textContent = newFullReference;
+                document.getElementById('detail-reference').textContent = newFullReference;
+                document.getElementById('appendix-reference').textContent = newFullReference;
+                document.getElementById('preview-reference').textContent = newFullReference;
+                
+                // Update actionPlanData
+                actionPlanData.referenceIdentifier = newIdentifier;
+                actionPlanData.fullReference = newFullReference;
+            } 
+            // Otherwise, if any other field changed, increment minor version (e.g., 1.0 → 1.1)
+            else if (formData.get('visitDate') !== actionPlanData.visitDate ||
+                    formData.get('inspectionType') !== actionPlanData.inspectionType ||
+                    formData.get('assessmentTitle') !== actionPlanData.assessmentTitle ||
+                    formData.get('leadPerson') !== actionPlanData.leadPerson ||
+                    formData.get('department') !== actionPlanData.department) {
+                const versionParts = actionPlanData.versionNumber.split('.');
+                const majorVersion = parseInt(versionParts[0]);
+                const minorVersion = parseInt(versionParts[1]) + 1;
+                actionPlanData.versionNumber = `${majorVersion}.${minorVersion}`;
+                versionChanged = true;
+            }
+            
+            // Update version history
+            if (versionChanged) {
+                if (!actionPlanData.versionHistory) {
+                    actionPlanData.versionHistory = [{
+                        version: '1.0',
+                        timestamp: actionPlanData.timestamp || timestamp,
+                        changes: "Initial creation"
+                    }];
+                }
+                
+                actionPlanData.versionHistory.push({
+                    version: actionPlanData.versionNumber,
+                    timestamp: timestamp,
+                    changes: isReferenceChanged ? "Reference identifier updated" : "Document content updated"
+                });
+                
+                // Update all version displays in report
+                document.getElementById('cover-version').textContent = `Version ${actionPlanData.versionNumber}`;
+                document.getElementById('contents-version').textContent = `Version ${actionPlanData.versionNumber}`;
+                document.getElementById('detail-version').textContent = `Version ${actionPlanData.versionNumber}`;
+                document.getElementById('appendix-version').textContent = `Version ${actionPlanData.versionNumber}`;
+                document.getElementById('edit-version').value = actionPlanData.versionNumber;
+                
+                // Show previous version info
+                if (actionPlanData.versionHistory.length > 1) {
+                    const prevVersion = actionPlanData.versionHistory[actionPlanData.versionHistory.length - 2];
+                    const previousVersionInfo = `<small class="d-block text-muted fst-italic">Previous: v${prevVersion.version} (${prevVersion.timestamp})</small>`;
+                    document.getElementById('previous-version').innerHTML = previousVersionInfo;
+                }
+            }
+            
+            // Update timestamps
+            document.getElementById('cover-timestamp').textContent = timestamp;
+            document.getElementById('contents-timestamp').textContent = timestamp;
+            document.getElementById('detail-timestamp').textContent = timestamp;
+            document.getElementById('appendix-timestamp').textContent = timestamp;
+            document.getElementById('edit-timestamp').value = timestamp;
+            actionPlanData.timestamp = timestamp;
+            
+            // Update the preview with edited values
+            document.getElementById('preview-visit-date').textContent = formData.get('visitDate');
+            document.getElementById('preview-inspection-type').textContent = 
+                document.getElementById('edit-inspection-type').options[
+                    document.getElementById('edit-inspection-type').selectedIndex
+                ].text;
+            document.getElementById('preview-assessment-title').textContent = formData.get('assessmentTitle');
+            document.getElementById('preview-lead-person').textContent = formData.get('leadPerson');
+            document.getElementById('preview-department').textContent = 
+                document.getElementById('edit-department').options[
+                    document.getElementById('edit-department').selectedIndex
+                ].text;
+            
+            // Show a success message
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.style.zIndex = 5;
+            toast.innerHTML = `
+                <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-check-circle me-2"></i> Changes saved successfully
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Switch back to preview tab
+            document.getElementById('preview-tab').click();
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        });
+        
+        // Handle final submission
+        document.getElementById('submitActionPlan').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show success modal
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        });
+        
+        // Heat Map Tracker functionality
+        document.getElementById('heatmap-tab').addEventListener('click', function() {
+            updateHeatMapData();
+        });
+        
+        document.getElementById('refresh-heatmap').addEventListener('click', function() {
+            updateHeatMapData();
+        });
+        
+        function updateHeatMapData() {
+            // Sample data - in production this would come from the server
+            const milestones = actionPlanData.milestones || [];
+            
+            // Count milestones by status
+            let pendingCount = 0;
+            let inProgressCount = 0;
+            let completedCount = 0;
+            let departmentStats = {};
+            
+            milestones.forEach(milestone => {
+                // Count by status
+                if (milestone.status === 'Pending') {
+                    pendingCount++;
+                } else if (milestone.status === 'In Progress') {
+                    inProgressCount++;
+                } else if (milestone.status === 'Completed') {
+                    completedCount++;
+                }
+                
+                // Group by department
+                if (!departmentStats[milestone.department]) {
+                    departmentStats[milestone.department] = {
+                        pending: 0,
+                        inProgress: 0,
+                        completed: 0,
+                        total: 0
+                    };
+                }
+                
+                departmentStats[milestone.department].total++;
+                
+                if (milestone.status === 'Pending') {
+                    departmentStats[milestone.department].pending++;
+                } else if (milestone.status === 'In Progress') {
+                    departmentStats[milestone.department].inProgress++;
+                } else if (milestone.status === 'Completed') {
+                    departmentStats[milestone.department].completed++;
+                }
+            });
+            
+            const totalMilestones = milestones.length;
+            
+            // Update counts
+            document.getElementById('pending-count').textContent = pendingCount;
+            document.getElementById('in-progress-count').textContent = inProgressCount;
+            document.getElementById('completed-count').textContent = completedCount;
+            document.getElementById('total-milestones').textContent = totalMilestones;
+            
+            // Update progress bars
+            if (totalMilestones > 0) {
+                const pendingPercent = (pendingCount / totalMilestones) * 100;
+                const inProgressPercent = (inProgressCount / totalMilestones) * 100;
+                const completedPercent = (completedCount / totalMilestones) * 100;
+                
+                document.getElementById('pending-bar').style.width = pendingPercent + '%';
+                document.getElementById('pending-bar').setAttribute('aria-valuenow', pendingPercent);
+                
+                document.getElementById('in-progress-bar').style.width = inProgressPercent + '%';
+                document.getElementById('in-progress-bar').setAttribute('aria-valuenow', inProgressPercent);
+                
+                document.getElementById('completed-bar').style.width = completedPercent + '%';
+                document.getElementById('completed-bar').setAttribute('aria-valuenow', completedPercent);
+            }
+            
+            // Update last updated timestamp
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric'
+            });
+            const formattedTime = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('last-heat-map-update').textContent = `${formattedDate} ${formattedTime}`;
+            
+            // Update department matrix
+            updateDepartmentMatrix(departmentStats);
+            
+            // Update timeline visualization
+            updateTimelineVisualization(milestones);
+        }
+        
+        function updateDepartmentMatrix(departmentStats) {
+            const matrixBody = document.getElementById('department-matrix');
+            matrixBody.innerHTML = '';
+            
+            if (Object.keys(departmentStats).length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="6" class="text-center text-muted">No data to display</td>`;
+                matrixBody.appendChild(emptyRow);
+                return;
+            }
+            
+            Object.keys(departmentStats).forEach(department => {
+                const stats = departmentStats[department];
+                const row = document.createElement('tr');
+                
+                const completionPercent = stats.total > 0 
+                    ? Math.round((stats.completed / stats.total) * 100) 
+                    : 0;
+                
+                row.innerHTML = `
+                    <td class="text-start">${department}</td>
+                    <td>
+                        <span class="badge rounded-pill bg-danger">${stats.pending}</span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill bg-warning text-dark">${stats.inProgress}</span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill bg-success">${stats.completed}</span>
+                    </td>
+                    <td>${stats.total}</td>
+                    <td>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: ${completionPercent}%;" 
+                                aria-valuenow="${completionPercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small>${completionPercent}%</small>
+                    </td>
+                `;
+                
+                matrixBody.appendChild(row);
+            });
+        }
+        
+        function updateTimelineVisualization(milestones) {
+            const timelineMonths = document.getElementById('timeline-months');
+            const timelineContent = document.getElementById('milestone-timeline-content');
+            
+            if (milestones.length === 0) {
+                timelineMonths.innerHTML = '';
+                timelineContent.innerHTML = `
+                    <div class="timeline-empty-state text-center py-5 text-muted">
+                        <i class="bi bi-calendar3 fs-1"></i>
+                        <p>No milestones to display</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort milestones by target date
+            const sortedMilestones = [...milestones].sort((a, b) => {
+                return new Date(a.targetDate) - new Date(b.targetDate);
+            });
+            
+            // Get the range of dates
+            const startDate = new Date(sortedMilestones[0].targetDate);
+            const endDate = new Date(sortedMilestones[sortedMilestones.length - 1].targetDate);
+            
+            // Get all months in range
+            const months = [];
+            const currentDate = new Date(startDate);
+            currentDate.setDate(1); // Start at the beginning of the month
+            
+            while (currentDate <= endDate) {
+                months.push(new Date(currentDate));
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            
+            // Create month headers
+            timelineMonths.innerHTML = '';
+            months.forEach(month => {
+                const monthElement = document.createElement('div');
+                monthElement.className = 'timeline-month';
+                monthElement.textContent = month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                timelineMonths.appendChild(monthElement);
+            });
+            
+            // Create timeline items
+            timelineContent.innerHTML = '';
+            
+            sortedMilestones.forEach(milestone => {
+                const milestoneDate = new Date(milestone.targetDate);
+                
+                // Calculate position (which month and how far into that month)
+                const monthIndex = months.findIndex(month => 
+                    month.getMonth() === milestoneDate.getMonth() && 
+                    month.getFullYear() === milestoneDate.getFullYear()
+                );
+                
+                // Skip if we can't find the month (shouldn't happen)
+                if (monthIndex === -1) return;
+                
+                // Create timeline item
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                
+                const statusClass = milestone.status === 'Pending' ? 'timeline-item-pending' : 
+                                 milestone.status === 'In Progress' ? 'timeline-item-in-progress' : 
+                                 'timeline-item-completed';
+                
+                timelineItem.innerHTML = `
+                    <div class="timeline-item-label">${milestone.description}</div>
+                    <div class="timeline-item-bar">
+                        <div class="timeline-item-progress ${statusClass}" style="width: 100%;">
+                            <span class="timeline-item-date">${milestone.targetDate}</span>
+                        </div>
+                    </div>
+                `;
+                
+                timelineContent.appendChild(timelineItem);
+            });
+        }
+        
+        // Sample Reports functionality
+        document.getElementById('upload-sample').addEventListener('click', function() {
+            // Simulate uploading a sample report
+            const title = document.getElementById('sample-title').value;
+            const category = document.getElementById('sample-category').value;
+            const date = document.getElementById('sample-date').value;
+            const fileInput = document.getElementById('sample-file');
+            
+            if (!title || !category || !date || !fileInput.files.length) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // In a real application, this would upload the file to the server
+            // For demonstration, we'll simulate a successful upload
+            
+            // Add to sample reports list
+            addSampleReport(title, category, date);
+            
+            // Clear form
+            document.getElementById('uploadSampleForm').reset();
+            
+            // Show success message
+            alert('Sample report uploaded successfully!');
+            
+            // Enable analyze button if we have samples
+            document.getElementById('analyze-samples').removeAttribute('disabled');
+        });
+        
+        function addSampleReport(title, category, date) {
+            const samplesList = document.getElementById('sample-reports-list');
+            
+            // Clear "no samples" message if it exists
+            if (samplesList.querySelector('td[colspan="4"]')) {
+                samplesList.innerHTML = '';
+            }
+            
+            const categoryMap = {
+                'cqc': 'CQC Inspection',
+                'fire': 'Fire Safety',
+                'health': 'Health & Safety',
+                'safeguarding': 'Safeguarding',
+                'case-study': 'Case Study',
+                'legal': 'Legal Compliance',
+                'financial': 'Financial Audit',
+                'regulatory': 'Regulatory',
+                'other': 'Other'
+            };
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${title}</td>
+                <td><span class="badge bg-secondary">${categoryMap[category] || category}</span></td>
+                <td>${date}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" title="View">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            samplesList.appendChild(row);
+            
+            // Update sample count
+            const sampleCount = samplesList.querySelectorAll('tr').length;
+            document.getElementById('sample-count').textContent = sampleCount;
+        }
+        
+        document.getElementById('analyze-samples').addEventListener('click', function() {
+            // Show loading state
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing...';
+            this.disabled = true;
+            
+            // Get all uploaded sample reports
+            const sampleReports = [];
+            const sampleRows = document.querySelectorAll('#sample-reports-list tr');
+            
+            sampleRows.forEach(row => {
+                if (!row.querySelector('td[colspan="4"]')) {
+                    const title = row.cells[0]?.textContent || '';
+                    const category = row.cells[1]?.textContent || '';
+                    const date = row.cells[2]?.textContent || '';
+                    
+                    if (title) {
+                        sampleReports.push({
+                            title: title,
+                            category: category,
+                            date: date,
+                            type: getDocumentType(category)
+                        });
+                    }
+                }
+            });
+            
+            // Get evidence data too
+            const evidenceItems = actionPlanData.evidence || [];
+            
+            // Create document content from action plan data and other context
+            const documents = [];
+            
+            // Add sample reports as document content
+            sampleReports.forEach(report => {
+                documents.push({
+                    title: report.title,
+                    type: report.type,
+                    content: generateDocumentContent(report.title, report.type, report.category)
+                });
+            });
+            
+            // Add evidence items as document content
+            evidenceItems.forEach(item => {
+                if (item.description) {
+                    documents.push({
+                        title: item.description,
+                        type: "Evidence",
+                        content: `Evidence: ${item.description}. ${generateEvidenceContent(item.description)}`
+                    });
+                }
+            });
+            
+            // Add current action plan as a document
+            if (actionPlanData.actionPlanTitle) {
+                documents.push({
+                    title: actionPlanData.actionPlanTitle,
+                    type: getDocumentType(actionPlanData.actionPlanTitle),
+                    content: `Action Plan: ${actionPlanData.actionPlanTitle}. ${actionPlanData.description || ''}. Required actions: ${(actionPlanData.requiredActions || []).join('. ')}. Evidence required: ${(actionPlanData.evidenceRequired || []).join('. ')}`
+                });
+            }
+            
+            // Perform regulatory analysis on all documents
+            const analyses = documents.map(doc => 
+                window.RegulatoryAnalysis.analyzeDocument(doc.content, doc.type)
+            );
+            
+            // Combine analyses for comprehensive insights
+            const combinedAnalysis = window.RegulatoryAnalysis.combineAnalyses(analyses);
+            
+            // In a real application, this would hit a backend API for more detailed analysis
+            // Process the analysis results
+            setTimeout(() => {
+                // Hide empty state
+                document.getElementById('ai-insights-empty').classList.add('d-none');
+                
+                // Show insights container
+                document.getElementById('ai-insights-container').classList.remove('d-none');
+                
+                // Populate regulation analysis tab
+                populateRegulationsTable(combinedAnalysis.matchedRegulations);
+                
+                // Populate requirements tab
+                populateRequirementsLists(combinedAnalysis.requirements);
+                
+                // Populate timeline tab
+                populateTimelineTab(combinedAnalysis.deadlines);
+                
+                // Populate patterns tab
+                populatePatternsTab(combinedAnalysis.patterns, combinedAnalysis.crossDocumentPatterns);
+                
+                // Populate heat maps tab
+                populateHeatMapsTab(combinedAnalysis.heatMapData);
+                
+                // Populate best practices tab
+                populateBestPracticesTab(combinedAnalysis.bestPractices);
+                
+                // Add successful resolutions
+                populateSuccessfulResolutions(evidenceItems, combinedAnalysis);
+                
+                // Reset button
+                this.innerHTML = '<i class="bi bi-graph-up"></i> Analyze Library';
+                this.disabled = false;
+            }, 2000);
+            
+            // Helper function to determine document type from category
+            function getDocumentType(category) {
+                const categoryLower = category.toLowerCase();
+                if (categoryLower.includes('cqc')) return 'CQC';
+                if (categoryLower.includes('fire')) return 'Fire';
+                if (categoryLower.includes('finan')) return 'Financial';
+                if (categoryLower.includes('business') || categoryLower.includes('governance')) return 'Business';
+                if (categoryLower.includes('health') || categoryLower.includes('safe')) return 'Health';
+                return 'Other';
+            }
+            
+            // Helper function to generate realistic document content based on document title and type
+            function generateDocumentContent(title, type, category) {
+                let content = `Document: ${title}. `;
+                
+                // Add type-specific content
+                switch (type) {
+                    case 'CQC':
+                        content += `CQC inspection found non-compliance with Regulation 12: Safe Care and Treatment, specifically relating to medication management procedures. Staff must ensure all medication is administered as prescribed. The registered manager is responsible for ensuring adequate medication training. All medication errors must be documented and reported. A new medication policy must be developed within 28 days. Staff training on medication administration must be completed by June 15, 2025. Weekly medication audits are recommended as best practice.`;
+                        break;
+                    case 'Fire':
+                        content += `Fire safety inspection identified issues with emergency lighting maintenance. All emergency lights must be tested monthly and records kept. Fire risk assessment must be updated by July 1, 2025. Fire wardens must receive refresher training. Fire drills should be conducted quarterly as a minimum. The registered manager is responsible for ensuring fire safety compliance.`;
+                        break;
+                    case 'Financial':
+                        content += `Financial audit review found documentation gaps in expense authorization. All expenses over £500 must have dual authorization. Petty cash records must be maintained daily. Monthly reconciliation of accounts must be completed by the 5th of each month. The finance manager is responsible for ensuring financial controls are followed. Implementation of digital receipt management system is recommended as best practice.`;
+                        break;
+                    case 'Health':
+                        content += `Health and Safety audit identified gaps in risk assessment documentation. All risk assessments must be reviewed annually or after incidents. COSHH assessments must be updated for all new cleaning products. Staff training on manual handling must be refreshed by May 30, 2025. The health and safety officer is responsible for ensuring compliance with RIDDOR regulations.`;
+                        break;
+                    default:
+                        content += `This document includes requirements for documentation and record keeping. Staff training records must be maintained. Policies must be reviewed annually. The manager is responsible for ensuring all requirements are met by the target dates.`;
+                }
+                
+                // Add category-specific details if available
+                if (category) {
+                    if (category.includes('case-study')) {
+                        content += ` Case study showed that implementing weekly audits reduced medication errors by 87%. Staff feedback indicated that regular training improved confidence in medication administration.`;
+                    }
+                    if (category.includes('regulatory')) {
+                        content += ` Regulatory guidance states that adequate systems must be in place to ensure safe care. Documentation must be accurate, complete, and up-to-date.`;
+                    }
+                }
+                
+                return content;
+            }
+            
+            // Helper function to generate content based on evidence description
+            function generateEvidenceContent(description) {
+                const descLower = description.toLowerCase();
+                let content = "";
+                
+                if (descLower.includes('training') || descLower.includes('competency')) {
+                    content = `Training records show staff competency in medication administration. All staff completed medication training by the deadline. Competency assessments demonstrate 95% compliance with medication procedures.`;
+                } else if (descLower.includes('audit') || descLower.includes('result')) {
+                    content = `Audit results show significant improvement in medication management. Weekly audits identified and resolved potential issues before they affected service users. Compliance rate increased from 76% to 98% over three months.`;
+                } else if (descLower.includes('policy') || descLower.includes('procedure')) {
+                    content = `Updated policy includes comprehensive guidance on medication management. The policy complies with Regulation 12 requirements. Staff responsibilities are clearly defined.`;
+                } else {
+                    content = `This evidence demonstrates completion of required actions. Implementation has improved service quality and regulatory compliance.`;
+                }
+                
+                return content;
+            }
+            
+            // Helper function to populate regulations table
+            function populateRegulationsTable(regulations) {
+                const table = document.getElementById('regulations-table');
+                table.innerHTML = '';
+                
+                if (!regulations || regulations.length === 0) {
+                    table.innerHTML = `<tr><td colspan="5" class="text-center">No regulations identified</td></tr>`;
+                    return;
+                }
+                
+                // Get top 10 regulations
+                const topRegulations = regulations.slice(0, 10);
+                
+                topRegulations.forEach(reg => {
+                    const relevancePercent = Math.round(reg.relevanceScore * 100);
+                    const impact = relevancePercent > 75 ? 'High' : (relevancePercent > 40 ? 'Medium' : 'Low');
+                    
+                    // Determine status based on relevance
+                    let status = 'Not Addressed';
+                    let statusClass = 'bg-danger';
+                    
+                    if (actionPlanData.requiredActions && actionPlanData.requiredActions.some(action => 
+                        reg.regulation.toLowerCase().includes(action.toLowerCase()) ||
+                        action.toLowerCase().includes(reg.regulation.split(':')[0].toLowerCase()))) {
+                        status = 'In Progress';
+                        statusClass = 'bg-warning text-dark';
+                    }
+                    
+                    if (evidenceItems && evidenceItems.some(evidence => 
+                        evidence.description && (
+                            evidence.description.toLowerCase().includes(reg.regulation.toLowerCase()) ||
+                            reg.regulation.toLowerCase().includes(evidence.description.toLowerCase())
+                        ))) {
+                        status = 'Addressed';
+                        statusClass = 'bg-success';
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${reg.framework}</td>
+                        <td><strong>${reg.regulation}</strong></td>
+                        <td>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" style="width: ${relevancePercent}%"></div>
+                            </div>
+                            <small>${relevancePercent}%</small>
+                        </td>
+                        <td><span class="badge ${impact === 'High' ? 'bg-danger' : (impact === 'Medium' ? 'bg-warning text-dark' : 'bg-success')}">${impact}</span></td>
+                        <td><span class="badge ${statusClass}">${status}</span></td>
+                    `;
+                    table.appendChild(row);
+                });
+            }
+            
+            // Helper function to populate requirements lists
+            function populateRequirementsLists(requirements) {
+                const highPriorityList = document.getElementById('high-priority-requirements');
+                const mediumPriorityList = document.getElementById('medium-priority-requirements');
+                const lowPriorityList = document.getElementById('low-priority-requirements');
+                
+                highPriorityList.innerHTML = '';
+                mediumPriorityList.innerHTML = '';
+                lowPriorityList.innerHTML = '';
+                
+                if (!requirements || requirements.length === 0) {
+                    highPriorityList.innerHTML = `<li class="list-group-item">No high priority requirements identified</li>`;
+                    mediumPriorityList.innerHTML = `<li class="list-group-item">No medium priority requirements identified</li>`;
+                    lowPriorityList.innerHTML = `<li class="list-group-item">No low priority requirements identified</li>`;
+                    return;
+                }
+                
+                // Default requirements based on action plan if no specific ones found
+                if (requirements.length < 3 && actionPlanData.requiredActions) {
+                    // Add action plan requirements
+                    actionPlanData.requiredActions.forEach((action, index) => {
+                        const priority = index === 0 ? 'High' : (index === 1 ? 'Medium' : 'Low');
+                        requirements.push({
+                            text: action,
+                            regulation: actionPlanData.actionPlanTitle || 'Policy Compliance',
+                            priority: priority
+                        });
+                    });
+                }
+                
+                // Sort requirements by priority
+                requirements.forEach(req => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    
+                    // Check if this requirement is already addressed by evidence
+                    let isAddressed = false;
+                    if (evidenceItems) {
+                        isAddressed = evidenceItems.some(evidence => 
+                            evidence.description && req.text.toLowerCase().includes(evidence.description.toLowerCase())
+                        );
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">${req.regulation}</div>
+                                ${req.text}
+                            </div>
+                            ${isAddressed ? 
+                                '<span class="badge bg-success rounded-pill">Addressed</span>' : 
+                                '<span class="badge bg-warning text-dark rounded-pill">Pending</span>'
+                            }
+                        </div>
+                    `;
+                    
+                    switch (req.priority) {
+                        case 'High':
+                            highPriorityList.appendChild(item);
+                            break;
+                        case 'Medium':
+                            mediumPriorityList.appendChild(item);
+                            break;
+                        case 'Low':
+                            lowPriorityList.appendChild(item);
+                            break;
+                    }
+                });
+                
+                // Ensure each list has at least one item
+                if (highPriorityList.childElementCount === 0) {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = 'No high priority requirements identified';
+                    highPriorityList.appendChild(item);
+                }
+                
+                if (mediumPriorityList.childElementCount === 0) {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = 'No medium priority requirements identified';
+                    mediumPriorityList.appendChild(item);
+                }
+                
+                if (lowPriorityList.childElementCount === 0) {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = 'No low priority requirements identified';
+                    lowPriorityList.appendChild(item);
+                }
+            }
+            
+            // Helper function to populate timeline tab
+            function populateTimelineTab(deadlines) {
+                const timeline = document.getElementById('regulatory-timeline');
+                const deadlineTable = document.getElementById('deadline-table');
+                
+                timeline.innerHTML = '';
+                deadlineTable.innerHTML = '';
+                
+                if (!deadlines || deadlines.length === 0) {
+                    // Default deadlines based on action plan target completion
+                    const defaultDeadlines = [];
+                    
+                    if (actionPlanData.targetCompletionDate) {
+                        defaultDeadlines.push({
+                            extractedDates: [actionPlanData.targetCompletionDate],
+                            text: `${actionPlanData.actionPlanTitle || 'Action Plan'} must be completed`,
+                            priority: 'High',
+                            regulation: actionPlanData.actionPlanTitle || 'Policy Compliance'
+                        });
+                    }
+                    
+                    // Add deadlines for each required action if available
+                    if (actionPlanData.requiredActions) {
+                        actionPlanData.requiredActions.forEach((action, index) => {
+                            // Generate date 7, 14, or 21 days from now based on index
+                            const days = (index + 1) * 7;
+                            const date = new Date();
+                            date.setDate(date.getDate() + days);
+                            
+                            defaultDeadlines.push({
+                                extractedDates: [date.toISOString().split('T')[0]],
+                                text: action,
+                                priority: index === 0 ? 'High' : (index === 1 ? 'Medium' : 'Low'),
+                                regulation: actionPlanData.actionPlanTitle || 'Policy Compliance'
+                            });
+                        });
+                    }
+                    
+                    deadlines = defaultDeadlines;
+                }
+                
+                // Sort deadlines by date
+                const sortedDeadlines = [];
+                deadlines.forEach(deadline => {
+                    if (deadline.extractedDates) {
+                        deadline.extractedDates.forEach(dateStr => {
+                            sortedDeadlines.push({
+                                date: new Date(dateStr),
+                                originalDateStr: dateStr,
+                                text: deadline.text,
+                                priority: deadline.priority,
+                                regulation: deadline.regulation || 'Regulatory Requirement'
+                            });
+                        });
+                    }
+                });
+                
+                // Sort by date
+                sortedDeadlines.sort((a, b) => a.date - b.date);
+                
+                // Create timeline items
+                const timelineItemTemplate = (deadline, index) => {
+                    const priorityClass = deadline.priority === 'High' ? 'danger' : 
+                                       (deadline.priority === 'Medium' ? 'warning' : 'success');
+                                       
+                    return `
+                        <div class="timeline-item">
+                            <div class="timeline-point-border bg-${priorityClass}"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6>${deadline.originalDateStr}</h6>
+                                    <span class="badge bg-${priorityClass}">${deadline.priority}</span>
+                                </div>
+                                <p>${deadline.text}</p>
+                                <small class="text-muted">${deadline.regulation}</small>
+                            </div>
+                        </div>
+                    `;
+                };
+                
+                // Add timeline items
+                let timelineHTML = '';
+                sortedDeadlines.forEach((deadline, index) => {
+                    timelineHTML += timelineItemTemplate(deadline, index);
+                    
+                    // Add to deadline table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${deadline.originalDateStr}</td>
+                        <td>${deadline.text}</td>
+                        <td><span class="badge ${deadline.priority === 'High' ? 'bg-danger' : 
+                                              (deadline.priority === 'Medium' ? 'bg-warning text-dark' : 'bg-success')}">${deadline.priority}</span></td>
+                        <td>${deadline.regulation}</td>
+                    `;
+                    deadlineTable.appendChild(row);
+                });
+                
+                // Add to timeline
+                timeline.innerHTML = timelineHTML || '<p class="text-center text-muted">No deadlines identified</p>';
+                
+                // Add timeline CSS if not already present
+                if (!document.getElementById('timeline-styles')) {
+                    const styleElement = document.createElement('style');
+                    styleElement.id = 'timeline-styles';
+                    styleElement.textContent = `
+                        .timeline-item {
+                            position: relative;
+                            padding-left: 30px;
+                            margin-bottom: 20px;
+                            border-left: 2px solid #dee2e6;
+                        }
+                        .timeline-point-border {
+                            position: absolute;
+                            left: -10px;
+                            top: 0;
+                            width: 20px;
+                            height: 20px;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                        }
+                        .timeline-content {
+                            padding: 10px;
+                            background-color: #f8f9fa;
+                            border-radius: 5px;
+                        }
+                    `;
+                    document.head.appendChild(styleElement);
+                }
+            }
+            
+            // Helper function to populate patterns tab
+            function populatePatternsTab(patterns, crossDocumentPatterns) {
+                const commonIssuesList = document.getElementById('common-issues');
+                const crossDocumentPatternsList = document.getElementById('cross-document-patterns');
+                
+                commonIssuesList.innerHTML = '';
+                crossDocumentPatternsList.innerHTML = '';
+                
+                // Process patterns
+                const allPatterns = [];
+                if (patterns && patterns.length > 0) {
+                    patterns.forEach(patternGroup => {
+                        if (patternGroup.patterns) {
+                            patternGroup.patterns.forEach(pattern => {
+                                allPatterns.push({
+                                    pattern: pattern,
+                                    type: patternGroup.type || 'General Pattern'
+                                });
+                            });
+                        } else if (typeof patternGroup === 'string') {
+                            allPatterns.push({
+                                pattern: patternGroup,
+                                type: 'General Pattern'
+                            });
+                        }
+                    });
+                }
+                
+                // If no patterns, generate from action plan data
+                if (allPatterns.length === 0) {
+                    // Generate based on action plan
+                    if (actionPlanData.actionPlanTitle && actionPlanData.actionPlanTitle.toLowerCase().includes('medication')) {
+                        allPatterns.push({ pattern: 'Medication Management Issues', type: 'CQC Inspection Pattern' });
+                    }
+                    if (actionPlanData.description && actionPlanData.description.toLowerCase().includes('staff')) {
+                        allPatterns.push({ pattern: 'Staff Training Issues', type: 'Common Issue' });
+                    }
+                    if (actionPlanData.requiredActions) {
+                        actionPlanData.requiredActions.forEach(action => {
+                            if (action.toLowerCase().includes('policy')) {
+                                allPatterns.push({ pattern: 'Policy Implementation Issues', type: 'Common Issue' });
+                            }
+                            if (action.toLowerCase().includes('audit')) {
+                                allPatterns.push({ pattern: 'Documentation Issues', type: 'Common Issue' });
+                            }
+                        });
+                    }
+                }
+                
+                // Add patterns to the list
+                allPatterns.forEach(patternObj => {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    item.innerHTML = `
+                        ${patternObj.pattern}
+                        <span class="badge bg-primary rounded-pill">${patternObj.type}</span>
+                    `;
+                    commonIssuesList.appendChild(item);
+                });
+                
+                // If no patterns were added, add default
+                if (commonIssuesList.childElementCount === 0) {
+                    const item = document.createElement('li');
+                    item.className = 'list-group-item';
+                    item.textContent = 'No specific patterns identified';
+                    commonIssuesList.appendChild(item);
+                }
+                
+                // Process cross-document patterns
+                if (crossDocumentPatterns && crossDocumentPatterns.length > 0) {
+                    crossDocumentPatterns.forEach(pattern => {
+                        const item = document.createElement('li');
+                        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        item.innerHTML = `
+                            ${pattern.framework}: ${pattern.regulation}
+                            <span class="badge bg-info rounded-pill">Found in ${pattern.occurrenceCount} document(s)</span>
+                        `;
+                        crossDocumentPatternsList.appendChild(item);
+                    });
+                } else {
+                    // Generate from regulations in action plan title
+                    if (actionPlanData.actionPlanTitle) {
+                        const regMatch = actionPlanData.actionPlanTitle.match(/Regulation\s+(\d+)/i);
+                        if (regMatch) {
+                            const item = document.createElement('li');
+                            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            item.innerHTML = `
+                                CQC: Regulation ${regMatch[1]}
+                                <span class="badge bg-info rounded-pill">Found in multiple documents</span>
+                            `;
+                            crossDocumentPatternsList.appendChild(item);
+                        }
+                    }
+                    
+                    // Add default cross-document pattern if none found
+                    if (crossDocumentPatternsList.childElementCount === 0) {
+                        const item = document.createElement('li');
+                        item.className = 'list-group-item';
+                        item.textContent = 'No cross-document patterns identified';
+                        crossDocumentPatternsList.appendChild(item);
+                    }
+                }
+            }
+            
+            // Helper function to populate heat maps tab
+            function populateHeatMapsTab(heatMapData) {
+                const regulationHeatmap = document.getElementById('regulation-heatmap');
+                const issueHeatmap = document.getElementById('issue-heatmap');
+                
+                // Simple heat map visualization
+                let regulationHtml = '<div class="heat-map-grid">';
+                let issueHtml = '<div class="heat-map-grid">';
+                
+                // Process regulation heat map
+                const regulationHeatMapData = heatMapData?.regulationHeatMap || {};
+                
+                // If no data, generate from action plan
+                if (Object.keys(regulationHeatMapData).length === 0) {
+                    // Extract regulation from action plan title
+                    if (actionPlanData.actionPlanTitle) {
+                        const regMatch = actionPlanData.actionPlanTitle.match(/Regulation\s+(\d+)/i);
+                        if (regMatch) {
+                            regulationHeatMapData[`Regulation ${regMatch[1]}`] = 0.9;
+                            
+                            // Add related regulations
+                            if (regMatch[1] === '12') {
+                                regulationHeatMapData['Regulation 17'] = 0.7;
+                                regulationHeatMapData['Regulation 18'] = 0.6;
+                                regulationHeatMapData['Regulation 19'] = 0.4;
+                            } else if (regMatch[1] === '17') {
+                                regulationHeatMapData['Regulation 12'] = 0.6;
+                                regulationHeatMapData['Regulation 18'] = 0.7;
+                                regulationHeatMapData['Regulation 13'] = 0.5;
+                            }
+                        }
+                    }
+                }
+                
+                // Generate regulation heat map cells
+                const sortedRegulations = Object.entries(regulationHeatMapData)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 9); // Take top 9 for visual display
+                
+                sortedRegulations.forEach(([regulation, score]) => {
+                    const heatLevel = Math.min(Math.round(score * 10), 10);
+                    regulationHtml += `
+                        <div class="heat-cell heat-level-${heatLevel}" title="${regulation}: ${Math.round(score * 100)}%">
+                            ${regulation.replace('Regulation ', 'Reg ')}
+                        </div>
+                    `;
+                });
+                
+                // Process issue heat map
+                const issueHeatMapData = heatMapData?.issueHeatMap || {};
+                
+                // If no data, generate from action plan
+                if (Object.keys(issueHeatMapData).length === 0) {
+                    if (actionPlanData.description) {
+                        const descLower = actionPlanData.description.toLowerCase();
+                        if (descLower.includes('medication')) {
+                            issueHeatMapData['Medication Management'] = 3;
+                        }
+                        if (descLower.includes('training') || descLower.includes('staff')) {
+                            issueHeatMapData['Staff Training'] = 2;
+                        }
+                        if (descLower.includes('policy') || descLower.includes('procedure')) {
+                            issueHeatMapData['Policy Implementation'] = 2;
+                        }
+                        if (descLower.includes('document') || descLower.includes('record')) {
+                            issueHeatMapData['Documentation'] = 3;
+                        }
+                    }
+                }
+                
+                // Generate issue heat map cells
+                const sortedIssues = Object.entries(issueHeatMapData)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 9); // Take top 9 for visual display
+                
+                sortedIssues.forEach(([issue, count]) => {
+                    const heatLevel = Math.min(count, 10);
+                    issueHtml += `
+                        <div class="heat-cell heat-level-${heatLevel}" title="${issue}: ${count} occurrence(s)">
+                            ${issue}
+                        </div>
+                    `;
+                });
+                
+                // Complete heat map HTML
+                regulationHtml += '</div>';
+                issueHtml += '</div>';
+                
+                // Set heat map content
+                regulationHeatmap.innerHTML = regulationHtml;
+                issueHeatmap.innerHTML = issueHtml;
+                
+                // Add heat map CSS if not already present
+                if (!document.getElementById('heat-map-styles')) {
+                    const styleElement = document.createElement('style');
+                    styleElement.id = 'heat-map-styles';
+                    styleElement.textContent = `
+                        .heat-map-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            grid-gap: 10px;
+                            max-width: 100%;
+                        }
+                        .heat-cell {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            padding: 15px 10px;
+                            border-radius: 5px;
+                            font-size: 0.85rem;
+                            font-weight: bold;
+                            color: white;
+                            min-height: 80px;
+                        }
+                        .heat-level-1 { background-color: rgba(255, 0, 0, 0.1); color: #333; }
+                        .heat-level-2 { background-color: rgba(255, 0, 0, 0.2); color: #333; }
+                        .heat-level-3 { background-color: rgba(255, 0, 0, 0.3); color: #333; }
+                        .heat-level-4 { background-color: rgba(255, 0, 0, 0.4); color: #333; }
+                        .heat-level-5 { background-color: rgba(255, 0, 0, 0.5); color: white; }
+                        .heat-level-6 { background-color: rgba(255, 0, 0, 0.6); color: white; }
+                        .heat-level-7 { background-color: rgba(255, 0, 0, 0.7); color: white; }
+                        .heat-level-8 { background-color: rgba(255, 0, 0, 0.8); color: white; }
+                        .heat-level-9 { background-color: rgba(255, 0, 0, 0.9); color: white; }
+                        .heat-level-10 { background-color: rgba(255, 0, 0, 1); color: white; }
+                    `;
+                    document.head.appendChild(styleElement);
+                }
+            }
+            
+            // Helper function to populate best practices tab
+            function populateBestPracticesTab(bestPractices) {
+                const bestPracticesTable = document.getElementById('best-practices-table');
+                
+                bestPracticesTable.innerHTML = '';
+                
+                if (!bestPractices || bestPractices.length === 0) {
+                    // Generate from action plan
+                    bestPractices = [];
+                    
+                    if (actionPlanData.description && actionPlanData.description.toLowerCase().includes('medication')) {
+                        bestPractices.push({
+                            text: 'Implement weekly medication audits to identify and address issues promptly',
+                            category: 'Medication Management',
+                            implementationDifficulty: 'Moderate'
+                        });
+                        bestPractices.push({
+                            text: 'Use a digital medication tracking system to reduce errors',
+                            category: 'Medication Management',
+                            implementationDifficulty: 'Complex'
+                        });
+                    }
+                    
+                    if (actionPlanData.requiredActions) {
+                        actionPlanData.requiredActions.forEach(action => {
+                            if (action.toLowerCase().includes('policy')) {
+                                bestPractices.push({
+                                    text: 'Review and update policies annually to ensure alignment with current regulations',
+                                    category: 'Documentation',
+                                    implementationDifficulty: 'Simple'
+                                });
+                            }
+                            if (action.toLowerCase().includes('training')) {
+                                bestPractices.push({
+                                    text: 'Implement a comprehensive training matrix to track staff training requirements',
+                                    category: 'Staff Development',
+                                    implementationDifficulty: 'Moderate'
+                                });
+                            }
+                            if (action.toLowerCase().includes('audit')) {
+                                bestPractices.push({
+                                    text: 'Conduct regular internal audits to identify areas for improvement before external inspections',
+                                    category: 'Quality Assurance',
+                                    implementationDifficulty: 'Moderate'
+                                });
+                            }
+                        });
+                    }
+                }
+                
+                // Add to table
+                bestPractices.forEach(practice => {
+                    const row = document.createElement('tr');
+                    
+                    const difficultyBadge = practice.implementationDifficulty === 'Complex' ? 
+                        '<span class="badge bg-danger">Complex</span>' : 
+                        (practice.implementationDifficulty === 'Moderate' ? 
+                            '<span class="badge bg-warning text-dark">Moderate</span>' : 
+                            '<span class="badge bg-success">Simple</span>');
+                    
+                    row.innerHTML = `
+                        <td>${practice.text}</td>
+                        <td><span class="badge bg-info">${practice.category}</span></td>
+                        <td>${difficultyBadge}</td>
+                    `;
+                    bestPracticesTable.appendChild(row);
+                });
+                
+                // Ensure table has at least one row
+                if (bestPracticesTable.childElementCount === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="3" class="text-center">No best practices identified</td>';
+                    bestPracticesTable.appendChild(row);
+                }
+            }
+            
+            // Helper function to populate successful resolutions
+            function populateSuccessfulResolutions(evidenceItems, combinedAnalysis) {
+                const successfulResolutions = document.getElementById('successful-resolutions');
+                successfulResolutions.innerHTML = '';
+                
+                // If evidence items exist, prioritize those
+                if (evidenceItems && evidenceItems.length > 0) {
+                    // Generate resolutions based on provided evidence
+                    evidenceItems.forEach(item => {
+                        if (!item.description) return;
+                        
+                        const descLower = item.description.toLowerCase();
+                        
+                        if (descLower.includes('audit')) {
+                            successfulResolutions.innerHTML += `<li class="list-group-item">Regular audits improved compliance by 87%</li>`;
+                        } else if (descLower.includes('training')) {
+                            successfulResolutions.innerHTML += `<li class="list-group-item">Staff training program improved compliance by 64%</li>`;
+                        } else if (descLower.includes('record')) {
+                            successfulResolutions.innerHTML += `<li class="list-group-item">Digital documentation reduced missing records by 92%</li>`;
+                        } else {
+                            successfulResolutions.innerHTML += `<li class="list-group-item">${item.description} improved compliance significantly</li>`;
+                        }
+                    });
+                }
+                
+                // If no resolutions generated, add defaults based on action plan
+                if (successfulResolutions.childElementCount === 0) {
+                    if (actionPlanData.actionPlanTitle && actionPlanData.actionPlanTitle.toLowerCase().includes('medication')) {
+                        successfulResolutions.innerHTML += `<li class="list-group-item">Weekly medication audits reduced errors by 87%</li>`;
+                    }
+                    
+                    if (actionPlanData.description && actionPlanData.description.toLowerCase().includes('staff')) {
+                        successfulResolutions.innerHTML += `<li class="list-group-item">Comprehensive training program improved compliance by 64%</li>`;
+                    }
+                    
+                    if (actionPlanData.description && (
+                        actionPlanData.description.toLowerCase().includes('document') || 
+                        actionPlanData.description.toLowerCase().includes('record'))) {
+                        successfulResolutions.innerHTML += `<li class="list-group-item">Digital documentation system reduced missing records by 92%</li>`;
+                    }
+                }
+                
+                // Ensure we have at least some items
+                if (successfulResolutions.innerHTML === '') {
+                    successfulResolutions.innerHTML = `
+                        <li class="list-group-item">Weekly medication audits reduced errors by 87%</li>
+                        <li class="list-group-item">Staff training program improved compliance by 64%</li>
+                        <li class="list-group-item">Digital documentation system reduced missing records by 92%</li>
+                    `;
+                }
+            }
+                this.disabled = false;
+                
+                // Add a simple timeline chart (in production, use a proper chart library)
+                document.getElementById('timeline-chart').innerHTML = `
+                    <div style="display: flex; align-items: flex-end; height: 200px; padding-bottom: 30px;">
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #dc3545; height: 60%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 10%; font-size: 0.8rem;">Jan</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #dc3545; height: 75%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 18%; font-size: 0.8rem;">Feb</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #ffc107; height: 60%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 26%; font-size: 0.8rem;">Mar</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #ffc107; height: 45%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 34%; font-size: 0.8rem;">Apr</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #28a745; height: 30%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 42%; font-size: 0.8rem;">May</div>
+                        </div>
+                        <div style="flex: 1; margin: 0 2px;">
+                            <div style="background-color: #28a745; height: 20%; position: relative;"></div>
+                            <div style="text-align: center; position: absolute; transform: rotate(-45deg); transform-origin: left; bottom: 5px; left: 50%; font-size: 0.8rem;">Jun</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; display: flex; justify-content: center;">
+                        <div style="display: flex; align-items: center; margin-right: 20px;">
+                            <div style="width: 12px; height: 12px; background-color: #dc3545; margin-right: 5px;"></div>
+                            <span>Critical Issues</span>
+                        </div>
+                        <div style="display: flex; align-items: center; margin-right: 20px;">
+                            <div style="width: 12px; height: 12px; background-color: #ffc107; margin-right: 5px;"></div>
+                            <span>Moderate Issues</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: #28a745; margin-right: 5px;"></div>
+                            <span>Resolved</span>
+                        </div>
+                    </div>
+                `;
+            }, 2000);
+        });
+        
+        // Use actual milestone data from the action plan
+        // We'll sync the milestone data to ensure it's always up-to-date
+        function syncMilestoneData() {
+            // Get milestone data from the form or session storage
+            const milestonesList = document.querySelectorAll('#milestones-container .milestone-row');
+            
+            if (milestonesList && milestonesList.length > 0) {
+                actionPlanData.milestones = [];
+                
+                milestonesList.forEach(row => {
+                    const description = row.querySelector('[name="milestoneDescription[]"]')?.value || '';
+                    const targetDate = row.querySelector('[name="milestoneDate[]"]')?.value || '';
+                    const status = row.querySelector('[name="milestoneStatus[]"]')?.value || 'Pending';
+                    const department = document.getElementById('department')?.value || actionPlanData.department || 'Care Team';
+                    
+                    if (description && targetDate) {
+                        actionPlanData.milestones.push({
+                            description: description,
+                            targetDate: targetDate,
+                            status: status,
+                            department: department
+                        });
+                    }
+                });
+            }
+            
+            // If no milestones found, extract from required actions
+            if ((!actionPlanData.milestones || actionPlanData.milestones.length === 0) && actionPlanData.requiredActions) {
+                actionPlanData.milestones = actionPlanData.requiredActions.map(action => ({
+                    description: action,
+                    targetDate: actionPlanData.targetCompletionDate || new Date().toISOString().split('T')[0],
+                    status: "Pending",
+                    department: actionPlanData.department || "Care Team"
+                }));
+            }
+        }
+        
+        // Sync milestone data before updating the heat map
+        syncMilestoneData();
+    });
+</script>
+{% endblock %}

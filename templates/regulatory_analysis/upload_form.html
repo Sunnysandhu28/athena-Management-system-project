@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document for Regulatory Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="bi bi-upload me-2"></i>Upload Document for Analysis</h1>
+            <p class="lead">Upload a document to analyze against multiple regulatory frameworks.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Document Upload Form</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('regulatory_analysis.upload_document') }}" method="POST" enctype="multipart/form-data">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="document_title" class="form-label">Document Title</label>
+                                <input type="text" class="form-control" id="document_title" name="document_title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="document_type" class="form-label">Document Type</label>
+                                <select class="form-select" id="document_type" name="document_type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="policy">Policy Document</option>
+                                    <option value="audit">Audit Report</option>
+                                    <option value="assessment">Assessment</option>
+                                    <option value="inspection">Inspection Report</option>
+                                    <option value="review">Review Document</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="document_date" class="form-label">Document Date</label>
+                                <input type="date" class="form-control" id="document_date" name="document_date" value="{{ today }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="document_reference" class="form-label">Reference Number</label>
+                                <input type="text" class="form-control" id="document_reference" name="document_reference" placeholder="Optional">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="regulatory_body" class="form-label">Regulatory Body</label>
+                            <select class="form-select" id="regulatory_body" name="regulatory_body" required>
+                                <option value="">Select Regulatory Body</option>
+                                <option value="cqc">Care Quality Commission (CQC)</option>
+                                <option value="hse">Health and Safety Executive (HSE)</option>
+                                <option value="fire">Fire Authority</option>
+                                <option value="financial">Financial Conduct Authority (FCA)</option>
+                                <option value="internal">Internal Compliance</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">Upload Document File</label>
+                            <input type="file" class="form-control" id="document_file" name="document_file" accept=".pdf,.doc,.docx,.txt" required>
+                            <div class="form-text">Upload a document file (maximum 10MB). Supported formats: PDF, Word, text files.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Frameworks for Analysis</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on" id="framework_cqc" name="framework_cqc" checked>
+                                        <label class="form-check-label" for="framework_cqc">CQC Regulations</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on" id="framework_riddor" name="framework_riddor" checked>
+                                        <label class="form-check-label" for="framework_riddor">RIDDOR</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on" id="framework_fire_safety" name="framework_fire_safety" checked>
+                                        <label class="form-check-label" for="framework_fire_safety">Fire Safety</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on" id="framework_financial" name="framework_financial">
+                                        <label class="form-check-label" for="framework_financial">Financial/Accounting</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="on" id="framework_governance" name="framework_governance">
+                                        <label class="form-check-label" for="framework_governance">Business Governance</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional context or information about this document..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="notify_results" name="notify_results" checked>
+                                <label class="form-check-label" for="notify_results">
+                                    Notify me when analysis is complete
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-file-earmark-bar-graph me-1"></i> Upload & Start Analysis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Analysis Features</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>Multi-framework analysis against CQC, RIDDOR, and other standards</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>Comprehensive compliance scoring and heat mapping</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>Automated findings and evidence assessment</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>Prioritized action plans with assignable tasks</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>Detailed reporting with export options</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Supported File Formats</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-success"><i class="bi bi-file-earmark-pdf"></i></div>
+                            <div>PDF Documents (.pdf)</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-success"><i class="bi bi-file-earmark-word"></i></div>
+                            <div>Microsoft Word (.doc, .docx)</div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-success"><i class="bi bi-file-earmark-text"></i></div>
+                            <div>Text Documents (.txt)</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you need assistance with document analysis or have questions about the process, please contact our support team.</p>
+                    <div class="d-grid">
+                        <a href="#" class="btn btn-outline-warning">
+                            <i class="bi bi-question-circle me-1"></i> Get Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

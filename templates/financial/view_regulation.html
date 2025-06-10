@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ regulation.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('financial.index') }}">Financial Regulations</a></li>
+                    {% if regulation.regulation_type in ['finance-act', 'finance-act-section'] %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('financial.list_by_type', regulation_type='finance-acts') }}">Finance Acts</a></li>
+                    {% elif regulation.regulation_type in ['accounting-standard', 'accounting-standard-specific', 'accounting-standard-section'] %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('financial.list_by_type', regulation_type='accounting-standards') }}">Accounting Standards</a></li>
+                    {% elif regulation.regulation_type in ['company-regulation', 'company-regulation-specific'] %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('financial.list_by_type', regulation_type='company-regulations') }}">Company Regulations</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ regulation.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="h3">{{ regulation.title }}</h1>
+                    {% if regulation.code %}
+                        <span class="badge bg-secondary">{{ regulation.code }}</span>
+                    {% endif %}
+                    {% if regulation.act_year %}
+                        <span class="badge bg-info">{{ regulation.act_year }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Regulation Type</h5>
+                            <p>{{ regulation.regulation_type|replace('-', ' ')|title }}</p>
+                        </div>
+                        {% if regulation.section_number %}
+                            <div class="col-md-3">
+                                <h5>Section</h5>
+                                <p>{{ regulation.section_number }}</p>
+                            </div>
+                        {% endif %}
+                        {% if regulation.part_number %}
+                            <div class="col-md-3">
+                                <h5>Part</h5>
+                                <p>{{ regulation.part_number }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if regulation.content_summary %}
+                        <h5>Content Summary</h5>
+                        <div class="mb-4">
+                            <p>{{ regulation.content_summary }}</p>
+                        </div>
+                    {% endif %}
+
+                    <h5>Document Actions</h5>
+                    <div class="d-flex gap-2 mb-3">
+                        {% if regulation.source_url %}
+                            <a href="{{ regulation.source_url }}" target="_blank" class="btn btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> View Original Document
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('financial.download_regulation', regulation_id=regulation.id) }}" class="btn btn-outline-success">
+                            <i class="fas fa-file-word"></i> Download as Word Document
+                        </a>
+                        
+                        {% if related_policies %}
+                            <a href="{{ url_for('financial.download_related_policies', regulation_id=regulation.id) }}" class="btn btn-outline-info">
+                                <i class="fas fa-file-archive"></i> Download Related Policies
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Regulation Details</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Created</th>
+                                    <td>{{ regulation.format_created_date() }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ regulation.format_updated_date() }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        {% if regulation.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt"></i> Related Policies
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if related_policies %}
+                        <ul class="list-group">
+                            {% for policy in related_policies %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('view_policy', policy_id=policy.id) }}">
+                                        {{ policy.title }}
+                                    </a>
+                                    {% if policy.code %}
+                                        <span class="badge bg-secondary">{{ policy.code }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No related policies found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Related Regulations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if related_regulations %}
+                        <ul class="list-group">
+                            {% for reg in related_regulations %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('financial.view_regulation', regulation_id=reg.id) }}">
+                                        {{ reg.title }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No related regulations found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if sitemap_node %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-sitemap"></i> Sitemap Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Discovery Date:</strong> {{ sitemap_node.format_discovery_date() }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Last Modified:</strong> {{ sitemap_node.last_modified }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Node Type:</strong> 
+                                    {% if sitemap_node.is_section %}
+                                        Section
+                                    {% elif sitemap_node.is_standard %}
+                                        Standard
+                                    {% elif sitemap_node.is_regulation %}
+                                        Regulation
+                                    {% else %}
+                                        Document
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

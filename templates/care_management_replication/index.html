@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+
+{% block title %}Care Management Replication{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-sync-alt text-primary"></i> Care Management Policy Replication
+            </h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> About Care Management Replication
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        This tool allows you to replicate Care Management policies from QCS to your local system.
+                        You can replicate individual policies or all policies in the Care Management category.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-clipboard-list"></i> What are Care Management Policies?</h5>
+                        <p>
+                            Care Management policies are essential documents that guide the delivery of care services.
+                            They include procedures for assessment, care planning, service delivery, and review of care.
+                            These policies ensure care is delivered consistently, safely, and in accordance with regulations.
+                        </p>
+                        <p>
+                            <strong>Policy Code Prefixes:</strong> CM, CC, PC
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Replication Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-list"></i> Replicate All Care Management Policies
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>
+                                        This will replicate all Care Management policies from QCS.
+                                        The process may take some time depending on the number of policies.
+                                    </p>
+                                    <form action="{{ url_for('care_management_replication.start_replication') }}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                            <i class="fas fa-sync"></i> Start Full Replication
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-search"></i> Replicate Individual Policy
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>
+                                        Enter a specific Care Management policy code to replicate just that policy.
+                                        Valid policy codes include CM01, CM02, CC10, etc.
+                                    </p>
+                                    <form action="{{ url_for('care_management_replication.replicate_single_policy', reference_code='placeholder') }}" method="post" id="single-policy-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control form-control-lg" id="policy-code" placeholder="Enter Policy Code (e.g., CM01)" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" type="button" onclick="submitSinglePolicyForm()">
+                                                    <i class="fas fa-sync"></i> Replicate
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Existing Care Management Policies
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Reference Code</th>
+                                        <th>Title</th>
+                                        <th>Version</th>
+                                        <th>Last Replication</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policies %}
+                                    <tr>
+                                        <td><strong>{{ policy.reference_code }}</strong></td>
+                                        <td>{{ policy.title }}</td>
+                                        <td>{{ policy.version }}</td>
+                                        <td>
+                                            {% if policy.last_replication %}
+                                                {{ policy.last_replication.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                Never
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if policy.replication_status == 'success' %}
+                                                <span class="badge badge-success">Success</span>
+                                            {% elif policy.replication_status == 'error' %}
+                                                <span class="badge badge-danger">Error</span>
+                                            {% elif policy.replication_status == 'warning' %}
+                                                <span class="badge badge-warning">Warning</span>
+                                            {% elif policy.replication_status == 'in_progress' %}
+                                                <span class="badge badge-info">In Progress</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Unknown</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form action="{{ url_for('care_management_replication.replicate_single_policy', reference_code=policy.reference_code) }}" method="post" style="display: inline;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-sync"></i> Update
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <strong>Total Care Management Policies:</strong> {{ count }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> No Care Management policies found. 
+                            Use the options above to start replicating policies from QCS.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function submitSinglePolicyForm() {
+        var code = document.getElementById('policy-code').value.trim();
+        if (code) {
+            var form = document.getElementById('single-policy-form');
+            form.action = "{{ url_for('care_management_replication.replicate_single_policy', reference_code='') }}" + code;
+            form.submit();
+        } else {
+            alert('Please enter a valid policy code');
+        }
+    }
+</script>
+{% endblock %}

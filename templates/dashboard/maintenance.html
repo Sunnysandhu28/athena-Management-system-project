@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Dashboard - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .status-card {
+        border-radius: 5px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+    .status-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .status-healthy {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    .status-warning {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+    .status-critical {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    .status-unknown {
+        background-color: #e2e3e5;
+        border-color: #d6d8db;
+    }
+    .status-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    .metric-card {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .metric-label {
+        color: #6c757d;
+    }
+    .report-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    .report-link:hover .card {
+        background-color: #f8f9fa;
+    }
+    .log-container {
+        max-height: 300px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px;
+        font-family: monospace;
+    }
+    .log-entry {
+        margin-bottom: 5px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+    .log-error {
+        color: #dc3545;
+    }
+    .log-warning {
+        color: #ffc107;
+    }
+    .log-info {
+        color: #0d6efd;
+    }
+    #systemHealthChart {
+        max-height: 300px;
+    }
+    .report-card {
+        transition: all 0.3s;
+    }
+    .report-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">CathenaSentry Maintenance Dashboard</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card status-card status-{{ system_health.status.lower() }}">
+                <div class="card-body text-center">
+                    <div class="status-icon">
+                        {% if system_health.status == 'Healthy' %}
+                            <i class="fas fa-check-circle text-success"></i>
+                        {% elif system_health.status == 'Warning' %}
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        {% elif system_health.status == 'Critical' %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                        {% else %}
+                            <i class="fas fa-question-circle text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title">System Status</h5>
+                    <h3 class="mb-0">{{ system_health.status }}</h3>
+                    <p class="text-muted">Last check: {{ system_health.last_check|default('Never') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-info">{{ system_health.overall_score|default(0) }}%</div>
+                <div class="metric-label">Health Score</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-danger">{{ system_health.critical_issues|default(0) }}</div>
+                <div class="metric-label">Critical Issues</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value text-warning">{{ system_health.warnings|default(0) }}</div>
+                <div class="metric-label">Warnings</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Health History</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="systemHealthChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Latest Diagnostic Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Status</th>
+                                    <th>Issue Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Database</td>
+                                    <td>
+                                        {% if component_status.database == 'Healthy' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif component_status.database == 'Warning' %}
+                                            <span class="badge bg-warning">Warning</span>
+                                        {% elif component_status.database == 'Critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ component_issues.database|default(0) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>QCS Integration</td>
+                                    <td>
+                                        {% if component_status.qcs_integration == 'Healthy' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif component_status.qcs_integration == 'Warning' %}
+                                            <span class="badge bg-warning">Warning</span>
+                                        {% elif component_status.qcs_integration == 'Critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ component_issues.qcs_integration|default(0) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Policy Storage</td>
+                                    <td>
+                                        {% if component_status.policy_storage == 'Healthy' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif component_status.policy_storage == 'Warning' %}
+                                            <span class="badge bg-warning">Warning</span>
+                                        {% elif component_status.policy_storage == 'Critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ component_issues.policy_storage|default(0) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>System Resources</td>
+                                    <td>
+                                        {% if component_status.system == 'Healthy' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif component_status.system == 'Warning' %}
+                                            <span class="badge bg-warning">Warning</span>
+                                        {% elif component_status.system == 'Critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ component_issues.system|default(0) }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Network</td>
+                                    <td>
+                                        {% if component_status.network == 'Healthy' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif component_status.network == 'Warning' %}
+                                            <span class="badge bg-warning">Warning</span>
+                                        {% elif component_status.network == 'Critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ component_issues.network|default(0) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Diagnostic Reports Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Diagnostic Reports</h5>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#runDiagnosticModal">
+                <i class="fas fa-play"></i> Run Diagnostics
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for report in recent_reports %}
+                <div class="col-md-4 mb-3">
+                    <a href="{{ url_for('dashboard.maintenance_view_report', report_id=report.id) }}" class="report-link">
+                        <div class="card report-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {% if report.status == 'Healthy' %}
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                    {% elif report.status == 'Warning' %}
+                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    {% elif report.status == 'Critical' %}
+                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                    {% endif %}
+                                    {{ report.date }}
+                                </h5>
+                                <p class="card-text text-muted">{{ report.time }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ report.cycles }} cycles</span>
+                                    <span class="badge bg-{{ report.status_class }}">{{ report.status }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No diagnostic reports available yet. Run diagnostics to generate reports.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('dashboard.maintenance_reports') }}" class="btn btn-outline-primary">View All Reports</a>
+        </div>
+    </div>
+    
+    <!-- Recent Logs Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Logs</h5>
+        </div>
+        <div class="card-body">
+            <div class="log-container">
+                {% for log in recent_logs %}
+                <div class="log-entry log-{{ log.level|lower }}">
+                    <strong>[{{ log.timestamp }}] [{{ log.level }}]</strong> {{ log.message }}
+                </div>
+                {% else %}
+                <div class="text-muted">No logs available</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('dashboard.maintenance_logs') }}" class="btn btn-outline-primary">View All Logs</a>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-primary btn-lg w-100 h-100 py-4" data-bs-toggle="modal" data-bs-target="#runDiagnosticModal">
+                        <i class="fas fa-stethoscope mb-2 d-block fs-2"></i>
+                        Run Diagnostics
+                    </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ url_for('dashboard.maintenance_troubleshoot') }}" class="btn btn-info btn-lg w-100 h-100 py-4">
+                        <i class="fas fa-tools mb-2 d-block fs-2"></i>
+                        Troubleshooting Guide
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-warning btn-lg w-100 h-100 py-4" data-bs-toggle="modal" data-bs-target="#scheduledDiagnosticsModal">
+                        <i class="fas fa-calendar-alt mb-2 d-block fs-2"></i>
+                        Scheduled Checks
+                    </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-success btn-lg w-100 h-100 py-4" data-bs-toggle="modal" data-bs-target="#emailNotificationsModal">
+                        <i class="fas fa-envelope mb-2 d-block fs-2"></i>
+                        Email Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Run Diagnostic Modal -->
+<div class="modal fade" id="runDiagnosticModal" tabindex="-1" aria-labelledby="runDiagnosticModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="runDiagnosticModalLabel">Run Diagnostic Check</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('dashboard.maintenance_run_diagnostics') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="cycles" class="form-label">Number of Cycles</label>
+                        <select class="form-select" id="cycles" name="cycles">
+                            <option value="1">1 cycle (Quick)</option>
+                            <option value="3" selected>3 cycles (Standard)</option>
+                            <option value="5">5 cycles (Thorough)</option>
+                        </select>
+                        <div class="form-text">More cycles provide more accurate results but take longer.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Output Formats</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="html_format" name="formats" value="html" checked>
+                            <label class="form-check-label" for="html_format">HTML Report</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="json_format" name="formats" value="json" checked>
+                            <label class="form-check-label" for="json_format">JSON Data</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="text_format" name="formats" value="text">
+                            <label class="form-check-label" for="text_format">Text Summary</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="send_email" name="send_email" value="1">
+                        <label class="form-check-label" for="send_email">
+                            Send Email Report
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i> Run Diagnostics
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scheduled Diagnostics Modal -->
+<div class="modal fade" id="scheduledDiagnosticsModal" tabindex="-1" aria-labelledby="scheduledDiagnosticsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduledDiagnosticsModalLabel">Scheduled Diagnostic Checks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('dashboard.maintenance_update_schedule') }}" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> CathenaSentry runs diagnostic checks twice daily.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Evening Check</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <select class="form-select" name="evening_hour">
+                                    {% for i in range(0, 24) %}
+                                    <option value="{{ i }}" {% if maintenance_schedule.evening.hour == i %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" name="evening_minute">
+                                    {% for i in range(0, 60, 5) %}
+                                    <option value="{{ i }}" {% if maintenance_schedule.evening.minute == i %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Morning Check</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <select class="form-select" name="morning_hour">
+                                    {% for i in range(0, 24) %}
+                                    <option value="{{ i }}" {% if maintenance_schedule.morning.hour == i %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" name="morning_minute">
+                                    {% for i in range(0, 60, 5) %}
+                                    <option value="{{ i }}" {% if maintenance_schedule.morning.minute == i %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cycles_per_check" class="form-label">Cycles Per Check</label>
+                        <select class="form-select" id="cycles_per_check" name="cycles">
+                            <option value="1" {% if maintenance_schedule.cycles == 1 %}selected{% endif %}>1 cycle</option>
+                            <option value="3" {% if maintenance_schedule.cycles == 3 %}selected{% endif %}>3 cycles</option>
+                            <option value="5" {% if maintenance_schedule.cycles == 5 %}selected{% endif %}>5 cycles</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Email Notifications Modal -->
+<div class="modal fade" id="emailNotificationsModal" tabindex="-1" aria-labelledby="emailNotificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailNotificationsModalLabel">Email Notification Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('dashboard.maintenance_update_email') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="email_reports" name="email_reports" {% if maintenance_schedule.email_reports %}checked{% endif %}>
+                            <label class="form-check-label" for="email_reports">Send Email Reports</label>
+                        </div>
+                        <div class="form-text">When enabled, diagnostic reports will be emailed automatically.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_recipients" class="form-label">Email Recipients</label>
+                        <textarea class="form-control" id="email_recipients" name="email_recipients" rows="3" placeholder="Enter email addresses, one per line">{% for email in maintenance_schedule.email_recipients %}{{ email }}
+{% endfor %}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notification Triggers</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_all" name="notify_triggers" value="all">
+                            <label class="form-check-label" for="notify_all">All Reports</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_warnings" name="notify_triggers" value="warnings" checked>
+                            <label class="form-check-label" for="notify_warnings">Reports with Warnings</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_critical" name="notify_triggers" value="critical" checked>
+                            <label class="form-check-label" for="notify_critical">Reports with Critical Issues</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize health history chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('systemHealthChart').getContext('2d');
+        
+        const healthScoreChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ health_history.dates|tojson }},
+                datasets: [{
+                    label: 'Health Score',
+                    data: {{ health_history.scores|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                },
+                {
+                    label: 'Critical Issues',
+                    data: {{ health_history.critical_issues|tojson }},
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Health Score (%)'
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        min: 0,
+                        max: 10,
+                        title: {
+                            display: true,
+                            text: 'Critical Issues'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %}

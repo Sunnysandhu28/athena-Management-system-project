@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cathena Policy Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .jumbotron {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .nav-card {
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .workflow-step {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+        .workflow-step:before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 45px;
+            height: 45px;
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .workflow-step h3 {
+            margin-top: 0;
+        }
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 0.75rem;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cathena Policy Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/requirements">Requirements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/documents">Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/report-details">Generate Report</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="jumbotron">
+            <h1>Welcome to Cathena Policy Management</h1>
+            <p class="lead">A comprehensive platform for managing regulatory requirements, documentation, and compliance reporting.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row mb-5">
+            <div class="col-lg-6">
+                <h2 class="mb-4">How It Works</h2>
+                
+                <div class="workflow-step" data-step="1">
+                    <h3>Add Regulatory Requirements</h3>
+                    <p>Start by entering the regulatory requirements your organization needs to comply with. These could be from CQC, HSE, GDPR, or other regulatory frameworks.</p>
+                </div>
+                
+                <div class="workflow-step" data-step="2">
+                    <h3>Upload Supporting Documents</h3>
+                    <p>Upload evidence documents such as policies, procedures, inspection reports, or any other documentation that demonstrates compliance with requirements.</p>
+                </div>
+                
+                <div class="workflow-step" data-step="3">
+                    <h3>Enter Inspection Details</h3>
+                    <p>Record information about inspections, audits, or regulatory visits, including dates, inspector names, and preliminary findings.</p>
+                </div>
+                
+                <div class="workflow-step" data-step="4">
+                    <h3>Generate Comprehensive Report</h3>
+                    <p>Create a detailed compliance report that combines requirements, supporting documents, and inspection details with statistical analysis and heat maps.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Quick Start Guide</h3>
+                        <p>New to the system? Follow these steps for a complete compliance report:</p>
+                        
+                        <ol class="list-group list-group-numbered mb-4">
+                            <li class="list-group-item d-flex">
+                                <div>
+                                    <strong>Add at least one requirement</strong>
+                                    <p class="mb-0 text-muted">Enter the regulatory requirement details including framework, category and severity</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div>
+                                    <strong>Upload supporting documents</strong>
+                                    <p class="mb-0 text-muted">Attach evidence documents and link them to specific requirements</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div>
+                                    <strong>Enter inspection information</strong>
+                                    <p class="mb-0 text-muted">Record details about the inspection including dates and inspector names</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div>
+                                    <strong>Generate your report</strong>
+                                    <p class="mb-0 text-muted">Create a comprehensive report with heat maps and statistics</p>
+                                </div>
+                            </li>
+                        </ol>
+                        
+                        <a href="/requirements" class="btn btn-success d-block">Start Now</a>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mx-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
+                                    </svg>
+                                </div>
+                                <h5>Heat Maps</h5>
+                                <p class="card-text">Visualize compliance levels with color-coded heat maps</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mx-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                                        <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                                        <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                    </svg>
+                                </div>
+                                <h5>PDF Reports</h5>
+                                <p class="card-text">Export comprehensive reports in professional formats</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-4 mt-5">Your Reports</h2>
+        <div class="row mb-4">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-25">
+                        <h5 class="mb-0">CQC Compliance Report</h5>
+                        <span class="badge bg-success">Available for Download</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Report Details</h5>
+                                        <p><strong>Organization:</strong> Quenby Rest Home</p>
+                                        <p><strong>Reference:</strong> Cat/Qu/aj.sandhu/0001/CQC</p>
+                                        <p><strong>Compliance Score:</strong> 78.5%</p>
+                                        <p><strong>Risk Level:</strong> Medium</p>
+                                        <p><strong>Generated:</strong> May 18, 2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Download Options</h5>
+                                        <p>Access your report in multiple formats:</p>
+                                        <div class="d-grid gap-2">
+                                            <a href="/download-pdf" class="btn btn-danger">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf me-2" viewBox="0 0 16 16">
+                                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                                                    <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029zm1.379-1.901c-.166.076-.32.156-.459.238-.328.194-.541.383-.647.547-.094.145-.096.25-.04.361.01.022.02.036.026.044a.266.266 0 0 0 .035-.012c.137-.056.355-.235.635-.572a8.18 8.18 0 0 0 .45-.606zm1.64-1.33a12.71 12.71 0 0 1 1.01-.193 11.744 11.744 0 0 1-.51-.858 20.801 20.801 0 0 1-.5 1.05zm2.446.45c.15.163.296.3.435.41.24.19.407.253.498.256a.107.107 0 0 0 .07-.015.307.307 0 0 0 .094-.125.436.436 0 0 0 .059-.2.095.095 0 0 0-.026-.063c-.052-.062-.2-.152-.518-.209a3.876 3.876 0 0 0-.612-.053zM8.078 7.8a6.7 6.7 0 0 0 .2-.828c.031-.188.043-.343.038-.465a.613.613 0 0 0-.032-.198.517.517 0 0 0-.145.04c-.087.035-.158.106-.196.283-.04.192-.03.469.046.822.024.111.054.227.09.346z"/>
+                                                </svg>
+                                                Download PDF Report
+                                            </a>
+                                            <a href="/download-word" class="btn btn-success">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-word me-2" viewBox="0 0 16 16">
+                                                    <path d="M5.485 6.879a.5.5 0 1 0-.97.242l1.5 6a.5.5 0 0 0 .967.01L8 9.402l1.018 3.73a.5.5 0 0 0 .967-.01l1.5-6a.5.5 0 0 0-.97-.242l-1.036 4.144-.997-3.655a.5.5 0 0 0-.964 0l-.997 3.655L5.485 6.88z"/>
+                                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                                                </svg>
+                                                Download Word Report
+                                            </a>
+                                            <a href="/download-enhanced-report" class="btn btn-primary mt-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-richtext me-2" viewBox="0 0 16 16">
+                                                    <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+                                                    <path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm1.639-3.708 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.639-1.208zM6.25 6a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5z"/>
+                                                </svg>
+                                                Download Enhanced CQC Report (All Regulations)
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Report Content</h5>
+                                <p>This comprehensive compliance report includes:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Detailed heat map analysis of compliance levels</li>
+                                    <li class="list-group-item">Prioritized action plan by risk level</li>
+                                    <li class="list-group-item">Regulatory framework analysis (CQC, HSE, GDPR)</li>
+                                    <li class="list-group-item">Document evidence evaluation</li>
+                                    <li class="list-group-item">Inspection details documentation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-4">Main Features</h2>
+        <div class="row mb-4">
+            <div class="col-md-4 mb-4">
+                <a href="/requirements" class="nav-card">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-clipboard-check text-primary mb-3" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            <h3 class="card-title">Manage Requirements</h3>
+                            <p class="card-text">View, add, and manage your regulatory requirements across different frameworks.</p>
+                            <span class="btn btn-outline-primary">View Requirements</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <a href="/documents" class="nav-card">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-file-earmark-text text-primary mb-3" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                            </svg>
+                            <h3 class="card-title">Document Library</h3>
+                            <p class="card-text">Organize and access all your supporting documentation and evidence files.</p>
+                            <span class="btn btn-outline-primary">Browse Documents</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <a href="/report-details" class="nav-card">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-graph-up text-primary mb-3" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
+                            </svg>
+                            <h3 class="card-title">Generate Reports</h3>
+                            <p class="card-text">Create comprehensive compliance reports with heat maps and action plans.</p>
+                            <span class="btn btn-primary">Create Report</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

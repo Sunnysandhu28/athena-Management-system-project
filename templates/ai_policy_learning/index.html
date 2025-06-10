@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Policy Learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">AI Policy Learning</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1>AI Policy Learning</h1>
+            <p class="lead">Machine learning tools to enhance policy content and structure</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Learning Tools</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Policy Metadata Enhancement</h5>
+                                    <p class="card-text">Use AI to analyze and enhance metadata in individual policies. The system can extract and generate missing sections like Relevant Legislation, Underpinning Knowledge, and Suggested Actions.</p>
+                                    <a href="{{ url_for('view_policies') }}" class="btn btn-outline-primary">Browse Policies</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Batch Enhancement</h5>
+                                    <p class="card-text">Process multiple policies at once to add missing metadata sections and enhance content structure based on learned patterns.</p>
+                                    <a href="{{ url_for('ai_policy_learning.batch_enhance') }}" class="btn btn-outline-primary">Run Batch Enhancement</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Learn from Template</h5>
+                                    <p class="card-text">Upload policy templates to teach the AI system about ideal policy structure and content organization.</p>
+                                    <a href="{{ url_for('ai_policy_learning.learn_from_template') }}" class="btn btn-outline-primary">Upload Template</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Policy Content Triangulation</h5>
+                                    <p class="card-text">Cross-reference policy content to intelligently generate missing sections using related information and regulatory knowledge.</p>
+                                    <p class="card-text text-muted small">Note: This feature is automatically applied during enhancement.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Learning Statistics</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="h1 mb-0">{{ stats.total_policies }}</div>
+                            <div class="small text-muted">Total Policies</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h1 mb-0">{{ stats.enhanced_policies }}</div>
+                            <div class="small text-muted">Enhanced</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h1 mb-0">{{ stats.patterns_learned }}</div>
+                            <div class="small text-muted">Patterns Learned</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h1 mb-0">{{ "%.0f"|format(stats.average_confidence * 100) }}%</div>
+                            <div class="small text-muted">Confidence</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted small">These statistics represent the AI system's learning progress and enhancement activity.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">How It Works</h2>
+                </div>
+                <div class="card-body">
+                    <p class="small">The AI Policy Learning system uses advanced pattern recognition to:</p>
+                    <ol class="small">
+                        <li>Analyze policy structure and content relationships</li>
+                        <li>Identify missing metadata sections</li>
+                        <li>Triangulate information from existing sections</li>
+                        <li>Generate appropriate content based on policy type</li>
+                        <li>Continuously improve through machine learning</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}AI Regulation Learning System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">AI Regulation Learning System</h1>
+            <p class="lead">
+                This system learns from regulations to make policy creation easier.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">System Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="h1 mb-0 text-primary text-center">{{ concepts_count }}</div>
+                            <p class="text-muted text-center">Concepts</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="h1 mb-0 text-success text-center">{{ requirements_count }}</div>
+                            <p class="text-muted text-center">Requirements</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="h1 mb-0 text-info text-center">{{ embeddings_count }}</div>
+                            <p class="text-muted text-center">Embeddings</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="h1 mb-0 text-warning text-center">{{ regulations_count }}</div>
+                            <p class="text-muted text-center">Regulations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <form action="{{ url_for('ai_learning.process_all_regulations') }}" method="post">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-sync-alt"></i> Process All Regulations
+                            </button>
+                        </form>
+                        
+                        <a href="{{ url_for('ai_learning.view_concepts') }}" class="btn btn-info btn-block">
+                            <i class="fas fa-lightbulb"></i> View Learned Concepts
+                        </a>
+                        
+                        <a href="{{ url_for('ai_learning.search_regulations') }}" class="btn btn-success btn-block">
+                            <i class="fas fa-search"></i> Search Similar Regulations
+                        </a>
+                        
+                        <a href="{{ url_for('ai_learning.generate_policy') }}" class="btn btn-warning btn-block">
+                            <i class="fas fa-file-alt"></i> Generate Policy
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Concept Type Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="conceptTypeChart" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Top Concepts by Importance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Concept</th>
+                                    <th>Type</th>
+                                    <th>Importance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for concept in top_concepts %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('ai_learning.view_concept', concept_id=concept.id) }}">
+                                                {{ concept.name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ concept.concept_type }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ (concept.importance_score * 100)|int }}%;" 
+                                                     aria-valuenow="{{ (concept.importance_score * 100)|int }}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">{{ (concept.importance_score * 100)|int }}%</small>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('ai_learning.view_concept', concept_id=concept.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Concept Type Chart
+        const conceptTypeData = {{ concept_type_data|tojson }};
+        
+        const ctx = document.getElementById('conceptTypeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: conceptTypeData.labels,
+                datasets: [{
+                    data: conceptTypeData.data,
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                        '#5a5c69', '#2e59d9', '#17a673', '#2c9faf', '#f39c12'
+                    ],
+                    hoverBackgroundColor: [
+                        '#2e59d9', '#17a673', '#2c9faf', '#f6b20b', '#e02d1b',
+                        '#4e4f58', '#2850c7', '#149064', '#25889c', '#e08e0b'
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                legend: {
+                    display: true,
+                    position: 'right'
+                },
+                cutoutPercentage: 50,
+            },
+        });
+    });
+</script>
+{% endblock %}

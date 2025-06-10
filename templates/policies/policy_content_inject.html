@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Policy Content - Cathena Policy Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{{ policy.title if policy else 'Policy Content' }}</h2>
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('policy_templates.editor', policy_id=policy.id) if policy else url_for('policy_templates.editor') }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Open in Editor
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-primary">{{ policy.code if policy and policy.code else 'No Code' }}</span>
+                    <span class="badge bg-secondary ms-2">{{ policy.category_name if policy and policy.category_name else 'Uncategorized' }}</span>
+                </div>
+                <div>
+                    <small class="text-muted">Last updated: {{ policy.updated_at.strftime('%d %b %Y') if policy and policy.updated_at else 'N/A' }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if policy and policy.content %}
+                <div class="policy-content">
+                    {{ policy.content|safe }}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i> No Content Available</h5>
+                    <p>This policy doesn't have any content yet. You can add content using the policy editor.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make sure policy content renders properly
+        const policyContent = document.querySelector('.policy-content');
+        if (policyContent) {
+            // Find all policy sections
+            const sections = policyContent.querySelectorAll('.policy-section');
+            
+            // If no proper sections found, wrap content in a section
+            if (sections.length === 0) {
+                const content = policyContent.innerHTML;
+                policyContent.innerHTML = `
+                    <div class="policy-section">
+                        <div class="section-header">
+                            <h3>Policy Content</h3>
+                        </div>
+                        <div class="section-content">
+                            ${content}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    });
+</script>
+{% endblock %}

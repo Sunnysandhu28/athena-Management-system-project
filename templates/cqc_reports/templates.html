@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}CQC Report Templates{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>CQC Report Templates</h1>
+            <p class="lead">Standardised templates for creating consistent CQC compliance reports</p>
+        </div>
+        <div>
+            <a href="{{ url_for('cqc_report.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <a href="{{ url_for('cqc_report.guidelines') }}" class="btn btn-outline-info ms-2">
+                <i class="fas fa-info-circle"></i> Report Guidelines
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for template in templates %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">{{ template.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ template.description }}</p>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i> Download Template
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">CQC Comprehensive Report</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Our most detailed report template with all required sections following the standardized guidelines for CQC compliance reporting.</p>
+                    <div class="d-flex flex-wrap mt-3 mb-2">
+                        <span class="badge bg-light text-dark me-2 mb-2">Executive Summary</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Findings</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Statistical Analysis</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Action Plan</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Heat Map</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('cqc_report.comprehensive_report') }}" class="btn btn-primary">
+                        <i class="fas fa-eye me-2"></i> View Example
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Z-Score Statistical Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Statistical analysis template with Z-score calculations for comparing CQC ratings across different regions and identifying significant variations.</p>
+                    <div class="d-flex flex-wrap mt-3 mb-2">
+                        <span class="badge bg-light text-dark me-2 mb-2">Statistical Tables</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Z-score Calculations</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Regional Comparison</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Trend Analysis</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('cqc_report.download_z_score_analysis') }}" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i> Download Template
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Interactive Action Plan</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Comprehensive action plan template with prioritisation, responsible persons, deadlines, and tracking capabilities.</p>
+                    <div class="d-flex flex-wrap mt-3 mb-2">
+                        <span class="badge bg-light text-dark me-2 mb-2">Priority Levels</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Timeline</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Resources</span>
+                        <span class="badge bg-light text-dark me-2 mb-2">Progress Tracking</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i> Download Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">About Our Templates</h5>
+            <p>All templates follow the standardised format guidelines required for CQC compliance reporting. They include:</p>
+            <ul>
+                <li>Consistent reference formatting using the <code>[Category]/[Framework]/[Frequency]/[Author]/[ID]/[Source]</code> structure</li>
+                <li>Standardised section headings and formatting to ensure compliance with regulatory requirements</li>
+                <li>Appropriate statistical analysis sections with guidance on data presentation</li>
+                <li>Structured action planning with clear accountability and timelines</li>
+            </ul>
+            <p>For more information on the required report format and guidelines, please visit the <a href="{{ url_for('cqc_report.guidelines') }}">Report Guidelines</a> page.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

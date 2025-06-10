@@ -1,0 +1,110 @@
+{% extends "policy_learning/base.html" %}
+
+{% block learning_content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Template Learning Results</h2>
+    </div>
+    <div class="card-body">
+        {% if result.success %}
+            <div class="alert alert-success">
+                <h4 class="alert-heading">Learning Completed Successfully</h4>
+                <p>The template learning process has completed with the following results:</p>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">Iterations Completed</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ result.iterations_completed }}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">Patterns Learned</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ result.patterns_learned|length }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if result.patterns_learned %}
+                <div class="mt-4">
+                    <h3>Pattern Details</h3>
+                    
+                    {% for pattern in result.patterns_learned %}
+                        <div class="card mb-3">
+                            <div class="card-header">Section Headers</div>
+                            <div class="card-body">
+                                {% if pattern.section_headers %}
+                                    <ul class="list-group">
+                                        {% for header in pattern.section_headers[:10] %}
+                                            <li class="list-group-item">{{ header }}</li>
+                                        {% endfor %}
+                                        
+                                        {% if pattern.section_headers|length > 10 %}
+                                            <li class="list-group-item text-muted">... and {{ pattern.section_headers|length - 10 }} more</li>
+                                        {% endif %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted">No section headers found</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">Section Relationships</div>
+                            <div class="card-body">
+                                {% if pattern.section_relationships %}
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Section</th>
+                                                    <th>Related To</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for section, related in pattern.section_relationships.items() %}
+                                                    <tr>
+                                                        <td>{{ section }}</td>
+                                                        <td>
+                                                            {% if related %}
+                                                                {{ related|join(', ') }}
+                                                            {% else %}
+                                                                <span class="text-muted">None</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No section relationships found</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+        {% else %}
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">Learning Failed</h4>
+                <p>The template learning process failed with the following error:</p>
+                <p><strong>{{ result.error }}</strong></p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('ai_policy_learning.learn_template') }}" class="btn btn-primary">Upload Another Template</a>
+            <a href="{{ url_for('ai_policy_learning.index') }}" class="btn btn-secondary">Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

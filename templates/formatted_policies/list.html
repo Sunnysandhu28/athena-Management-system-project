@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Categories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Policy Categories</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Cathena Policy Management System contains policies across 9 categories:</p>
+                    
+                    <div class="row">
+                        {% for category in categories %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 border-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{{ url_for('formatted_policies_bp.category_view', category_name=category.name) }}" class="text-decoration-none">
+                                            {{ category.display_name }}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text text-muted">{{ category.description }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary rounded-pill">{{ category.count }} policies</span>
+                                        <a href="{{ url_for('formatted_policies_bp.category_view', category_name=category.name) }}" class="btn btn-sm btn-outline-primary">
+                                            View Policies
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Policy Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="display-4 mb-2">265</div>
+                            <p class="text-muted">Total Policies</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-4 mb-2">9</div>
+                            <p class="text-muted">Categories</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="display-4 mb-2">100%</div>
+                            <p class="text-muted">Format Accuracy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

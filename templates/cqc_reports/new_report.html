@@ -1,0 +1,713 @@
+{% extends "layout.html" %}
+
+{% block title %}Create New CQC Report{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<style>
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-number {
+        background-color: #0d6efd;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+    
+    .remove-item-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .add-item-btn {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: 1px dashed #0d6efd;
+        border-radius: 5px;
+        padding: 10px;
+        color: #0d6efd;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .add-item-btn:hover {
+        background-color: #f0f7ff;
+    }
+    
+    .dynamic-items-container > div {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin: 40px 0;
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+    
+    .step {
+        width: 18%;
+        text-align: center;
+        position: relative;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 10px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .step.active .step-number {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .step.completed .step-number {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .step.active .step-label {
+        color: #0d6efd;
+        font-weight: bold;
+    }
+    
+    .step.completed .step-label {
+        color: #198754;
+    }
+    
+    .step-divider {
+        position: absolute;
+        top: 20px;
+        left: 60%;
+        width: 80%;
+        height: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .step.completed .step-divider {
+        background-color: #198754;
+    }
+    
+    .step:last-child .step-divider {
+        display: none;
+    }
+    
+    .reference-format {
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Create New CQC Report</h1>
+            <p class="lead">Complete the form below to create a standardised CQC compliance report</p>
+        </div>
+        <div>
+            <a href="{{ url_for('cqc_report.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <a href="{{ url_for('cqc_report.guidelines') }}" class="btn btn-outline-info ms-2">
+                <i class="fas fa-info-circle"></i> Report Guidelines
+            </a>
+        </div>
+    </div>
+    
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active" id="step-indicator-1">
+            <div class="step-number">1</div>
+            <div class="step-label">Basic Information</div>
+            <div class="step-divider"></div>
+        </div>
+        <div class="step" id="step-indicator-2">
+            <div class="step-number">2</div>
+            <div class="step-label">Findings</div>
+            <div class="step-divider"></div>
+        </div>
+        <div class="step" id="step-indicator-3">
+            <div class="step-number">3</div>
+            <div class="step-label">Action Plan</div>
+            <div class="step-divider"></div>
+        </div>
+        <div class="step" id="step-indicator-4">
+            <div class="step-number">4</div>
+            <div class="step-label">Statistical Analysis</div>
+            <div class="step-divider"></div>
+        </div>
+        <div class="step" id="step-indicator-5">
+            <div class="step-number">5</div>
+            <div class="step-label">Generate Report</div>
+        </div>
+    </div>
+    
+    <!-- Form -->
+    <form id="cqcReportForm" action="{{ url_for('cqc_report.comprehensive_report') }}" method="get">
+        <!-- Step 1: Basic Information -->
+        <div class="form-section" id="step1">
+            <div class="form-section-header">
+                <div class="section-number">1</div>
+                <h3>Basic Information</h3>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Organisation Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="organisation_name" placeholder="e.g. Quenby Care Home Ltd" value="Quenby Care Home Ltd" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Report Reference Code <span class="text-danger">*</span></label>
+                    <div class="reference-format">
+                        <div class="row">
+                            <div class="col">
+                                <select class="form-select" name="ref_category" required>
+                                    <option value="Rep" selected>Rep (Report)</option>
+                                    <option value="Insp">Insp (Inspection)</option>
+                                    <option value="Gov">Gov (Governance)</option>
+                                    <option value="Pol">Pol (Policy)</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-select" name="ref_framework" required>
+                                    <option value="CQC" selected>CQC</option>
+                                    <option value="HSE">HSE</option>
+                                    <option value="RIDDOR">RIDDOR</option>
+                                    <option value="Fire">Fire</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-select" name="ref_frequency" required>
+                                    <option value="M" selected>M (Monthly)</option>
+                                    <option value="Q">Q (Quarterly)</option>
+                                    <option value="Y">Y (Yearly)</option>
+                                    <option value="S">S (Singular)</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-select" name="ref_author" required>
+                                    <option value="aj.sandhu" selected>aj.sandhu</option>
+                                    <option value="ana.ionescu">ana.ionescu</option>
+                                    <option value="system">system</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" name="ref_id" placeholder="ID" value="0001" required>
+                            </div>
+                            <div class="col">
+                                <select class="form-select" name="ref_source" required>
+                                    <option value="CQC">CQC</option>
+                                    <option value="Internal">Internal</option>
+                                    <option value="Cathena" selected>Cathena</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">Format: Category/Framework/Frequency/Author/ID/Source</small>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Assessment Date <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control datepicker" name="assessment_date" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Next Review Date</label>
+                    <input type="text" class="form-control datepicker" name="next_review_date">
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Executive Summary <span class="text-danger">*</span></label>
+                    <textarea class="form-control" name="executive_summary" rows="4" placeholder="Provide a brief summary of the overall compliance assessment..." required>This comprehensive compliance report provides a detailed assessment of Quenby Care Home Ltd's compliance with Care Quality Commission (CQC) regulatory requirements. The assessment covers all key areas of service provision, with particular emphasis on the five key domains: Safe, Effective, Caring, Responsive, and Well-led.</textarea>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Assessment Team</label>
+                    <div id="team_container" class="dynamic-items-container">
+                        <div class="team-item">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="team_name[]" placeholder="Name" value="Ana Ionescu">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="team_role[]" placeholder="Role" value="Compliance Director">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-danger remove-team" disabled>Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-item-btn" id="add_team_member">
+                        <i class="fas fa-plus me-2"></i> Add Team Member
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Findings -->
+        <div class="form-section hidden" id="step2">
+            <div class="form-section-header">
+                <div class="section-number">2</div>
+                <h3>Findings</h3>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Key Strengths</h5>
+                <div id="strengths_container" class="dynamic-items-container">
+                    <div class="strength-item">
+                        <div class="row">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="strength[]" placeholder="Describe a key strength identified..." value="Strong person-centered care practices supported by comprehensive documentation">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-strength" disabled>Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="add-item-btn" id="add_strength">
+                    <i class="fas fa-plus me-2"></i> Add Strength
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Areas of Concern</h5>
+                <div id="concerns_container" class="dynamic-items-container">
+                    <div class="concern-item">
+                        <div class="row">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" name="concern[]" placeholder="Describe an area of concern..." value="Staff recruitment documentation requires standardisation and consistency">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-concern" disabled>Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="add-item-btn" id="add_concern">
+                    <i class="fas fa-plus me-2"></i> Add Concern
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h5>Regulatory Requirements</h5>
+                <div id="regulations_container" class="dynamic-items-container">
+                    <div class="regulation-item">
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Regulation</label>
+                                <input type="text" class="form-control" name="regulation_title[]" placeholder="e.g. Regulation 12: Safe Care and Treatment" value="Regulation 12: Safe Care and Treatment">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Compliance Status</label>
+                                <select class="form-select" name="regulation_status[]">
+                                    <option value="Compliant">Compliant</option>
+                                    <option value="Partially Compliant" selected>Partially Compliant</option>
+                                    <option value="Non-Compliant">Non-Compliant</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-sm btn-danger d-block remove-regulation" disabled>Remove</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="regulation_description[]" rows="2" placeholder="Describe the regulatory requirement...">Assessment and management of risks to service users' health, safety and welfare.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="add-item-btn" id="add_regulation">
+                    <i class="fas fa-plus me-2"></i> Add Regulation
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Action Plan -->
+        <div class="form-section hidden" id="step3">
+            <div class="form-section-header">
+                <div class="section-number">3</div>
+                <h3>Action Plan</h3>
+            </div>
+            
+            <div id="actions_container" class="dynamic-items-container">
+                <div class="action-item">
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <label class="form-label">Action Title</label>
+                            <input type="text" class="form-control" name="action_title[]" placeholder="e.g. Update Staff Training Matrix" value="Update Staff Training Matrix">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" name="action_priority[]">
+                                <option value="High" selected>High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-sm btn-danger d-block remove-action" disabled>Remove</button>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="action_description[]" rows="2" placeholder="Describe the action required...">Establish a comprehensive training matrix that clearly identifies mandatory and role-specific training requirements for all staff.</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Responsible Person</label>
+                            <input type="text" class="form-control" name="action_responsible[]" placeholder="e.g. Training Manager" value="Training Manager">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Deadline</label>
+                            <input type="text" class="form-control datepicker" name="action_deadline[]" placeholder="Select date">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Resources Required</label>
+                            <input type="text" class="form-control" name="action_resources[]" placeholder="e.g. Training budget allocation" value="Training budget allocation">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" class="add-item-btn mt-3" id="add_action">
+                <i class="fas fa-plus me-2"></i> Add Action
+            </button>
+        </div>
+        
+        <!-- Step 4: Statistical Analysis -->
+        <div class="form-section hidden" id="step4">
+            <div class="form-section-header">
+                <div class="section-number">4</div>
+                <h3>Statistical Analysis</h3>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> The statistical analysis section includes data from the Z-Score Analysis and Standard Deviation reports. These files are automatically included as appendices in the generated report.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Statistical Summary</label>
+                    <textarea class="form-control" name="statistical_summary" rows="4" placeholder="Provide a brief summary of the key statistical findings...">Analysis of 5,000 CQC reports across the region indicates that care homes in this geographic area have shown a standard deviation of 0.72 points in overall ratings, with a Z-score of 1.3 for this provider when compared to similar services. This places the organisation above the regional average but with identified areas for improvement.</textarea>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Key Statistical Findings</label>
+                    <div id="findings_container" class="dynamic-items-container">
+                        <div class="finding-item">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <input type="text" class="form-control" name="finding[]" placeholder="Enter a key statistical finding..." value="Overall policy compliance (65.7%) is within 0.8 standard deviations of the regional mean (72.4%)">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-danger remove-finding" disabled>Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-item-btn" id="add_finding">
+                        <i class="fas fa-plus me-2"></i> Add Statistical Finding
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label">Methodology Note</label>
+                    <textarea class="form-control" name="methodology_note" rows="3" placeholder="Briefly describe the statistical methodology used...">The analysis employs standard statistical methods including standard deviation calculations to measure dispersion in compliance rates, Z-score calculations to determine relative standing against regional benchmarks, and categorical analysis to identify domain-specific compliance patterns.</textarea>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="include_z_score" id="include_z_score" checked>
+                        <label class="form-check-label" for="include_z_score">
+                            Include Z-Score Analysis Appendix
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="include_std_dev" id="include_std_dev" checked>
+                        <label class="form-check-label" for="include_std_dev">
+                            Include Standard Deviation Analysis Appendix
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 5: Generate Report -->
+        <div class="form-section hidden" id="step5">
+            <div class="form-section-header">
+                <div class="section-number">5</div>
+                <h3>Generate Report</h3>
+            </div>
+            
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-check-circle me-2"></i> All required information has been collected. Your report is ready to be generated.
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Report Format</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="report_format" id="format_html" value="html" checked>
+                        <label class="form-check-label" for="format_html">
+                            HTML (view online)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="report_format" id="format_pdf" value="pdf">
+                        <label class="form-check-label" for="format_pdf">
+                            PDF (download)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Appendices to Include</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="appendix_z_score" id="appendix_z_score" checked>
+                        <label class="form-check-label" for="appendix_z_score">
+                            Z-Score Analysis
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="appendix_std_dev" id="appendix_std_dev" checked>
+                        <label class="form-check-label" for="appendix_std_dev">
+                            Standard Deviation Analysis
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="appendix_action_plan" id="appendix_action_plan" checked>
+                        <label class="form-check-label" for="appendix_action_plan">
+                            Detailed Action Plan
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Navigation -->
+        <div class="form-navigation">
+            <button type="button" class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
+            <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+            <button type="submit" class="btn btn-success hidden" id="submitBtn">Generate Report</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers
+        flatpickr('.datepicker', {
+            dateFormat: 'd/m/Y',
+            allowInput: true
+        });
+        
+        // Dynamic form items
+        const addTeamMember = document.getElementById('add_team_member');
+        const teamContainer = document.getElementById('team_container');
+        
+        if(addTeamMember) {
+            addTeamMember.addEventListener('click', function() {
+                const newItem = document.createElement('div');
+                newItem.className = 'team-item';
+                newItem.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="team_name[]" placeholder="Name">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="team_role[]" placeholder="Role">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-sm btn-danger remove-team">Remove</button>
+                        </div>
+                    </div>
+                `;
+                teamContainer.appendChild(newItem);
+                
+                // Add remove event listener
+                newItem.querySelector('.remove-team').addEventListener('click', function() {
+                    teamContainer.removeChild(newItem);
+                });
+            });
+        }
+        
+        // Multi-step form navigation
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        function showStep(step) {
+            // Hide all steps
+            for(let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}`).classList.add('hidden');
+                document.getElementById(`step-indicator-${i}`).classList.remove('active', 'completed');
+            }
+            
+            // Show current step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            document.getElementById(`step-indicator-${step}`).classList.add('active');
+            
+            // Mark completed steps
+            for(let i = 1; i < step; i++) {
+                document.getElementById(`step-indicator-${i}`).classList.add('completed');
+            }
+            
+            // Update buttons
+            prevBtn.disabled = step === 1;
+            
+            if(step === totalSteps) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+        
+        prevBtn.addEventListener('click', function() {
+            if(currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+        
+        nextBtn.addEventListener('click', function() {
+            if(currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+        
+        // Initialize other dynamic form elements
+        ['strength', 'concern', 'regulation', 'action', 'finding'].forEach(itemType => {
+            const addBtn = document.getElementById(`add_${itemType}`);
+            const container = document.getElementById(`${itemType}s_container`);
+            
+            if(addBtn && container) {
+                addBtn.addEventListener('click', function() {
+                    const template = container.querySelector(`.${itemType}-item`).cloneNode(true);
+                    
+                    // Clear input values
+                    template.querySelectorAll('input, textarea, select').forEach(input => {
+                        if(input.type !== 'radio' && input.type !== 'checkbox') {
+                            input.value = '';
+                        }
+                    });
+                    
+                    // Enable remove button
+                    const removeBtn = template.querySelector(`.remove-${itemType}`);
+                    if(removeBtn) {
+                        removeBtn.disabled = false;
+                        removeBtn.addEventListener('click', function() {
+                            container.removeChild(template);
+                        });
+                    }
+                    
+                    // Add datepicker to new action items if needed
+                    if(itemType === 'action') {
+                        const datepicker = template.querySelector('.datepicker');
+                        if(datepicker) {
+                            flatpickr(datepicker, {
+                                dateFormat: 'd/m/Y',
+                                allowInput: true
+                            });
+                        }
+                    }
+                    
+                    container.appendChild(template);
+                });
+            }
+        });
+        
+        // Enable remove buttons for initial items
+        document.querySelectorAll('.dynamic-items-container .remove-strength, .dynamic-items-container .remove-concern, .dynamic-items-container .remove-regulation, .dynamic-items-container .remove-action, .dynamic-items-container .remove-finding, .dynamic-items-container .remove-team').forEach(btn => {
+            btn.disabled = false;
+            const itemType = btn.classList[0].split('-')[1];
+            const container = document.getElementById(`${itemType}s_container`) || document.getElementById(`team_container`);
+            
+            btn.addEventListener('click', function() {
+                container.removeChild(btn.closest(`.${itemType}-item`));
+            });
+        });
+    });
+</script>
+{% endblock %}

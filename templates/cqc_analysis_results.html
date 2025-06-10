@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('cqc.dashboard') }}">CQC Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Analysis Results</li>
+                </ol>
+            </nav>
+
+            <h1 class="mb-4">CQC Analysis Results</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie"></i> Analysis Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p>{{ analysis.summary }}</p>
+                    </div>
+                    
+                    {% if analysis.recommendations %}
+                    <h5 class="mt-4">Recommendations:</h5>
+                    <ul class="list-group">
+                        {% for rec in analysis.recommendations %}
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-primary"></i> {{ rec }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% for area, data in analysis.areas.items() %}
+            <div class="card mb-4">
+                <div class="card-header 
+                    {% if data.rating == 'outstanding' %}bg-success text-white
+                    {% elif data.rating == 'good' %}bg-info text-white
+                    {% elif data.rating == 'requires_improvement' %}bg-warning
+                    {% elif data.rating == 'inadequate' %}bg-danger text-white
+                    {% else %}bg-secondary text-white{% endif %}">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check"></i> {{ area|title }} - {{ data.rating|replace('_', ' ')|title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>ML-Generated Insight:</h6>
+                    <div class="border p-3 bg-light mb-4">
+                        {{ data.insight|replace('\n', '<br>')|safe }}
+                    </div>
+                    
+                    {% if data.key_sentences %}
+                    <h6>Key Evidence:</h6>
+                    <ul class="list-group">
+                        {% for sentence in data.key_sentences %}
+                        <li class="list-group-item">
+                            <i class="fas fa-angle-right text-primary"></i> {{ sentence }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="text-center mb-4">
+                <a href="{{ url_for('cqc.dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Format page for printing
+    @media print {
+        .breadcrumb, .btn, nav, footer {
+            display: none !important;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .card {
+            break-inside: avoid;
+        }
+    }
+</script>
+{% endblock %}

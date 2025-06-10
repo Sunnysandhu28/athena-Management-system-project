@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}System Health Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">System Health Dashboard</h1>
+        <div>
+            <button id="runDiagnosticsBtn" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i> Run Diagnostics
+            </button>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Overall Health Score</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-{{ system_health.status_color }}" 
+                                 role="progressbar" 
+                                 style="width: {{ system_health.score }}%;" 
+                                 aria-valuenow="{{ system_health.score }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ system_health.score }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Database Performance</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-{{ system_health.database_color }}" 
+                                 role="progressbar" 
+                                 style="width: {{ system_health.database_score }}%;" 
+                                 aria-valuenow="{{ system_health.database_score }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ system_health.database_score }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Memory Usage</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-{{ system_health.memory_color }}" 
+                                 role="progressbar" 
+                                 style="width: {{ system_health.memory_usage }}%;" 
+                                 aria-valuenow="{{ system_health.memory_usage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ system_health.memory_usage }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">System Status</label>
+                        <span class="badge bg-{{ system_health.status_color }}">{{ system_health.status }}</span>
+                        <div class="small text-muted mt-1">Last check: {{ system_health.get('last_updated', '')|format_datetime }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>Database Size</th>
+                                <td>{{ system_health.database_size }}</td>
+                            </tr>
+                            <tr>
+                                <th>Total Policies</th>
+                                <td>{{ system_health.policy_count }}</td>
+                            </tr>
+                            <tr>
+                                <th>Average Response Time</th>
+                                <td>{{ system_health.avg_response_time }} ms</td>
+                            </tr>
+                            <tr>
+                                <th>Critical Errors (24h)</th>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if system_health.get('critical_errors', 0) > 0 else 'success' }}">
+                                        {{ system_health.get('critical_errors', 0) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Warnings (24h)</th>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if system_health.get('warnings', 0) > 5 else 'success' }}">
+                                        {{ system_health.get('warnings', 0) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Last Maintenance</th>
+                                <td>{{ system_health.get('last_maintenance', '')|format_datetime }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Recent Diagnostic Reports</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Category</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Execution Time</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for diagnostic in diagnostics %}
+                        <tr class="{{ 'table-danger' if diagnostic.status == 'critical' else 'table-warning' if diagnostic.status == 'warning' else '' }}">
+                            <td>{{ diagnostic.created_at|format_datetime }}</td>
+                            <td>{{ diagnostic.category }}</td>
+                            <td>{{ diagnostic.name }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if diagnostic.status == 'critical' else 'warning' if diagnostic.status == 'warning' else 'success' }}">
+                                    {{ diagnostic.status }}
+                                </span>
+                            </td>
+                            <td>{{ diagnostic.execution_time|round(2) }} ms</td>
+                            <td>{{ diagnostic.message }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No diagnostic reports found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const runDiagnosticsBtn = document.getElementById('runDiagnosticsBtn');
+        
+        if (runDiagnosticsBtn) {
+            runDiagnosticsBtn.addEventListener('click', function() {
+                // Show spinner
+                const originalText = runDiagnosticsBtn.innerHTML;
+                runDiagnosticsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Running...';
+                runDiagnosticsBtn.disabled = true;
+                
+                // Call API to run diagnostics
+                fetch('{{ url_for("dashboard.run_diagnostics") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Diagnostics completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error running diagnostics: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error running diagnostics:', error);
+                    alert('Error running diagnostics. Please try again later.');
+                })
+                .finally(() => {
+                    // Restore button
+                    runDiagnosticsBtn.innerHTML = originalText;
+                    runDiagnosticsBtn.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

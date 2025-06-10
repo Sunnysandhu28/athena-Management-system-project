@@ -1,0 +1,106 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-trash me-2"></i>Delete Policy
+        </h1>
+        <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Policy
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All versions of this policy will be permanently deleted.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>You are about to delete:</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item">
+                                <strong>Policy Name:</strong> {{ policy.name }}
+                            </li>
+                            {% if policy.reference %}
+                            <li class="list-group-item">
+                                <strong>Reference:</strong> {{ policy.reference }}
+                            </li>
+                            {% endif %}
+                            <li class="list-group-item">
+                                <strong>Category:</strong> {{ policy.category.name if policy.category else 'Uncategorized' }}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>The following files will be deleted:</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file-word text-primary me-2"></i>Original Document
+                                </div>
+                                {% if policy.download_path %}
+                                <span class="badge bg-danger rounded-pill">Will be deleted</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Not available</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>PDF Version
+                                </div>
+                                {% if policy.pdf_path %}
+                                <span class="badge bg-danger rounded-pill">Will be deleted</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Not available</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file-word text-success me-2"></i>Formatted Document
+                                </div>
+                                {% if policy.formatted_path %}
+                                <span class="badge bg-danger rounded-pill">Will be deleted</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Not available</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file-word text-info me-2"></i>Reworded Document
+                                </div>
+                                {% if policy.reworded_path %}
+                                <span class="badge bg-danger rounded-pill">Will be deleted</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Not available</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <form action="{{ url_for('delete_policy', policy_id=policy.id) }}" method="post">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Permanently Delete Policy
+                            </button>
+                            <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

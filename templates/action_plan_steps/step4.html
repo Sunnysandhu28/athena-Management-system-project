@@ -1,0 +1,334 @@
+{% extends 'action_plan_steps/base_wizard.html' %}
+
+{% set current_step = 4 %}
+{% set progress_percentage = 80 %}
+
+{% block step_title %}Responsibilities & Timeline{% endblock %}
+{% block step_description %}Assign responsibilities and establish a detailed timeline for implementation.{% endblock %}
+{% block form_action %}/action-plans/step5{% endblock %}
+
+{% block step_content %}
+<div class="mb-4">
+    <label for="leadPerson" class="form-label">Lead Person Responsible</label>
+    <input type="text" class="form-control" id="leadPerson" name="leadPerson" placeholder="Full name of the person responsible">
+</div>
+
+<div class="mb-4">
+    <label for="leadEmail" class="form-label">Lead Email</label>
+    <input type="email" class="form-control" id="leadEmail" name="leadEmail" placeholder="Email address">
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <label for="department" class="form-label">Department</label>
+        <select class="form-select" id="department" name="department">
+            <option selected>Select department</option>
+            <option value="care">Care Team</option>
+            <option value="nursing">Nursing</option>
+            <option value="management">Management</option>
+            <option value="admin">Administration</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="catering">Catering</option>
+            <option value="housekeeping">Housekeeping</option>
+            <option value="hr">Human Resources</option>
+            <option value="finance">Finance</option>
+        </select>
+    </div>
+</div>
+
+<div class="mb-4" id="team-members-container">
+    <label class="form-label">Support Team Members</label>
+    
+    <div class="team-member-group mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="teamMemberName[]" placeholder="Team member name">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Department/Organization</label>
+                <input type="text" class="form-control" name="teamMemberDept[]" placeholder="Department or organization">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-team-member" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="add-team-member">
+            <i class="bi bi-plus-circle"></i> Add Another Team Member
+        </button>
+    </div>
+    
+    <div class="form-text mt-2">Add all team members who will support implementation of this action plan</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Team member management
+        const teamContainer = document.getElementById('team-members-container');
+        const addTeamButton = document.getElementById('add-team-member');
+        
+        // Function to add a new team member
+        addTeamButton.addEventListener('click', function() {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'team-member-group mb-3';
+            newGroup.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="teamMemberName[]" placeholder="Team member name">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Department/Organization</label>
+                        <input type="text" class="form-control" name="teamMemberDept[]" placeholder="Department or organization">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-team-member">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert the new group before the add button div
+            teamContainer.insertBefore(newGroup, document.querySelector('#team-members-container .text-end'));
+            
+            // Add event listener for the remove button
+            newGroup.querySelector('.remove-team-member').addEventListener('click', function() {
+                teamContainer.removeChild(newGroup);
+                updateTeamMemberButtons();
+            });
+            
+            updateTeamMemberButtons();
+        });
+        
+        // Function to update the visibility of remove buttons
+        function updateTeamMemberButtons() {
+            const groups = teamContainer.querySelectorAll('.team-member-group');
+            if (groups.length === 1) {
+                groups[0].querySelector('.remove-team-member').style.display = 'none';
+            } else {
+                groups.forEach(group => {
+                    group.querySelector('.remove-team-member').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup
+        updateTeamMemberButtons();
+        
+        // Get form data from previous steps using sessionStorage
+        try {
+            // Retrieve evidence titles from session storage (set in step 2)
+            const evidenceData = JSON.parse(sessionStorage.getItem('evidenceData')) || [];
+            
+            // Set up date validation for milestones
+            const milestoneContainer = document.getElementById('milestones-container');
+            
+            // Function to check milestone status based on evidence and dates
+            function validateMilestones() {
+                const today = new Date();
+                const milestoneGroups = milestoneContainer.querySelectorAll('.milestone-group');
+                
+                milestoneGroups.forEach(group => {
+                    const titleInput = group.querySelector('input[name="milestoneTitle[]"]');
+                    const dateInput = group.querySelector('input[name="milestoneDate[]"]');
+                    const statusSelect = group.querySelector('select[name="milestoneStatus[]"]');
+                    
+                    if (!titleInput || !dateInput || !statusSelect) return;
+                    
+                    const milestoneTitle = titleInput.value.trim().toLowerCase();
+                    const milestoneDate = new Date(dateInput.value);
+                    
+                    // Skip validation if title is empty
+                    if (!milestoneTitle) return;
+                    
+                    // Check if date is in the past
+                    if (milestoneDate < today && dateInput.value) {
+                        // Milestone date is in the past
+                        if (statusSelect.value === 'pending') {
+                            // Suggest completed status with a tooltip
+                            const feedbackDiv = document.createElement('div');
+                            feedbackDiv.className = 'form-text text-warning mt-1';
+                            feedbackDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> This milestone\'s date has passed. Should it be marked as completed?';
+                            
+                            // Remove any existing feedback
+                            const existingFeedback = group.querySelector('.form-text.text-warning');
+                            if (existingFeedback) {
+                                existingFeedback.remove();
+                            }
+                            
+                            // Add new feedback
+                            group.appendChild(feedbackDiv);
+                        }
+                    }
+                    
+                    // Check evidence data for potential matches with milestone title
+                    evidenceData.forEach(evidence => {
+                        const evidenceTitle = evidence.trim().toLowerCase();
+                        
+                        // If evidence title contains milestone title keywords or vice versa
+                        if ((evidenceTitle.includes(milestoneTitle) || 
+                            milestoneTitle.includes(evidenceTitle)) && 
+                            evidenceTitle.length > 3 && milestoneTitle.length > 3) {
+                            
+                            // Suggest that this milestone might be completed based on evidence
+                            if (statusSelect.value === 'pending') {
+                                const evidenceFeedbackDiv = document.createElement('div');
+                                evidenceFeedbackDiv.className = 'form-text text-info mt-1';
+                                evidenceFeedbackDiv.innerHTML = `<i class="bi bi-info-circle-fill"></i> Evidence "${evidence}" suggests this milestone may be completed.`;
+                                
+                                // Remove any existing feedback of this type
+                                const existingFeedback = group.querySelector('.form-text.text-info');
+                                if (existingFeedback) {
+                                    existingFeedback.remove();
+                                }
+                                
+                                // Add new feedback after any warning
+                                group.appendChild(evidenceFeedbackDiv);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Add event listeners to validate on change
+            milestoneContainer.addEventListener('change', function(e) {
+                if (e.target.matches('input[name="milestoneTitle[]"]') || 
+                    e.target.matches('input[name="milestoneDate[]"]')) {
+                    validateMilestones();
+                }
+            });
+            
+            // Run validation when new milestones are added
+            document.getElementById('add-milestone').addEventListener('click', function() {
+                // Use setTimeout to wait for the new element to be fully added
+                setTimeout(validateMilestones, 100);
+            });
+            
+            // Initial validation
+            setTimeout(validateMilestones, 500);
+            
+        } catch (error) {
+            console.error('Error retrieving session data:', error);
+        }
+    });
+</script>
+
+<div class="mb-4" id="milestones-container">
+    <label class="form-label">Timeline Milestones</label>
+    
+    <div class="milestone-group mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Milestone Title</label>
+                <input type="text" class="form-control" name="milestoneTitle[]" placeholder="Milestone title">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Target Date</label>
+                <input type="date" class="form-control" name="milestoneDate[]">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="milestoneStatus[]">
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-milestone" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="add-milestone">
+            <i class="bi bi-plus-circle"></i> Add Another Milestone
+        </button>
+    </div>
+    
+    <div class="form-text mt-2">Add important milestones and completion dates for the action plan</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('milestones-container');
+        const addButton = document.getElementById('add-milestone');
+        
+        // Function to add a new milestone
+        addButton.addEventListener('click', function() {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'milestone-group mb-3';
+            newGroup.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Milestone Title</label>
+                        <input type="text" class="form-control" name="milestoneTitle[]" placeholder="Milestone title">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Target Date</label>
+                        <input type="date" class="form-control" name="milestoneDate[]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="milestoneStatus[]">
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-milestone">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert the new group before the add button div
+            container.insertBefore(newGroup, document.querySelector('#milestones-container .text-end'));
+            
+            // Add event listener for the remove button
+            newGroup.querySelector('.remove-milestone').addEventListener('click', function() {
+                container.removeChild(newGroup);
+                updateRemoveButtons();
+            });
+            
+            updateRemoveButtons();
+        });
+        
+        // Function to update the visibility of remove buttons
+        function updateRemoveButtons() {
+            const groups = container.querySelectorAll('.milestone-group');
+            if (groups.length === 1) {
+                groups[0].querySelector('.remove-milestone').style.display = 'none';
+            } else {
+                groups.forEach(group => {
+                    group.querySelector('.remove-milestone').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup
+        updateRemoveButtons();
+    });
+</script>
+
+<div class="mb-4">
+    <label for="progressUpdates" class="form-label">Progress Reporting Frequency</label>
+    <select class="form-select" id="progressUpdates" name="progressUpdates">
+        <option selected>Select frequency</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="biweekly">Bi-weekly</option>
+        <option value="monthly">Monthly</option>
+    </select>
+</div>
+{% endblock %}

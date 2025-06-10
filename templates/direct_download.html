@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Direct QCS Policy Download{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Direct QCS Policy Download</h4>
+                </div>
+                
+                <div class="card-body">
+                    <p class="lead">Use this simple form to download policies directly from QCS.</p>
+                    
+                    <!-- Download form -->
+                    <form action="{{ url_for('direct_download.start_download') }}" method="POST">
+                        <!-- CSRF protection handled by Flask -->
+                        
+                        <div class="mb-3">
+                            <label for="limit" class="form-label">Maximum Policies to Download</label>
+                            <input type="number" class="form-control" id="limit" name="limit" placeholder="Leave blank for all policies">
+                            <div class="form-text">Limit the number of policies to download (optional)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="downloadDir" class="form-label">Download Directory</label>
+                            <input type="text" class="form-control" id="downloadDir" name="download_dir" value="direct_downloads">
+                            <div class="form-text">Directory where policy files will be saved</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="startDownloadBtn">
+                                <i class="fas fa-download me-2"></i> Start Download
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Download Statistics -->
+            {% if session.download_stats %}
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Download Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Total Policies</th>
+                                <td>{{ session.download_stats.total }}</td>
+                            </tr>
+                            <tr>
+                                <th>Downloaded</th>
+                                <td>{{ session.download_stats.downloaded }}</td>
+                            </tr>
+                            <tr>
+                                <th>Skipped</th>
+                                <td>{{ session.download_stats.skipped }}</td>
+                            </tr>
+                            <tr>
+                                <th>Errors</th>
+                                <td>{{ session.download_stats.errors|length }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    {% if session.download_stats.errors %}
+                    <div class="mt-3">
+                        <h6>Errors:</h6>
+                        <ul class="list-group">
+                            {% for error in session.download_stats.errors %}
+                            <li class="list-group-item list-group-item-danger">{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const downloadForm = document.querySelector('form');
+        const startDownloadBtn = document.getElementById('startDownloadBtn');
+        
+        if (downloadForm) {
+            downloadForm.addEventListener('submit', function() {
+                // Show spinner
+                startDownloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Downloading...';
+                startDownloadBtn.disabled = true;
+            });
+        }
+    });
+</script>
+{% endblock %}

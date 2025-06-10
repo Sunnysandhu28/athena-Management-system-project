@@ -1,0 +1,736 @@
+{% extends "layout.html" %}
+
+{% block title %}CQC Regulatory Compliance Report Generator{% endblock %}
+
+{% block head %}
+<style>
+    .generator-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .section-header {
+        background-color: #003366;
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+    
+    .upload-container {
+        background-color: #f8f9fa;
+        border: 2px dashed #ced4da;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-container:hover {
+        border-color: #007bff;
+        background-color: #e9f4ff;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .file-label {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .file-label:hover {
+        background-color: #0069d9;
+    }
+    
+    .progress-container {
+        margin: 20px 0;
+    }
+    
+    .files-list {
+        margin-top: 30px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .files-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: bold;
+    }
+    
+    .file-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .file-item:last-child {
+        border-bottom: none;
+    }
+    
+    .file-icon {
+        font-size: 24px;
+        margin-right: 15px;
+        color: #6c757d;
+    }
+    
+    .file-details {
+        flex-grow: 1;
+    }
+    
+    .file-name {
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    .file-size {
+        color: #6c757d;
+        font-size: 12px;
+    }
+    
+    .file-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .file-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .view-btn {
+        background-color: #17a2b8;
+    }
+    
+    .view-btn:hover {
+        background-color: #138496;
+    }
+    
+    .delete-btn {
+        background-color: #dc3545;
+    }
+    
+    .delete-btn:hover {
+        background-color: #c82333;
+    }
+    
+    .report-options {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .option-header {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+    
+    .option-group {
+        margin-bottom: 25px;
+    }
+    
+    .option-label {
+        font-weight: 500;
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    
+    .checkbox-custom {
+        margin-bottom: 15px;
+    }
+    
+    .checkbox-custom .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.15rem;
+    }
+    
+    .checkbox-custom .form-check-label {
+        padding-left: 10px;
+    }
+    
+    .generate-btn {
+        background-color: #28a745;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .generate-btn:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+    
+    .drag-active {
+        background-color: #e2f3ff;
+        border-color: #007bff;
+    }
+    
+    .document-preview {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-family: monospace;
+        font-size: 14px;
+    }
+    
+    .processing-steps {
+        counter-reset: step;
+        margin: 30px 0;
+    }
+    
+    .step-item {
+        position: relative;
+        padding-left: 60px;
+        margin-bottom: 25px;
+    }
+    
+    .step-item:before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 40px;
+        height: 40px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .step-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #212529;
+    }
+    
+    .step-description {
+        color: #6c757d;
+    }
+    
+    .section-divider {
+        height: 1px;
+        background-color: #dee2e6;
+        margin: 40px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <div class="container">
+        <h1 class="mb-2">CQC Regulatory Compliance Report Generator</h1>
+        <p class="lead">Upload policy documents and generate comprehensive compliance reports</p>
+    </div>
+</div>
+
+<div class="generator-container container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Document Upload Section -->
+            <div class="upload-container" id="dropZone">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Upload Regulatory Documents</h3>
+                <p>Drag and drop files here or click the button below</p>
+                <input type="file" id="fileInput" class="file-input" multiple>
+                <label for="fileInput" class="file-label">
+                    <i class="fas fa-upload me-2"></i> Choose Files
+                </label>
+                <div class="progress-container d-none">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <p class="mt-2 mb-0">Uploading... <span id="progressText">0%</span></p>
+                </div>
+            </div>
+            
+            <!-- Uploaded Files List -->
+            <div class="files-list" id="filesList">
+                <div class="files-header">
+                    <div class="row">
+                        <div class="col-md-6">Document</div>
+                        <div class="col-md-3">Type</div>
+                        <div class="col-md-3">Actions</div>
+                    </div>
+                </div>
+                <div id="filesContainer">
+                    <!-- Existing uploaded files -->
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt" style="color: #007bff"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">Administration Quality Assurance.txt</div>
+                            <div class="file-size">156 KB</div>
+                        </div>
+                        <div class="col-md-3">
+                            Policy
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-button view-btn" data-index="0">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="file-button delete-btn" data-index="0">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt" style="color: #007bff"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">Audit.txt</div>
+                            <div class="file-size">98 KB</div>
+                        </div>
+                        <div class="col-md-3">
+                            Policy
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-button view-btn" data-index="1">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="file-button delete-btn" data-index="1">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <i class="fas fa-clipboard-check" style="color: #28a745"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">CQC_Report_with_Details.pdf</div>
+                            <div class="file-size">1.2 MB</div>
+                        </div>
+                        <div class="col-md-3">
+                            Inspection Report
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-button view-btn" data-index="2">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="file-button delete-btn" data-index="2">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt" style="color: #007bff"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">Discharge_Pack_Policy_and_Procedure.txt</div>
+                            <div class="file-size">124 KB</div>
+                        </div>
+                        <div class="col-md-3">
+                            Policy
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-button view-btn" data-index="3">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="file-button delete-btn" data-index="3">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt" style="color: #007bff"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">Diabetes_Policy_and_Procedure.pdf</div>
+                            <div class="file-size">234 KB</div>
+                        </div>
+                        <div class="col-md-3">
+                            Policy
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-button view-btn" data-index="4">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="file-button delete-btn" data-index="4">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-divider"></div>
+            
+            <!-- Processing Steps -->
+            <div class="processing-steps">
+                <h3 class="mb-4">How It Works</h3>
+                <div class="step-item">
+                    <div class="step-title">Upload Your Documents</div>
+                    <div class="step-description">Upload your policy documents, CQC inspection reports, or other regulatory documents to be analyzed.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-title">AI-Powered Analysis</div>
+                    <div class="step-description">Our advanced machine learning algorithms analyze your documents for compliance with CQC regulations and standards.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-title">Statistical Processing</div>
+                    <div class="step-description">Regional variations and inspector consistency are analyzed using Z-score and standard deviation methodologies.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-title">Comprehensive Report Generation</div>
+                    <div class="step-description">A detailed compliance report is generated with actionable insights and improvement recommendations.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Report Options -->
+            <div class="report-options">
+                <div class="option-header">Report Options</div>
+                
+                <div class="option-group">
+                    <div class="option-label">Report Type</div>
+                    <select class="form-select" id="reportType">
+                        <option value="comprehensive">Comprehensive Compliance Report</option>
+                        <option value="inspection">Inspection Preparation Report</option>
+                        <option value="quarterly">Quarterly Review Report</option>
+                        <option value="action">Action Plan Only</option>
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-label">Include Sections</div>
+                    <div class="checkbox-custom form-check">
+                        <input class="form-check-input" type="checkbox" id="includeExecutiveSummary" checked>
+                        <label class="form-check-label" for="includeExecutiveSummary">Executive Summary</label>
+                    </div>
+                    <div class="checkbox-custom form-check">
+                        <input class="form-check-input" type="checkbox" id="includeStatisticalAnalysis" checked>
+                        <label class="form-check-label" for="includeStatisticalAnalysis">Statistical Analysis</label>
+                    </div>
+                    <div class="checkbox-custom form-check">
+                        <input class="form-check-input" type="checkbox" id="includeHeatMap" checked>
+                        <label class="form-check-label" for="includeHeatMap">Compliance Heat Map</label>
+                    </div>
+                    <div class="checkbox-custom form-check">
+                        <input class="form-check-input" type="checkbox" id="includeActionPlan" checked>
+                        <label class="form-check-label" for="includeActionPlan">Action Plan</label>
+                    </div>
+                    <div class="checkbox-custom form-check">
+                        <input class="form-check-input" type="checkbox" id="includeAppendices" checked>
+                        <label class="form-check-label" for="includeAppendices">Statistical Appendices</label>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-label">Organisation Details</div>
+                    <div class="mb-3">
+                        <label class="form-label">Organisation Name</label>
+                        <input type="text" class="form-control" id="organisationName" value="Quenby Rest Home">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">CQC Provider ID</label>
+                        <input type="text" class="form-control" id="providerID" placeholder="e.g. 1-123456789">
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-label">Reference Format</div>
+                    <select class="form-select" id="referenceFormat">
+                        <option value="default">Standard Format (Rep/CQC/M/...)</option>
+                        <option value="detailed">Detailed Format</option>
+                        <option value="simple">Simplified Format</option>
+                    </select>
+                </div>
+                
+                <button class="btn generate-btn w-100 mt-4" id="generateReport">
+                    <i class="fas fa-file-medical me-2"></i> Generate Compliance Report
+                </button>
+            </div>
+            
+            <!-- Document Preview -->
+            <div class="document-preview d-none" id="documentPreview">
+                <h5 class="mb-3">Document Preview</h5>
+                <div id="previewContent">
+                    Select a document to preview its content
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.querySelector('.progress-container');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressText = document.getElementById('progressText');
+        const filesList = document.getElementById('filesList');
+        const filesContainer = document.getElementById('filesContainer');
+        const documentPreview = document.getElementById('documentPreview');
+        const previewContent = document.getElementById('previewContent');
+        const generateReportBtn = document.getElementById('generateReport');
+        
+        // Sample file types for different document categories
+        const fileTypes = {
+            'policy': ['Policy', 'fas fa-file-alt', '#007bff'],
+            'inspection': ['Inspection Report', 'fas fa-clipboard-check', '#28a745'],
+            'guidance': ['Guidance Document', 'fas fa-book', '#fd7e14'],
+            'form': ['Form Template', 'fas fa-file-contract', '#6f42c1'],
+            'data': ['Data File', 'fas fa-table', '#17a2b8']
+        };
+        
+        // Handle drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('drag-active');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('drag-active');
+        }
+        
+        // Handle file drop
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                showProgress();
+                
+                // Simulate upload progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    updateProgress(progress);
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        hideProgress();
+                        displayFiles(files);
+                    }
+                }, 200);
+            }
+        }
+        
+        // Show the existing files list on load since we already have files
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show the files list on page load since we already have uploaded files
+            filesList.classList.remove('d-none');
+        });
+        
+        function showProgress() {
+            progressContainer.classList.remove('d-none');
+            updateProgress(0);
+        }
+        
+        function hideProgress() {
+            progressContainer.classList.add('d-none');
+        }
+        
+        function updateProgress(value) {
+            progressBar.style.width = `${value}%`;
+            progressText.textContent = `${value}%`;
+        }
+        
+        function displayFiles(files) {
+            filesList.classList.remove('d-none');
+            
+            // Clear previous files
+            if (filesContainer.innerHTML === '') {
+                // Keep the existing content if it's the first upload
+            } else {
+                // Append to existing files
+            }
+            
+            Array.from(files).forEach((file, index) => {
+                // Determine file type based on extension
+                const extension = file.name.split('.').pop().toLowerCase();
+                let fileType, fileIcon, fileColor;
+                
+                if (['doc', 'docx', 'pdf', 'txt'].includes(extension)) {
+                    [fileType, fileIcon, fileColor] = fileTypes.policy;
+                } else if (['xls', 'xlsx', 'csv'].includes(extension)) {
+                    [fileType, fileIcon, fileColor] = fileTypes.data;
+                } else if (['ppt', 'pptx'].includes(extension)) {
+                    [fileType, fileIcon, fileColor] = fileTypes.guidance;
+                } else {
+                    [fileType, fileIcon, fileColor] = ['Unknown', 'fas fa-file', '#6c757d'];
+                }
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-icon">
+                        <i class="${fileIcon}" style="color: ${fileColor}"></i>
+                    </div>
+                    <div class="file-details">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="col-md-3">
+                        ${fileType}
+                    </div>
+                    <div class="file-actions">
+                        <div class="file-button view-btn" data-index="${index}">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="file-button delete-btn" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
+                `;
+                
+                filesContainer.appendChild(fileItem);
+                
+                // Add event listeners for view and delete buttons
+                fileItem.querySelector('.view-btn').addEventListener('click', function() {
+                    previewFile(file);
+                });
+                
+                fileItem.querySelector('.delete-btn').addEventListener('click', function() {
+                    fileItem.remove();
+                    if (filesContainer.children.length === 0) {
+                        filesList.classList.add('d-none');
+                    }
+                });
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function previewFile(file) {
+            documentPreview.classList.remove('d-none');
+            
+            // Check if the file is a text file or PDF
+            if (file.type.startsWith('text/') || file.name.endsWith('.txt')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewContent.innerHTML = `<pre>${e.target.result}</pre>`;
+                };
+                
+                reader.readAsText(file);
+            } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                previewContent.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> PDF preview is not available. The document will be processed during report generation.
+                    </div>
+                    <div>File: ${file.name}</div>
+                    <div>Type: PDF Document</div>
+                    <div>Size: ${formatFileSize(file.size)}</div>
+                `;
+            } else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+                previewContent.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Word document preview is not available. The document will be processed during report generation.
+                    </div>
+                    <div>File: ${file.name}</div>
+                    <div>Type: Microsoft Word Document</div>
+                    <div>Size: ${formatFileSize(file.size)}</div>
+                `;
+            } else {
+                previewContent.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Preview not available for this file type.
+                    </div>
+                    <div>File: ${file.name}</div>
+                    <div>Type: ${file.type || 'Unknown'}</div>
+                    <div>Size: ${formatFileSize(file.size)}</div>
+                `;
+            }
+        }
+        
+        // Handle report generation
+        generateReportBtn.addEventListener('click', function() {
+            if (filesContainer.children.length === 0) {
+                alert('Please upload at least one document to generate a report.');
+                return;
+            }
+            
+            // Show generating progress
+            generateReportBtn.disabled = true;
+            generateReportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating Report...';
+            
+            // Simulate report generation
+            setTimeout(() => {
+                // Redirect to the comprehensive report page
+                window.location.href = '/cqc-reports/comprehensive-report';
+            }, 3000);
+        });
+    });
+</script>
+{% endblock %}

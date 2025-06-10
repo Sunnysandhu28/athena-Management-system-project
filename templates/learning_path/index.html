@@ -1,0 +1,70 @@
+
+{% extends "base.html" %}
+
+{% block title %}Interactive Compliance Learning Path{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>Interactive Compliance Learning Path</h2>
+        <p>Create a personalized learning journey to achieve regulatory compliance based on your organization's specific needs and gaps.</p>
+        
+        <div class="alert alert-info">
+            <p>The Interactive Compliance Learning Path analyzes your current compliance status and creates a tailored learning journey with:</p>
+            <ul>
+                <li>Prioritized modules based on identified compliance gaps</li>
+                <li>Visual timeline showing your learning schedule</li>
+                <li>Progress tracking with animated visualizations</li>
+                <li>Detailed heatmaps showing progress over time</li>
+            </ul>
+        </div>
+        
+        <form action="{{ url_for('learning_path.generate') }}" method="post" onsubmit="showLoading()">
+            <div class="form-group">
+                <label for="user_name">Facility Manager Name:</label>
+                <input type="text" id="user_name" name="user_name" placeholder="Enter your name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="simulation_days">Simulation Period (days):</label>
+                <input type="number" id="simulation_days" name="simulation_days" min="7" max="90" value="30" required>
+            </div>
+            
+            <button type="submit" class="btn">Generate Learning Path</button>
+        </form>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Generating your personalized learning path...</p>
+            <p>This may take a moment as we analyze compliance data and create visualizations.</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Recent Learning Paths</h2>
+        
+        {% if learning_paths %}
+            <div class="grid">
+                {% for path in learning_paths %}
+                <div class="card">
+                    <h3>{{ path.user_name }}</h3>
+                    <p>Generated: {{ path.created_at }}</p>
+                    <p>Overall Completion: {{ path.overall_completion }}%</p>
+                    <a href="{{ url_for('learning_path.details', path_id=path.id) }}" class="btn">View Details</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No learning paths have been generated yet. Create your first one above!</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block head %}
+<script>
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        return true;
+    }
+</script>
+{% endblock %}
+            

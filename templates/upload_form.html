@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document{% endblock %}
+
+{% block styles %}
+<style>
+    .document-type-card {
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .document-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .document-type-card.selected {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    .document-type-card.selected .check-icon {
+        display: block !important;
+    }
+    .framework-option {
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .framework-option:hover {
+        background-color: #f8f9fa;
+        border-left-width: 6px;
+    }
+    .framework-option.cqc {
+        border-left-color: #28a745;
+    }
+    .framework-option.riddor {
+        border-left-color: #dc3545;
+    }
+    .framework-option.fire-safety {
+        border-left-color: #fd7e14;
+    }
+    .framework-option.financial {
+        border-left-color: #17a2b8;
+    }
+    .framework-option input[type="checkbox"]:checked + label {
+        font-weight: bold;
+    }
+    .upload-dropzone {
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    .upload-dropzone:hover, .upload-dropzone.highlight {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+    }
+    .doc-type-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+    }
+    .policy-icon {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    .case-study-icon {
+        background-color: rgba(111, 66, 193, 0.1);
+        color: #6f42c1;
+    }
+    .research-icon {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+    .statistical-icon {
+        background-color: rgba(32, 201, 151, 0.1);
+        color: #20c997;
+    }
+    .report-icon {
+        background-color: rgba(232, 62, 140, 0.1);
+        color: #e83e8c;
+    }
+    .guidance-icon {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    .check-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #007bff;
+        display: none;
+    }
+    .section-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 mb-0">Upload Document</h1>
+            <p class="text-muted">Upload a document for regulatory analysis</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('regulatory.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show mb-4">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" action="{{ url_for('regulatory.upload_document') }}" enctype="multipart/form-data" id="uploadForm">
+        <!-- Document Type Selection -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Document Type</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="policy">
+                            <div class="card-body">
+                                <div class="doc-type-icon policy-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Policy</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="case_study">
+                            <div class="card-body">
+                                <div class="doc-type-icon case-study-icon">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Case Study</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="research">
+                            <div class="card-body">
+                                <div class="doc-type-icon research-icon">
+                                    <i class="fas fa-microscope"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Research</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="statistical">
+                            <div class="card-body">
+                                <div class="doc-type-icon statistical-icon">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Statistical</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="report">
+                            <div class="card-body">
+                                <div class="doc-type-icon report-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Report</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="card document-type-card mb-3" data-type="guidance">
+                            <div class="card-body">
+                                <div class="doc-type-icon guidance-icon">
+                                    <i class="fas fa-hands-helping"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Guidance</h5>
+                                <span class="check-icon"><i class="fas fa-check-circle fa-lg"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="document_type" id="documentTypeInput" value="policy">
+            </div>
+        </div>
+        
+        <!-- Regulatory Frameworks -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Regulatory Frameworks</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Select the regulatory frameworks to analyze this document against:</p>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option cqc">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cqcFramework" name="frameworks" value="cqc" checked>
+                                    <label class="form-check-label" for="cqcFramework">
+                                        CQC (Care Quality Commission)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option riddor">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="riddorFramework" name="frameworks" value="riddor" checked>
+                                    <label class="form-check-label" for="riddorFramework">
+                                        RIDDOR (Reporting of Injuries)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option fire-safety">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="fireSafetyFramework" name="frameworks" value="fire_safety" checked>
+                                    <label class="form-check-label" for="fireSafetyFramework">
+                                        Fire Safety Regulations
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option financial">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="financialFramework" name="frameworks" value="financial" checked>
+                                    <label class="form-check-label" for="financialFramework">
+                                        Financial/Accounting Regulations
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="section-label mb-3">UK Legal Frameworks</h6>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option" style="border-left-color: #6f42c1;">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ukLawFramework" name="frameworks" value="uk_law">
+                                    <label class="form-check-label" for="ukLawFramework">
+                                        UK Law (General Legal Compliance)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option" style="border-left-color: #20c997;">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ukCommercialLawFramework" name="frameworks" value="uk_commercial_law">
+                                    <label class="form-check-label" for="ukCommercialLawFramework">
+                                        UK Commercial Law
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option" style="border-left-color: #e83e8c;">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ukCompanyLawFramework" name="frameworks" value="uk_company_law">
+                                    <label class="form-check-label" for="ukCompanyLawFramework">
+                                        UK Company Law
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card mb-2 framework-option" style="border-left-color: #ffc107;">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="ukTaxLawFramework" name="frameworks" value="uk_tax_law">
+                                    <label class="form-check-label" for="ukTaxLawFramework">
+                                        UK Tax Law
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Source Type & Organization -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Document Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="sourceType" class="form-label">Source Type</label>
+                            <select class="form-select" id="sourceType" name="source_type">
+                                <option value="internal">Internal Document</option>
+                                <option value="external">External Document</option>
+                                <option value="qcs">Quality Compliance Systems (QCS)</option>
+                                <option value="cqc">Care Quality Commission (CQC)</option>
+                                <option value="nhs">National Health Service (NHS)</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="organization" class="form-label">Organization Name</label>
+                            <input type="text" class="form-control" id="organization" name="organization" placeholder="Optional">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="documentNotes" class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control" id="documentNotes" name="notes" rows="2" placeholder="Add any additional notes about this document..."></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Upload -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">File Upload</h5>
+            </div>
+            <div class="card-body">
+                <div class="upload-dropzone p-5 text-center" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt upload-icon mb-3"></i>
+                    <h4>Drag & Drop Files Here</h4>
+                    <p class="text-muted mb-3">or click to browse</p>
+                    
+                    <input type="file" class="form-control d-none" id="fileInput" name="file" accept=".pdf,.docx,.doc,.txt,.rtf">
+                    <button type="button" class="btn btn-outline-primary" id="browseButton">
+                        <i class="fas fa-folder-open me-1"></i> Browse Files
+                    </button>
+                    
+                    <div id="filePreview" class="mt-4 d-none">
+                        <div class="card">
+                            <div class="card-body d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-alt text-primary me-3 fa-2x"></i>
+                                    <div>
+                                        <h5 class="mb-0" id="fileName">filename.pdf</h5>
+                                        <span class="text-muted small" id="fileSize">0 KB</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="removeFile">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="small text-muted mt-2">
+                    <p><strong>Supported file types:</strong> PDF, Word Document (.docx, .doc), Text (.txt), Rich Text Format (.rtf)</p>
+                    <p><strong>Maximum file size:</strong> 10MB</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Options -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Processing Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="extractKeyTerms" name="extract_key_terms" checked>
+                            <label class="form-check-label" for="extractKeyTerms">Extract key terms and concepts</label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="generateSummary" name="generate_summary" checked>
+                            <label class="form-check-label" for="generateSummary">Generate document summary</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="identifyGaps" name="identify_gaps" checked>
+                            <label class="form-check-label" for="identifyGaps">Identify compliance gaps</label>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="generateRecommendations" name="generate_recommendations" checked>
+                            <label class="form-check-label" for="generateRecommendations">Generate improvement recommendations</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="processingPriority" class="form-label">Processing Priority</label>
+                    <select class="form-select" id="processingPriority" name="processing_priority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High (Process Immediately)</option>
+                        <option value="low">Low (Process During Off-Peak Hours)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+            <button type="submit" class="btn btn-primary btn-lg" id="submitButton" disabled>
+                <i class="fas fa-upload me-1"></i> Upload and Analyze
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Document Type Selection
+    const documentTypeCards = document.querySelectorAll('.document-type-card');
+    const documentTypeInput = document.getElementById('documentTypeInput');
+    
+    documentTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            documentTypeCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input value
+            documentTypeInput.value = this.getAttribute('data-type');
+        });
+    });
+    
+    // Set initial selection
+    documentTypeCards[0].classList.add('selected');
+    
+    // File Upload
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const browseButton = document.getElementById('browseButton');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFile = document.getElementById('removeFile');
+    const submitButton = document.getElementById('submitButton');
+    
+    // Open file dialog when browse button is clicked
+    browseButton.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+    
+    // Prevent default behavior for drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Highlight drop zone when file is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropZone.classList.add('highlight');
+    }
+    
+    function unhighlight() {
+        dropZone.classList.remove('highlight');
+    }
+    
+    // Handle dropped files
+    dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    });
+    
+    // Handle files from both drag & drop and file input
+    function handleFiles(files) {
+        if (files.length) {
+            const file = files[0];
+            displayFilePreview(file);
+            fileInput.files = files;
+            submitButton.disabled = false;
+        }
+    }
+    
+    // Display file preview
+    function displayFilePreview(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        filePreview.classList.remove('d-none');
+    }
+    
+    // Remove selected file
+    removeFile.addEventListener('click', function() {
+        fileInput.value = '';
+        filePreview.classList.add('d-none');
+        submitButton.disabled = true;
+    });
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+        }
+    });
+});
+</script>
+{% endblock %}

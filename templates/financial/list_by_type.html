@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ type_title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('financial.index') }}">Financial Regulations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ type_title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">{{ type_title }}</h1>
+            <p class="lead">
+                {% if regulation_type == 'finance-acts' %}
+                    Finance Acts and their sections from UK legislation.
+                {% elif regulation_type == 'accounting-standards' %}
+                    UK Accounting Standards for financial reporting.
+                {% elif regulation_type == 'company-regulations' %}
+                    Regulations for UK company accounts and reporting.
+                {% else %}
+                    Financial regulations and documents.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <form action="{{ url_for('financial.search') }}" method="get" class="form-inline d-flex">
+                <input type="text" name="query" class="form-control flex-grow-1 mr-2" placeholder="Search financial regulations..." required>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">{{ regulations|length }} {{ type_title }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if regulations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Code</th>
+                                        {% if regulation_type == 'finance-acts' %}
+                                            <th>Year</th>
+                                            <th>Section</th>
+                                            <th>Part</th>
+                                        {% endif %}
+                                        <th>Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for regulation in regulations %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('financial.view_regulation', regulation_id=regulation.id) }}">
+                                                    {{ regulation.title }}
+                                                </a>
+                                            </td>
+                                            <td>{{ regulation.code }}</td>
+                                            {% if regulation_type == 'finance-acts' %}
+                                                <td>{{ regulation.act_year }}</td>
+                                                <td>{{ regulation.section_number }}</td>
+                                                <td>{{ regulation.part_number }}</td>
+                                            {% endif %}
+                                            <td>{{ regulation.regulation_type|replace('-', ' ')|title }}</td>
+                                            <td>
+                                                <a href="{{ url_for('financial.view_regulation', regulation_id=regulation.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                                {% if regulation.source_url %}
+                                                    <a href="{{ regulation.source_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-external-link-alt"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No {{ type_title }} found. <a href="{{ url_for('financial.update_regulations') }}">Update regulations</a> to fetch them.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

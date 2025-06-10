@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}QCS Sitemap - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>QCS Sitemap Data</h1>
+    <p class="lead">View the structure of QCS categories and policies</p>
+
+    <div class="row">
+        <!-- Categories Section -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Categories</h2>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                        <ul class="list-group">
+                            {% for category in categories %}
+                                <li class="list-group-item">
+                                    <strong>{{ category.name }}</strong>
+                                    {% if category.url %}
+                                        <a href="{{ category.url }}" target="_blank" class="float-end">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center text-muted">No categories found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Policies Section -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Policies</h2>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                        <div class="form-group mb-3">
+                            <input type="text" id="policySearch" class="form-control" placeholder="Search policies...">
+                        </div>
+                        <ul class="list-group" id="policyList">
+                            {% for policy in policies %}
+                                <li class="list-group-item">
+                                    <strong>{{ policy.name }}</strong>
+                                    {% if policy.url %}
+                                        <a href="{{ policy.url }}" target="_blank" class="float-end">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center text-muted">No policies found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if policies %}
+        <div class="alert alert-info">
+            <p><strong>Total Policies:</strong> {{ policies|length }}</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simple search functionality for policies
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('policySearch');
+        const policyList = document.getElementById('policyList');
+        
+        if (searchInput && policyList) {
+            searchInput.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const items = policyList.getElementsByTagName('li');
+                
+                for (let i = 0; i < items.length; i++) {
+                    const text = items[i].textContent.toLowerCase();
+                    if (text.includes(searchValue)) {
+                        items[i].style.display = '';
+                    } else {
+                        items[i].style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

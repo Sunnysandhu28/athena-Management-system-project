@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Enhance Policy Metadata{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('view_policy', policy_id=policy.id) }}">{{ policy.title }}</a></li>
+                    <li class="breadcrumb-item active">Enhance Metadata</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Enhance Policy Metadata</h1>
+            <p class="lead">Use AI to analyze and enhance the metadata for <strong>{{ policy.title }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Confirmation</h2>
+                </div>
+                <div class="card-body">
+                    <p>This process will use machine learning to:</p>
+                    <ul>
+                        <li>Analyze the policy structure and content</li>
+                        <li>Identify missing metadata sections</li>
+                        <li>Generate appropriate content through triangulation of existing data</li>
+                        <li>Update the policy with enhanced metadata</li>
+                    </ul>
+                    
+                    <p class="mb-4">This process may take a few moments to complete.</p>
+                    
+                    <form method="POST" action="{{ url_for('ai_policy_learning.enhance_policy', policy_id=policy.id) }}">
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Enhance Metadata</button>
+                            <a href="{{ current_url }}" class="btn btn-secondary ml-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Policy Information</h2>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Title:</dt>
+                        <dd>{{ policy.title }}</dd>
+                        
+                        <dt>Reference:</dt>
+                        <dd>{{ policy.reference_code or policy.code or 'N/A' }}</dd>
+                        
+                        <dt>Category:</dt>
+                        <dd>{{ policy.category.name if policy.category else 'Uncategorized' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

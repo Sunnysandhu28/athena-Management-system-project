@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}Policy Comparison Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Policy Comparison Tool</h1>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        This tool allows you to compare your old policies against QCS standards to determine 
+                        compliance variation at the time of inspection.
+                    </p>
+                    <p>
+                        Upload your old policies to see how they compare to current QCS standards. The tool will 
+                        analyze structure, content, and key elements to calculate a compliance score.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h4 mb-0">Upload Old Policy</h2>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('policy_comparison.upload_old_policy') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="policy_title" class="form-label">Policy Title</label>
+                            <input type="text" class="form-control" id="policy_title" name="policy_title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="policy_code" class="form-label">Policy Code (e.g., CM01, HR02)</label>
+                            <input type="text" class="form-control" id="policy_code" name="policy_code" 
+                                   placeholder="Enter policy code to help match with QCS standards">
+                            <small class="text-muted">If you know the QCS code, entering it helps with matching.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Policy Category</label>
+                            <select class="form-select" id="category_id" name="category_id">
+                                <option value="">-- Select Category --</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="policy_file" class="form-label">Upload Policy Document</label>
+                            <input type="file" class="form-control" id="policy_file" name="policy_file" required
+                                   accept=".doc,.docx,.pdf,.txt">
+                            <small class="text-muted">Supported formats: .doc, .docx, .pdf, .txt</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="inspection_date" class="form-label">Inspection Date (Optional)</label>
+                            <input type="date" class="form-control" id="inspection_date" name="inspection_date">
+                            <small class="text-muted">If known, enter the date of inspection to track historical compliance.</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Upload & Compare</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h4 mb-0">Batch Comparison</h2>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Compare multiple old policies at once against QCS standards.
+                    </p>
+                    <p>
+                        This option is useful when you have already uploaded several old policies
+                        and want to analyze them as a batch to get an overall compliance view.
+                    </p>
+                    
+                    <form action="{{ url_for('policy_comparison.batch_comparison') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="batch_category_id" class="form-label">Filter by Category</label>
+                            <select class="form-select" id="batch_category_id" name="category_id">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-info text-white">Run Batch Comparison</button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <a href="{{ url_for('policy_comparison.comparison_report') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-chart-bar me-2"></i> View Compliance Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if policies %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h4 mb-0">Previously Uploaded Policies</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Code</th>
+                                    <th>Category</th>
+                                    <th>Upload Date</th>
+                                    <th>Compliance Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in policies %}
+                                {% if policy.is_old_version %}
+                                <tr>
+                                    <td>{{ policy.title }}</td>
+                                    <td>{{ policy.code }}</td>
+                                    <td>{{ policy.category.name if policy.category else 'Uncategorized' }}</td>
+                                    <td>{{ policy.upload_date.strftime('%d-%m-%Y') if policy.upload_date else 'Unknown' }}</td>
+                                    <td>
+                                        {% if policy.compliance_score > 0 %}
+                                        <div class="progress" title="{{ policy.compliance_score }}%">
+                                            <div class="progress-bar bg-{{ 'success' if policy.compliance_score >= 80 else 'warning' if policy.compliance_score >= 60 else 'danger' }}" 
+                                                 role="progressbar" style="width: {{ policy.compliance_score }}%">
+                                                {{ policy.compliance_score }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">Not analyzed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('policy_comparison.compare_policy', policy_id=policy.id) }}" 
+                                           class="btn btn-sm btn-primary">Compare</a>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

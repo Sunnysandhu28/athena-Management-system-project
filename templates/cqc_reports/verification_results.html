@@ -1,0 +1,289 @@
+{% extends "layout.html" %}
+
+{% block title %}CQC Report Verification Results{% endblock %}
+
+{% block head %}
+<style>
+    .verification-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .verification-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 30px;
+        border-left: 4px solid #003366;
+    }
+    
+    .verification-section {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .verification-section-header {
+        background-color: #003366;
+        color: white;
+        padding: 10px 15px;
+        margin: 0;
+    }
+    
+    .verification-section-content {
+        padding: 15px;
+    }
+    
+    .status-verified {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    
+    .status-failed {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    
+    .discrepancy-list {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .warning-list {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .extracted-data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .extracted-data-table th, 
+    .extracted-data-table td {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    
+    .extracted-data-table th {
+        background-color: #f0f0f0;
+    }
+    
+    .extracted-data-label {
+        font-weight: bold;
+        width: 30%;
+    }
+    
+    .btn-action {
+        display: inline-block;
+        background-color: #003366;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .btn-action:hover {
+        background-color: #002244;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .data-section {
+        margin-bottom: 20px;
+    }
+    
+    .data-section h4 {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .nested-table {
+        margin-left: 20px;
+        width: calc(100% - 20px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 verification-container">
+    <div class="verification-header">
+        <h1 class="text-center mb-4">CQC Report Verification Results</h1>
+        <p class="text-center mb-4">Verification based on facts file: <strong>{{ facts_file }}</strong></p>
+        
+        {% if results.is_verified %}
+            <div class="text-center">
+                <div class="status-verified">✓ Report Verified</div>
+                <p>All inspection facts in the report match the known facts.</p>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <div class="status-failed">✗ Verification Failed</div>
+                <p>The report contains discrepancies compared to the known facts.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if results.discrepancies %}
+        <div class="verification-section">
+            <h3 class="verification-section-header">Discrepancies Found</h3>
+            <div class="verification-section-content">
+                <div class="discrepancy-list">
+                    <h4>The following discrepancies were identified:</h4>
+                    <ul>
+                        {% for discrepancy in results.discrepancies %}
+                            <li>{{ discrepancy }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <p>These discrepancies should be corrected to ensure the report contains accurate information.</p>
+            </div>
+        </div>
+    {% endif %}
+    
+    {% if results.warnings %}
+        <div class="verification-section">
+            <h3 class="verification-section-header">Warnings</h3>
+            <div class="verification-section-content">
+                <div class="warning-list">
+                    <h4>The following warnings were generated:</h4>
+                    <ul>
+                        {% for warning in results.warnings %}
+                            <li>{{ warning }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <p>These warnings don't necessarily indicate errors, but should be reviewed.</p>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="verification-section">
+        <h3 class="verification-section-header">Extracted Data</h3>
+        <div class="verification-section-content">
+            <p>The following data was extracted from the report:</p>
+            
+            {% if results.extracted_data.inspector_names %}
+                <div class="data-section">
+                    <h4>Inspector Names</h4>
+                    <ul>
+                        {% for name in results.extracted_data.inspector_names %}
+                            <li>{{ name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if results.extracted_data.inspection_dates %}
+                <div class="data-section">
+                    <h4>Inspection Dates</h4>
+                    <table class="extracted-data-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event, date in results.extracted_data.inspection_dates.items() %}
+                                <tr>
+                                    <td class="extracted-data-label">{{ event|replace('_', ' ')|title }}</td>
+                                    <td>{{ date }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            {% if results.extracted_data.warning_info %}
+                <div class="data-section">
+                    <h4>Warning Notice Information</h4>
+                    <table class="extracted-data-table">
+                        <tbody>
+                            {% for key, value in results.extracted_data.warning_info.items() %}
+                                <tr>
+                                    <td class="extracted-data-label">{{ key|replace('_', ' ')|title }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            {% if results.extracted_data.contract_details %}
+                <div class="data-section">
+                    <h4>Contract Details</h4>
+                    <table class="extracted-data-table">
+                        <tbody>
+                            {% for key, value in results.extracted_data.contract_details.items() %}
+                                <tr>
+                                    <td class="extracted-data-label">{{ key|replace('_', ' ')|title }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            {% if results.extracted_data.compliance_scores %}
+                <div class="data-section">
+                    <h4>Compliance Scores</h4>
+                    <table class="extracted-data-table">
+                        <thead>
+                            <tr>
+                                <th>Area</th>
+                                <th>Score (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for area, score in results.extracted_data.compliance_scores.items() %}
+                                <tr>
+                                    <td class="extracted-data-label">{{ area|replace('_', ' ')|title }}</td>
+                                    <td>{{ score }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="text-center mb-5">
+        <a href="{{ url_for('cqc_report.final_report') }}" class="btn-action">View Full Report</a>
+        <a href="{{ url_for('cqc_report.fact_capture') }}" class="btn-action btn-secondary">Return to Fact Capture</a>
+        <a href="{{ url_for('cqc_report.index') }}" class="btn-action btn-secondary">CQC Reports Home</a>
+    </div>
+</div>
+{% endblock %}

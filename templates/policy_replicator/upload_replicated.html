@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Replicated Policy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Policy Replicator</a></li>
+            {% if original_policy %}
+            <li class="breadcrumb-item"><a href="{{ url_for('policy_replicator.view_policy', policy_id=original_policy.id) }}">{{ original_policy.title }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">Upload Replicated Policy</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Upload Replicated Policy</h4>
+                </div>
+                <div class="card-body">
+                    {% if original_policy %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You are uploading a replicated version of <strong>{{ original_policy.title }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('policy_replicator.upload_replicated') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        
+                        {% if original_policy %}
+                        <input type="hidden" name="original_policy_id" value="{{ original_policy.id }}" />
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="policy_title" class="form-label">Policy Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="policy_title" name="policy_title" 
+                                value="{% if original_policy %}Replicated - {{ original_policy.title }}{% endif %}" required>
+                            <div class="form-text">Enter a title for the replicated policy.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="policy_file" class="form-label">Policy Document (DOCX) <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="policy_file" name="policy_file" accept=".docx" required>
+                            <div class="form-text">Upload the replicated Word document (.docx format only).</div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Upload Checklist</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="check_content" required>
+                                    <label class="form-check-label" for="check_content">
+                                        I have replicated all content word-for-word from the original policy
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="check_structure" required>
+                                    <label class="form-check-label" for="check_structure">
+                                        I have maintained the same section structure and heading hierarchy
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="check_tables" required>
+                                    <label class="form-check-label" for="check_tables">
+                                        I have accurately recreated all tables, lists, and visual elements
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="check_references" required>
+                                    <label class="form-check-label" for="check_references">
+                                        I have preserved all cross-references to other policies or regulations
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <strong>Important:</strong> By uploading this document, you confirm that it is a faithful word-for-word replication of the original policy and will only be used within your organization according to your license agreement with QCS.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% if original_policy %}{{ url_for('policy_replicator.view_policy', policy_id=original_policy.id) }}{% else %}{{ url_for('dashboard.index') }}{% endif %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i> Upload Replicated Policy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Tips for Successful Replication</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Document Format</h6>
+                            <ul class="mb-3">
+                                <li>Use the template provided by the system</li>
+                                <li>Save as .docx format (Word 2007 or newer)</li>
+                                <li>Use proper Word styles for headings</li>
+                                <li>Maximum file size: 10MB</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Content Quality</h6>
+                            <ul class="mb-0">
+                                <li>Copy text exactly as written</li>
+                                <li>Keep all formatting (bold, italic, etc.)</li>
+                                <li>Include all footnotes and appendices</li>
+                                <li>Verify against the original before upload</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('policy_replicator.guidelines') }}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-info-circle me-1"></i> View Full Replication Guidelines
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Policies - Cathena Policy Automation System{% endblock %}
+
+{% block styles %}
+<style>
+    .category-list {
+        margin-bottom: 20px;
+    }
+    
+    .category-card {
+        margin-bottom: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .category-header {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .category-heading {
+        margin: 0;
+        color: #0078d7;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .policy-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .policy-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s;
+    }
+    
+    .policy-item:last-child {
+        border-bottom: none;
+    }
+    
+    .policy-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .policy-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+    
+    .policy-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    .policy-code {
+        background-color: #e9f5ff;
+        color: #0078d7;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .policy-meta {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .policy-meta > * {
+        margin-right: 15px;
+    }
+    
+    .policy-meta .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .badge-qcs {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .badge-adapted {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .filter-controls {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        margin-right: 10px;
+    }
+    
+    .category-count {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-left: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Policies</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Policies</h1>
+    </div>
+    
+    {% if categories %}
+    <div class="filter-controls">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-md-0">
+                    <label for="categoryFilter" class="filter-label">Category:</label>
+                    <select id="categoryFilter" class="form-select" onchange="location = this.value;">
+                        <option value="{{ url_for('view_policies') }}">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ url_for('view_policies', category_id=cat.id) }}" {% if category_id == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 mt-3 mt-md-0">
+                <div class="form-group mb-0">
+                    <label class="filter-label">Type:</label>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('view_policies') }}" class="btn btn-outline-secondary {% if is_qcs is none and is_adapted is none %}active{% endif %}">All</a>
+                        <a href="{{ url_for('view_policies', is_qcs=1) }}" class="btn btn-outline-info {% if is_qcs == 1 %}active{% endif %}">QCS Policies</a>
+                        <a href="{{ url_for('view_policies', is_adapted=1) }}" class="btn btn-outline-success {% if is_adapted == 1 %}active{% endif %}">Adapted Policies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if policies %}
+    <!-- Group policies by category -->
+    {% set categories_with_policies = {} %}
+    {% for policy in policies %}
+        {% if policy.category %}
+            {% if policy.category.name in categories_with_policies %}
+                {% set _ = categories_with_policies[policy.category.name].append(policy) %}
+            {% else %}
+                {% set _ = categories_with_policies.update({policy.category.name: [policy]}) %}
+            {% endif %}
+        {% else %}
+            {% if 'Uncategorized' in categories_with_policies %}
+                {% set _ = categories_with_policies['Uncategorized'].append(policy) %}
+            {% else %}
+                {% set _ = categories_with_policies.update({'Uncategorized': [policy]}) %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    
+    <!-- Display categories list if not filtering by category -->
+    {% if not category_id %}
+    <div class="row row-cols-1 row-cols-md-3 g-4 category-list">
+        {% for category_name, category_policies in categories_with_policies.items() %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category_name }}</h5>
+                    <p class="card-text text-muted">{{ category_policies|length }} policies</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="#{{ category_name|replace(' ', '_') }}" class="btn btn-outline-primary btn-sm">View Policies</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Display policies grouped by category -->
+    {% for category_name, category_policies in categories_with_policies.items() %}
+    <div class="category-card" id="{{ category_name|replace(' ', '_') }}">
+        <div class="category-header">
+            <h2 class="category-heading">
+                {{ category_name }}
+                <span class="category-count">({{ category_policies|length }} policies)</span>
+            </h2>
+        </div>
+        <ul class="policy-list">
+            {% for policy in category_policies %}
+            <li class="policy-item">
+                <div class="policy-title-row">
+                    <h3 class="policy-title">
+                        <a href="{{ url_for('view_policy', policy_id=policy.id) }}" class="text-decoration-none">
+                            {{ policy.title }}
+                        </a>
+                    </h3>
+                    <span class="policy-code">{{ policy.code }}</span>
+                </div>
+                <div class="policy-meta">
+                    <span>Version: {{ policy.version or '1.0' }}</span>
+                    {% if policy.is_qcs_policy %}
+                    <span class="badge badge-qcs">QCS Policy</span>
+                    {% endif %}
+                    {% if policy.is_adapted %}
+                    <span class="badge badge-adapted">Adapted</span>
+                    {% endif %}
+                    {% if policy.updated_at %}
+                    <span>Updated: {{ policy.updated_at.strftime('%d %b %Y') }}</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info">
+        <p class="mb-0">No policies found matching your criteria. Try adjusting your filters.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-scroll to category if fragment identifier is present
+        if(window.location.hash) {
+            const element = document.querySelector(window.location.hash);
+            if(element) {
+                element.scrollIntoView({behavior: "smooth"});
+            }
+        }
+    });
+</script>
+{% endblock %}

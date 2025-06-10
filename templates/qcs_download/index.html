@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}QCS Policy Download{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">QCS Policy Download</h1>
+            <p class="lead">
+                Download policies directly from QCS.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder"></i> Download by Category
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Select a category to download all QCS policies from that category.
+                    </p>
+                    
+                    <div class="list-group">
+                        {% for category in categories %}
+                            <a href="{{ url_for('qcs_download.download_category', category_id=category.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                {{ category.name }}
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ category.policies|selectattr('is_qcs_policy', 'equalto', true)|list|length }}
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt"></i> QCS Credentials Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="credential-status" class="alert alert-info">
+                        <i class="fas fa-spinner fa-spin"></i> Checking QCS credentials...
+                    </div>
+                    
+                    <p>
+                        To download policies from QCS, you need valid QCS credentials. These should be set as environment variables:
+                    </p>
+                    
+                    <ul>
+                        <li><code>QCS_USERNAME</code> - Your QCS username or email</li>
+                        <li><code>QCS_PASSWORD</code> - Your QCS password</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Available QCS Policies
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if qcs_policies %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Code</th>
+                                        <th>Category</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in qcs_policies %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('view_policy', policy_id=policy.id) }}">
+                                                    {{ policy.title }}
+                                                </a>
+                                            </td>
+                                            <td>{{ policy.code }}</td>
+                                            <td>{{ policy.category.name if policy.category else 'Uncategorized' }}</td>
+                                            <td>
+                                                {% if policy.qcs_url %}
+                                                    <a href="{{ url_for('qcs_download.download_policy', policy_id=policy.id) }}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-download"></i> Download
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-warning">No QCS URL</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No QCS policies found in the database.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check QCS credentials
+        fetch('{{ url_for("qcs_download.check_credentials") }}')
+            .then(response => response.json())
+            .then(data => {
+                const statusEl = document.getElementById('credential-status');
+                
+                if (data.status === 'success') {
+                    statusEl.className = 'alert alert-success';
+                    statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+                } else {
+                    statusEl.className = 'alert alert-danger';
+                    statusEl.innerHTML = '<i class="fas fa-times-circle"></i> ' + data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking credentials:', error);
+                const statusEl = document.getElementById('credential-status');
+                statusEl.className = 'alert alert-danger';
+                statusEl.innerHTML = '<i class="fas fa-times-circle"></i> Error checking credentials. See console for details.';
+            });
+    });
+</script>
+{% endblock %}

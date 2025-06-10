@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Analyze Document - Regulatory Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Analyze Document</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('regulatory_analysis.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i data-feather="arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upload Document for Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Document Title</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="Enter document title">
+                            <div class="form-text">A descriptive name for this document.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="document_type" class="form-label">Document Type</label>
+                            <select class="form-select" id="document_type" name="document_type">
+                                <option value="CQC">CQC (Care Quality Commission)</option>
+                                <option value="RIDDOR">RIDDOR (Reporting of Injuries, Diseases and Dangerous Occurrences)</option>
+                                <option value="Fire">Fire Safety</option>
+                                <option value="Financial">Financial/Accounting</option>
+                                <option value="Business">Business Governance</option>
+                                <option value="General">General/Other</option>
+                            </select>
+                            <div class="form-text">Select the type of regulatory framework most relevant to this document.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Upload Document</label>
+                            <input class="form-control" type="file" id="document" name="document">
+                            <div class="form-text">Upload a text file or document (.txt, .doc, .docx, .pdf).</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Analyze Document</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">About Regulatory Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <p>This tool analyzes documents against multiple regulatory frameworks:</p>
+                    <ul>
+                        <li><strong>CQC Regulations</strong> - For healthcare and care service compliance</li>
+                        <li><strong>RIDDOR</strong> - For workplace incidents and injuries</li>
+                        <li><strong>Fire Safety</strong> - For fire prevention and safety requirements</li>
+                        <li><strong>Financial</strong> - For financial and accounting regulations</li>
+                        <li><strong>Business Governance</strong> - For corporate governance and compliance</li>
+                    </ul>
+                    <p>The analysis will identify:</p>
+                    <ul>
+                        <li>Matched regulations and requirements</li>
+                        <li>Key deadlines and responsibilities</li>
+                        <li>Common patterns and best practices</li>
+                        <li>Heat maps of regulatory focus areas</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Document Examples</h5>
+                </div>
+                <div class="card-body">
+                    <p>Suitable documents for analysis include:</p>
+                    <ul>
+                        <li>CQC inspection reports</li>
+                        <li>Internal audit documents</li>
+                        <li>Policy and procedure documents</li>
+                        <li>Risk assessments</li>
+                        <li>Incident reports</li>
+                        <li>Corporate reports and whitepapers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

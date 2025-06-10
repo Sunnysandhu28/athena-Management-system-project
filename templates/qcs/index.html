@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}QCS Policy Download - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h2 class="mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                QCS Policy Download
+            </h2>
+        </div>
+        <div class="card-body">
+            <p class="lead mb-4">
+                This tool allows administrators to download policies directly from QCS. 
+                Please provide your QCS credentials to access the download functionality.
+            </p>
+            
+            <div class="alert alert-warning">
+                <strong>Warning!</strong> The direct download option may timeout when downloading many policies. 
+                For downloading more than 5 policies or the full set of 127 policies, please use the 
+                <a href="#background-download-section" class="alert-link">Background Download option</a> below.
+            </div>
+            
+            {% include 'includes/messages.html' %}
+            
+            <form method="post" action="{{ url_for('dashboard.index') }}" class="needs-validation" novalidate>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">QCS Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ username or '' }}" required>
+                            <div class="form-text">Your QCS portal username or email address</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">QCS Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <div class="form-text">Your QCS portal password</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="download_type" class="form-label">Download Type</label>
+                            <select class="form-select" id="download_type" name="download_type" required>
+                                <option value="all" selected>All Policies</option>
+                                <option value="category">By Category</option>
+                                <option value="single">Single Policy</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3 policy-option" id="limit-option">
+                            <label for="limit" class="form-label">Limit (optional)</label>
+                            <input type="number" class="form-control" id="limit" name="limit" min="1" max="400">
+                            <div class="form-text">Maximum number of policies to download</div>
+                        </div>
+                        <div class="mb-3 policy-option d-none" id="category-option">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="Health & Safety">Health & Safety</option>
+                                <option value="Care">Care</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Data Protection">Data Protection</option>
+                                <option value="Administration">Administration</option>
+                                <option value="First Aid">First Aid</option>
+                                <option value="COSHH">COSHH</option>
+                                <option value="Fire Safety">Fire Safety</option>
+                                <option value="Infection Control">Infection Control</option>
+                                <option value="Mental Health">Mental Health</option>
+                                <option value="Dementia Care">Dementia Care</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 policy-option d-none" id="policy-code-option">
+                            <label for="policy_code" class="form-label">Policy Code</label>
+                            <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="e.g. HS01, CR63">
+                            <div class="form-text">Code of the specific policy to download</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download Policies
+                    </button>
+                </div>
+            </form>
+
+            <hr class="my-4">
+            
+            <div id="background-download-section" class="card mb-3 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Background Download (For Large Policy Sets)</h5>
+                    <p class="card-text">For downloading a large number of policies, use the background download option to avoid timeouts. The download will continue even if you navigate away from the page.</p>
+                    
+                    <form id="background-form" method="get" action="{{ url_for('qcs_download.background_download') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bg-username" class="form-label">QCS Username</label>
+                                    <input type="text" class="form-control" id="bg-username" name="username" value="{{ username or '' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bg-password" class="form-label">QCS Password</label>
+                                    <input type="password" class="form-control" id="bg-password" name="password" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bg-limit" class="form-label">Limit (optional)</label>
+                                    <input type="number" class="form-control" id="bg-limit" name="limit" min="1" max="400">
+                                    <div class="form-text">Maximum number of policies to download</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                                Start Background Download
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-dark text-white">
+            <div class="small">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                Your QCS credentials are used only for downloading policies and are not stored permanently.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const downloadTypeSelect = document.getElementById('download_type');
+        const limitOption = document.getElementById('limit-option');
+        const categoryOption = document.getElementById('category-option');
+        const policyCodeOption = document.getElementById('policy-code-option');
+        
+        // Copy credentials from main form to background form
+        function syncFormsValues() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const limit = document.getElementById('limit').value;
+            
+            document.getElementById('bg-username').value = username;
+            document.getElementById('bg-password').value = password;
+            document.getElementById('bg-limit').value = limit;
+        }
+        
+        // Add input event listeners to sync form values
+        document.getElementById('username').addEventListener('input', syncFormsValues);
+        document.getElementById('password').addEventListener('input', syncFormsValues);
+        document.getElementById('limit').addEventListener('input', syncFormsValues);
+        
+        // Auto-scroll to background download section when clicking the alert link
+        document.querySelector('.alert-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = document.getElementById('background-download-section');
+            section.scrollIntoView({ behavior: 'smooth' });
+            
+            // Also sync the forms
+            syncFormsValues();
+            
+            // Highlight the background form briefly
+            section.classList.add('border', 'border-info', 'shadow-lg');
+            setTimeout(function() {
+                section.classList.remove('border', 'border-info', 'shadow-lg');
+            }, 1500);
+        });
+        
+        downloadTypeSelect.addEventListener('change', function() {
+            // Hide all options first
+            limitOption.classList.add('d-none');
+            categoryOption.classList.add('d-none');
+            policyCodeOption.classList.add('d-none');
+            
+            // Show relevant options based on selection
+            if (this.value === 'all') {
+                limitOption.classList.remove('d-none');
+            } else if (this.value === 'category') {
+                categoryOption.classList.remove('d-none');
+            } else if (this.value === 'single') {
+                policyCodeOption.classList.remove('d-none');
+            }
+        });
+        
+        // Form validation
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            });
+        });
+        
+        // When the form has a large number of policies, suggest the background download
+        document.getElementById('limit').addEventListener('change', function() {
+            if (parseInt(this.value) > 5) {
+                const warningMessage = document.createElement('div');
+                warningMessage.className = 'alert alert-warning mt-2';
+                warningMessage.innerHTML = 'Downloading more than 5 policies may cause timeouts. Consider using the <a href="#background-download-section" class="alert-link">Background Download</a> option instead.';
+                
+                const existingWarning = this.parentNode.querySelector('.alert');
+                if (!existingWarning) {
+                    this.parentNode.appendChild(warningMessage);
+                    
+                    // Add click handler to new link
+                    warningMessage.querySelector('.alert-link').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const section = document.getElementById('background-download-section');
+                        section.scrollIntoView({ behavior: 'smooth' });
+                        syncFormsValues();
+                    });
+                }
+            } else {
+                const existingWarning = this.parentNode.querySelector('.alert');
+                if (existingWarning) {
+                    existingWarning.remove();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,363 @@
+{% extends "layout.html" %}
+
+{% block title %}Policy Comparison - {{ old_policy.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">Policy Comparison</h1>
+                </div>
+                <div class="card-body">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('policy_comparison.index') }}">Policy Comparison Tool</a></li>
+                            <li class="breadcrumb-item active">Compare "{{ old_policy.title }}"</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h4 mb-0">Old Policy Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="fw-bold">Policy Title:</label>
+                        <p>{{ old_policy.title }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Policy Code:</label>
+                        <p>{{ old_policy.code or 'Not specified' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Category:</label>
+                        <p>{{ old_policy.category.name if old_policy.category else 'Uncategorized' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Upload Date:</label>
+                        <p>{{ old_policy.upload_date.strftime('%d-%m-%Y') if old_policy.upload_date else 'Unknown' }}</p>
+                    </div>
+                    
+                    {% if old_policy.inspection_date %}
+                    <div class="mb-3">
+                        <label class="fw-bold">Inspection Date:</label>
+                        <p>{{ old_policy.inspection_date.strftime('%d-%m-%Y') }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if old_policy.file_path %}
+                    <div class="mb-3">
+                        <a href="{{ url_for('policies.download', policy_id=old_policy.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i> Download Original Document
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h4 mb-0">QCS Standard Selection</h2>
+                </div>
+                <div class="card-body">
+                    {% if qcs_policy %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i> Matching QCS policy found: <strong>{{ qcs_policy.title }}</strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">QCS Policy Code:</label>
+                        <p>{{ qcs_policy.code or 'Not specified' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">QCS Category:</label>
+                        <p>{{ qcs_policy.category.name if qcs_policy.category else 'Uncategorized' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Last Updated:</label>
+                        <p>{{ qcs_policy.updated_at.strftime('%d-%m-%Y') if qcs_policy.updated_at else 'Unknown' }}</p>
+                    </div>
+                    
+                    <form action="{{ url_for('policy_comparison.compare_policy', policy_id=old_policy.id) }}" method="POST">
+                        <input type="hidden" name="qcs_policy_id" value="{{ qcs_policy.id }}">
+                        <button type="submit" class="btn btn-primary">Compare with this QCS Policy</button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> No matching QCS policy found automatically.
+                    </div>
+                    
+                    <p>Please select a QCS policy to compare against:</p>
+                    
+                    <form action="{{ url_for('policy_comparison.compare_policy', policy_id=old_policy.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="qcs_policy_id" class="form-label">Select QCS Policy</label>
+                            <select class="form-select" id="qcs_policy_id" name="qcs_policy_id" required>
+                                <option value="">-- Select QCS Policy --</option>
+                                {% for policy in qcs_policies %}
+                                {% if not policy.is_old_version %}
+                                <option value="{{ policy.id }}">{{ policy.title }} {% if policy.code %}({{ policy.code }}){% endif %}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Compare Policies</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if comparison_results %}
+    <div class="row mt-4">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h4 mb-0">Comparison Results</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Overall Compliance</h5>
+                                    <div class="display-4 mb-2">{{ comparison_results.get('compliance_score', 0) }}%</div>
+                                    <div class="progress" style="height: 25px;">
+                                        <div class="progress-bar bg-{{ 'success' if comparison_results.get('compliance_score', 0) >= 80 else 'warning' if comparison_results.get('compliance_score', 0) >= 60 else 'danger' }}" 
+                                             role="progressbar" 
+                                             style="width: {{ comparison_results.get('compliance_score', 0) }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Structure Match</h5>
+                                            <div class="h4">{{ comparison_results.get('structure_match', 0) }}%</div>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ comparison_results.get('structure_match', 0) }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Content Match</h5>
+                                            <div class="h4">{{ comparison_results.get('content_match', 0) }}%</div>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ comparison_results.get('content_match', 0) }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Key Elements</h5>
+                                            <div class="h4">{{ comparison_results.get('key_elements_match', 0) }}%</div>
+                                            <div class="progress">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ comparison_results.get('key_elements_match', 0) }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Summary</h5>
+                                    <p>
+                                        {% if comparison_results.get('compliance_score', 0) >= 80 %}
+                                        <span class="text-success"><i class="fas fa-check-circle me-2"></i> This policy was <strong>largely compliant</strong> with QCS standards at the time of inspection.</span>
+                                        {% elif comparison_results.get('compliance_score', 0) >= 60 %}
+                                        <span class="text-warning"><i class="fas fa-exclamation-circle me-2"></i> This policy was <strong>partially compliant</strong> with QCS standards at the time of inspection.</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle me-2"></i> This policy was <strong>significantly non-compliant</strong> with QCS standards at the time of inspection.</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav nav-tabs" id="comparisonTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="structure-tab" data-bs-toggle="tab" data-bs-target="#structure" 
+                                    type="button" role="tab" aria-controls="structure" aria-selected="true">
+                                Structure Analysis
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="key-elements-tab" data-bs-toggle="tab" data-bs-target="#key-elements" 
+                                    type="button" role="tab" aria-controls="key-elements" aria-selected="false">
+                                Key Elements
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="comparisonTabsContent">
+                        <!-- Structure Tab -->
+                        <div class="tab-pane fade show active" id="structure" role="tabpanel" aria-labelledby="structure-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Missing Sections</h5>
+                                    {% if comparison_results.get('missing_sections', []) %}
+                                    <div class="list-group">
+                                        {% for section in comparison_results.get('missing_sections', []) %}
+                                        <div class="list-group-item list-group-item-danger">
+                                            <i class="fas fa-times-circle me-2"></i> {{ section }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-success"><i class="fas fa-check-circle me-2"></i> No essential sections missing</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5>Additional Sections</h5>
+                                    {% if comparison_results.get('extra_sections', []) %}
+                                    <div class="list-group">
+                                        {% for section in comparison_results.get('extra_sections', []) %}
+                                        <div class="list-group-item list-group-item-info">
+                                            <i class="fas fa-plus-circle me-2"></i> {{ section }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted"><i class="fas fa-info-circle me-2"></i> No additional sections found</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if comparison_results.get('section_comparisons') %}
+                            <h5 class="mt-4">Section Match Details</h5>
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>QCS Section</th>
+                                        <th>Matched With</th>
+                                        <th>Name Similarity</th>
+                                        <th>Content Similarity</th>
+                                        <th>Overall Match</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for qcs_section, match in comparison_results.get('section_comparisons', {}).items() %}
+                                    <tr>
+                                        <td>{{ qcs_section }}</td>
+                                        <td>{{ match.name }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                     style="width: {{ match.name_similarity }}%" 
+                                                     aria-valuenow="{{ match.name_similarity }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ match.name_similarity }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-primary" role="progressbar" 
+                                                     style="width: {{ match.content_similarity }}%" 
+                                                     aria-valuenow="{{ match.content_similarity }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ match.content_similarity }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-{{ 'success' if match.combined_score >= 80 else 'warning' if match.combined_score >= 60 else 'danger' }}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ match.combined_score }}%" 
+                                                     aria-valuenow="{{ match.combined_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ match.combined_score }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Key Elements Tab -->
+                        <div class="tab-pane fade" id="key-elements" role="tabpanel" aria-labelledby="key-elements-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Present Key Elements</h5>
+                                    {% if comparison_results.get('key_elements', {}).get('present', []) %}
+                                    <div class="list-group">
+                                        {% for element in comparison_results.get('key_elements', {}).get('present', []) %}
+                                        <div class="list-group-item list-group-item-success">
+                                            <i class="fas fa-check-circle me-2"></i> {{ element }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted"><i class="fas fa-info-circle me-2"></i> No key elements matched</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5>Missing Key Elements</h5>
+                                    {% if comparison_results.get('key_elements', {}).get('missing', []) %}
+                                    <div class="list-group">
+                                        {% for element in comparison_results.get('key_elements', {}).get('missing', []) %}
+                                        <div class="list-group-item list-group-item-danger">
+                                            <i class="fas fa-times-circle me-2"></i> {{ element }}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-success"><i class="fas fa-check-circle me-2"></i> All required key elements present</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

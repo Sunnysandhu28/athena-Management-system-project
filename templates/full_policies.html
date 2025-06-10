@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Policy Collection | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .policy-list {
+        padding: 0;
+        list-style: none;
+    }
+    
+    .policy-category {
+        margin-bottom: 30px;
+    }
+    
+    .category-title {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border-left: 5px solid #0d6efd;
+    }
+    
+    .policy-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.2s;
+    }
+    
+    .policy-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .policy-code {
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-right: 10px;
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .policy-code.zero-prefix {
+        background-color: #e2f0d9;
+        color: #2e7d32;
+        font-weight: 500;
+    }
+    
+    .special-xml-format {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .policy-tag {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        margin-right: 5px;
+        color: #495057;
+    }
+    
+    .policy-tag.tag-core {
+        background-color: #cfe2ff;
+        color: #0d6efd;
+    }
+    
+    .policy-tag.tag-qcs {
+        background-color: #d1e7dd;
+        color: #198754;
+    }
+    
+    .policy-tag.tag-cqc {
+        background-color: #f8d7da;
+        color: #dc3545;
+    }
+    
+    .policy-tag.tag-nhs {
+        background-color: #fff3cd;
+        color: #fd7e14;
+    }
+    
+    .search-container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .category-navigation {
+        position: sticky;
+        top: 80px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .category-nav-item {
+        display: block;
+        padding: 8px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .category-nav-item:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+    
+    .category-nav-item.active {
+        background-color: #e9ecef;
+        color: #0d6efd;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5">Complete Policy Collection</h1>
+            <p class="lead">Browse the full library of policies and procedures</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/policy-repository" class="btn btn-outline-primary me-2">
+                <i class="fas fa-th-large me-1"></i> Policy Repository
+            </a>
+            <button class="btn btn-primary">
+                <i class="fas fa-download me-1"></i> Export All
+            </button>
+        </div>
+    </div>
+    
+    <!-- Search Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="search-container">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search all policies..." id="policySearch">
+                            <button class="btn btn-primary" type="button">Search</button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="In Review">In Review</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Category Navigation -->
+        <div class="col-md-3">
+            <div class="category-navigation">
+                <h5 class="mb-3">Categories</h5>
+                <div class="category-nav-links">
+                    <a href="#all" class="category-nav-item active">All Policies</a>
+                    <a href="#qcs" class="category-nav-item">QCS Original</a>
+                    <a href="#cathena" class="category-nav-item">Cathena Adapted</a>
+                    <div class="dropdown-divider my-3"></div>
+                    <a href="#admin" class="category-nav-item">Administration</a>
+                    <a href="#care" class="category-nav-item">Care Management</a>
+                    <a href="#clinical" class="category-nav-item">Clinical</a>
+                    <a href="#health" class="category-nav-item">Health & Safety</a>
+                    <a href="#hr" class="category-nav-item">Human Resources</a>
+                    <a href="#info" class="category-nav-item">Information Governance</a>
+                    <a href="#medication" class="category-nav-item">Medication</a>
+                    <a href="#quality" class="category-nav-item">Quality Assurance</a>
+                    <a href="#service" class="category-nav-item">Service User</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Policy Listings -->
+        <div class="col-md-9">
+            <!-- QCS Original Policies -->
+            <div id="qcs" class="policy-category">
+                <h3 class="category-title">QCS Original Policies</h3>
+                <ul class="policy-list">
+                    {% if qcs_policies %}
+                        {% for policy in qcs_policies %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                                {% if policy.format_status %}
+                                <span class="badge bg-info text-white ms-2">{{ policy.format_status }}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No QCS original policies found. Please check your policy directories or contact an administrator.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Cathena Adapted Policies -->
+            <div id="cathena" class="policy-category">
+                <h3 class="category-title">Cathena Adapted Policies</h3>
+                <ul class="policy-list">
+                    {% if cathena_policies %}
+                        {% for policy in cathena_policies %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                                {% if policy.format_status %}
+                                <span class="badge bg-success text-white ms-2">{{ policy.format_status }}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No Cathena adapted policies found. Please check your policy directories or contact an administrator.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Administration Policies -->
+            <div id="admin" class="policy-category">
+                <h3 class="category-title">Administration</h3>
+                <ul class="policy-list">
+                    {% if policies_by_category.Administration %}
+                        {% for policy in policies_by_category.Administration %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No Administration policies found.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Care Management Policies -->
+            <div id="care" class="policy-category">
+                <h3 class="category-title">Care Management</h3>
+                <ul class="policy-list">
+                    {% if policies_by_category['Care Management'] %}
+                        {% for policy in policies_by_category['Care Management'] %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No Care Management policies found.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Health & Safety Policies -->
+            <div id="health" class="policy-category">
+                <h3 class="category-title">Health & Safety</h3>
+                <ul class="policy-list">
+                    {% if policies_by_category['Health and Safety'] %}
+                        {% for policy in policies_by_category['Health and Safety'] %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No Health & Safety policies found.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Clinical Policies -->
+            <div id="clinical" class="policy-category">
+                <h3 class="category-title">Clinical</h3>
+                <ul class="policy-list">
+                    {% if policies_by_category.Clinical %}
+                        {% for policy in policies_by_category.Clinical %}
+                        <li class="policy-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="policy-code">{{ policy.code }}</span>
+                                <span>{{ policy.title }}</span>
+                            </div>
+                            <div>
+                                {% for tag in policy.tags %}
+                                <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                                {% endfor %}
+                                <a href="/policy/{{ policy.code }}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-eye"></i></a>
+                                <a href="/download-policy/{{ policy.code }}" class="btn btn-sm btn-outline-secondary ms-1"><i class="fas fa-download"></i></a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="policy-item">
+                            <div class="alert alert-info mb-0">
+                                No Clinical policies found.
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Make category navigation sticky and active state
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.category-nav-item');
+        
+        // Set active class based on scroll position
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.policy-category');
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        // Smooth scroll to category when nav link is clicked
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetSection.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+                
+                navLinks.forEach(link => link.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('policySearch');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const policyItems = document.querySelectorAll('.policy-item');
+            
+            policyItems.forEach(item => {
+                const policyText = item.textContent.toLowerCase();
+                if (policyText.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

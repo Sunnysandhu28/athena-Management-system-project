@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Updates List{% endblock %}
+
+{% block head %}
+<style>
+    .update-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+    .update-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+    }
+    .update-type-news {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+    }
+    .update-type-guidance {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+    }
+    .update-type-publication {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    .update-type-regulation {
+        background-color: #f3e5f5;
+        color: #4a148c;
+    }
+    .filter-card {
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .analyzed-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .analyzed-true {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .analyzed-false {
+        background-color: #ffcdd2;
+        color: #b71c1c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>CQC Updates</h1>
+        <a href="{{ url_for('cqc_updates.index') }}" class="btn btn-outline-secondary">Dashboard</a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="filter-card">
+                <h5 class="mb-3">Filters</h5>
+                <form method="get" action="{{ url_for('cqc_updates.updates_list') }}">
+                    <div class="mb-3">
+                        <label for="content_type" class="form-label">Content Type</label>
+                        <select class="form-select" id="content_type" name="content_type">
+                            <option value="">All Types</option>
+                            {% for type in content_types %}
+                            <option value="{{ type }}" {% if selected_content_type == type %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="days" class="form-label">Time Period</label>
+                        <select class="form-select" id="days" name="days">
+                            <option value="">All Time</option>
+                            <option value="7" {% if selected_days == '7' %}selected{% endif %}>Last 7 Days</option>
+                            <option value="30" {% if selected_days == '30' %}selected{% endif %}>Last 30 Days</option>
+                            <option value="90" {% if selected_days == '90' %}selected{% endif %}>Last 90 Days</option>
+                            <option value="365" {% if selected_days == '365' %}selected{% endif %}>Last Year</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </form>
+                <hr>
+                <form action="{{ url_for('cqc_updates.analyze_specific') }}" method="post" id="analyze-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <h5 class="mb-3">Analyze Updates</h5>
+                    <p class="small text-muted">Select updates and click Analyze to check if any policies need updating.</p>
+                    <button type="submit" class="btn btn-secondary w-100" id="analyze-button" disabled>Analyze Selected</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            {% if updates %}
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>{{ updates|length }} Updates Found</h5>
+                </div>
+                <hr>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="select-all" onclick="toggleSelectAll()">
+                    <label class="form-check-label" for="select-all">
+                        Select All
+                    </label>
+                </div>
+                
+                {% for update in updates %}
+                <div class="update-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <input class="form-check-input update-checkbox" type="checkbox" name="update_ids" form="analyze-form" value="{{ update.id }}" onclick="updateAnalyzeButton()">
+                            </div>
+                            <div>
+                                <h5 class="mb-2">{{ update.title }}</h5>
+                                <div class="mb-2">
+                                    {% if update.content_type == 'News' %}
+                                    <span class="update-type update-type-news">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Guidance' %}
+                                    <span class="update-type update-type-guidance">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Publication' %}
+                                    <span class="update-type update-type-publication">{{ update.content_type }}</span>
+                                    {% elif update.content_type == 'Regulation' %}
+                                    <span class="update-type update-type-regulation">{{ update.content_type }}</span>
+                                    {% else %}
+                                    <span class="update-type">{{ update.content_type }}</span>
+                                    {% endif %}
+                                    
+                                    {% if update.update_date %}
+                                    <small class="text-muted">{{ update.update_date }}</small>
+                                    {% endif %}
+                                    
+                                    {% if update.analyzed %}
+                                    <span class="analyzed-badge analyzed-true">Analyzed</span>
+                                    {% else %}
+                                    <span class="analyzed-badge analyzed-false">Not Analyzed</span>
+                                    {% endif %}
+                                </div>
+                                {% if update.description %}
+                                <p class="mb-3">{{ update.description | truncate(200) }}</p>
+                                {% endif %}
+                                {% if update.affected_areas %}
+                                <div class="mb-2">
+                                    <strong class="small">Affected Areas:</strong>
+                                    <div>
+                                        {% for area in update.affected_areas[:10] %}
+                                        <span class="badge bg-light text-dark">{{ area }}</span>
+                                        {% endfor %}
+                                        {% if update.affected_areas|length > 10 %}
+                                        <span class="badge bg-light text-dark">+{{ update.affected_areas|length - 10 }} more</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('cqc_updates.view_update', update_id=update.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            <a href="{{ update.url }}" target="_blank" class="btn btn-sm btn-link">CQC Site</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <h4>No updates found</h4>
+                <p class="text-muted">Try adjusting your filters or run the CQC update crawler to fetch new updates.</p>
+                <a href="{{ url_for('cqc_updates.index') }}" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('select-all');
+        const updateCheckboxes = document.querySelectorAll('.update-checkbox');
+        
+        updateCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+        
+        updateAnalyzeButton();
+    }
+    
+    function updateAnalyzeButton() {
+        const updateCheckboxes = document.querySelectorAll('.update-checkbox:checked');
+        const analyzeButton = document.getElementById('analyze-button');
+        
+        analyzeButton.disabled = updateCheckboxes.length === 0;
+    }
+</script>
+{% endblock %}

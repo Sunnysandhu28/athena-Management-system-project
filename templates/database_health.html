@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Database Health{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Database Health Check</h1>
+    
+    <div class="card border-{{ 'success' if db_status else 'danger' }} my-4">
+        <div class="card-header bg-{{ 'success' if db_status else 'danger' }} text-white">
+            <h5 class="card-title mb-0">Database Status: {{ 'ONLINE' if db_status else 'OFFLINE' }}</h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text">{{ status_message }}</p>
+            
+            <h6>Connection Details:</h6>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Database URL:</strong> {{ db_url }}
+                </li>
+            </ul>
+            
+            <h6 class="mt-3">Connection Pool Information:</h6>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Pool Size:</strong> {{ engine_info.pool_size }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Connections Checked In:</strong> {{ engine_info.checkedin }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Connections Checked Out:</strong> {{ engine_info.checkedout }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Overflow Connections:</strong> {{ engine_info.overflow }}
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary">Back to Admin</a>
+                <a href="{{ url_for('database_health') }}" class="btn btn-primary">Refresh</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

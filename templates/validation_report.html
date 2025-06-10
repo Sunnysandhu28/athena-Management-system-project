@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Validation Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Validation Report</h1>
+        <a href="{{ url_for('validation_dashboard') }}" class="btn btn-secondary">Back to Reports</a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Report Date:</th>
+                            <td>{{ report.start_time | replace("T", " ") | replace("Z", "") }}</td>
+                        </tr>
+                        <tr>
+                            <th>Duration:</th>
+                            <td>{{ report.duration_seconds }} seconds</td>
+                        </tr>
+                        <tr>
+                            <th>Total Policies:</th>
+                            <td>{{ report.total }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Processed:</th>
+                            <td>{{ report.processed }}</td>
+                        </tr>
+                        <tr>
+                            <th>Valid:</th>
+                            <td><span class="badge bg-success">{{ report.valid }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Invalid:</th>
+                            <td><span class="badge bg-danger">{{ report.invalid }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Errors:</th>
+                            <td>{{ report.errors }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {{ (report.valid / report.processed * 100) if report.processed > 0 else 0 }}%;" 
+                     aria-valuenow="{{ report.valid }}" aria-valuemin="0" aria-valuemax="{{ report.processed }}">
+                    {{ report.valid }} Valid
+                </div>
+                <div class="progress-bar bg-danger" role="progressbar" 
+                     style="width: {{ (report.invalid / report.processed * 100) if report.processed > 0 else 0 }}%;" 
+                     aria-valuenow="{{ report.invalid }}" aria-valuemin="0" aria-valuemax="{{ report.processed }}">
+                    {{ report.invalid }} Invalid
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if report.validation_issues and report.validation_issues|length > 0 %}
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="card-title mb-0">Critical Validation Issues</h5>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="issuesAccordion">
+                {% for policy_issue in report.validation_issues %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                                aria-controls="collapse{{ loop.index }}">
+                            {{ policy_issue.policy }} - {{ policy_issue.issues|length }} issues
+                        </button>
+                    </h2>
+                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+                         aria-labelledby="heading{{ loop.index }}" data-bs-parent="#issuesAccordion">
+                        <div class="accordion-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Issue</th>
+                                        <th>Severity</th>
+                                        <th>Suggestion</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for issue in policy_issue.issues %}
+                                    <tr>
+                                        <td>{{ issue.issue }}</td>
+                                        <td>
+                                            {% if issue.severity == 'high' or issue.severity == 'critical' %}
+                                            <span class="badge bg-danger">{{ issue.severity }}</span>
+                                            {% elif issue.severity == 'medium' %}
+                                            <span class="badge bg-warning text-dark">{{ issue.severity }}</span>
+                                            {% else %}
+                                            <span class="badge bg-info">{{ issue.severity }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ issue.suggestion }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            {% if policy_issue.path %}
+                            <a href="/policy/view?path={{ policy_issue.path }}" class="btn btn-sm btn-primary">View Policy</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Enhancement Metrics</h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text">The validation process checks for several key enhancements in each policy:</p>
+            <ul>
+                <li><strong>Numbered Headers:</strong> Proper section numbering (e.g., "1. Policy", "2. Procedure")</li>
+                <li><strong>Reference Code:</strong> Standard QCS reference format (e.g., "CC87 - Diabetes Policy")</li>
+                <li><strong>Copyright Notice:</strong> Inclusion of QCS copyright information</li>
+                <li><strong>Legislation References:</strong> References to relevant healthcare legislation</li>
+                <li><strong>Complete Sections:</strong> All required policy sections present</li>
+                <li><strong>Professional Formatting:</strong> Proper spacing and layout</li>
+                <li><strong>Table of Contents:</strong> Inclusion of a table of contents</li>
+            </ul>
+            
+            <p class="card-text mt-3">
+                Policies must achieve at least 80% of enhancement requirements and include all critical elements 
+                to be considered valid.
+            </p>
+        </div>
+    </div>
+    
+    <div class="mt-4 text-center">
+        <p class="text-muted small">Report file: {{ filename }}</p>
+    </div>
+</div>
+{% endblock %}

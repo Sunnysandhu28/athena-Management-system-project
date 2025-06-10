@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Details - Cathena Policy Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .date-entry {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .remove-date {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            cursor: pointer;
+        }
+        .add-row-btn {
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .visitor-entry {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .remove-visitor {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cathena Policy Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/requirements">Requirements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/documents">Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/generate-report">Generate Report</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="form-header text-center">
+                    <h2>Inspection/Audit Details</h2>
+                    <p class="lead">Enter information about your inspection, audit, or meeting</p>
+                    <div class="alert alert-info">
+                        <strong>Why is this important?</strong> 
+                        <p>This information will be included in your final report to create a complete picture of the inspection process, who was involved, and what was found.</p>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <form action="/save-report-details" method="post">
+                            <!-- Helper Card -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill text-primary me-2" viewBox="0 0 16 16">
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                                        </svg>
+                                        How to Fill This Form
+                                    </h5>
+                                    <p class="card-text">This form helps you record what happened during your inspection or meeting. Fill in what you know - you don't need to complete every field.</p>
+                                    <ul class="mb-0">
+                                        <li>Start by choosing what kind of visit it was (inspection, meeting, etc.)</li>
+                                        <li>Enter the dates when inspectors came to your facility</li>
+                                        <li>If you know their names, add the people who conducted the inspection</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Report Type -->
+                            <div class="mb-4">
+                                <label for="report_type" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Select the type of visit that occurred">
+                                        What type of visit was this?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <select class="form-select form-select-lg" id="report_type" name="report_type">
+                                    <option value="Inspection">Inspection</option>
+                                    <option value="Audit">Audit</option>
+                                    <option value="Meeting">Meeting</option>
+                                    <option value="Assessment">Assessment</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="form-text">Choose the type of visit that occurred at your facility</div>
+                            </div>
+                            
+                            <!-- Report Title -->
+                            <div class="mb-4">
+                                <label for="report_title" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Give your report a descriptive name that helps you identify it later">
+                                        Report Title
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="report_title" name="report_title" placeholder="Example: CQC Inspection May 2025">
+                                <div class="form-text">A title that helps you identify this report (will be filled automatically if left empty)</div>
+                            </div>
+                            
+                            <!-- Organization Conducting the Inspection -->
+                            <div class="mb-4">
+                                <label for="organization" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Enter the name of the organization that conducted the inspection">
+                                        Who conducted this visit?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="organization" name="organization" placeholder="Example: Care Quality Commission, HSE, Financial Regulator">
+                                <div class="form-text">The name of the organization that performed the inspection or audit</div>
+                            </div>
+                            
+                            <!-- Visit Dates Section -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Enter the date(s) when the inspection or visit took place">
+                                        When did the visit happen?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                
+                                <div class="form-text mb-2">Click the calendar icon to select dates. If the inspection lasted multiple days, you can add more dates.</div>
+                                
+                                <div id="dates-container">
+                                    <div class="date-entry">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="visit_date_0" class="form-label">Date</label>
+                                                <input type="date" class="form-control form-control-lg" id="visit_date_0" name="visit_dates[]">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="visit_duration_0" class="form-label">
+                                                    How long? (hours)
+                                                    <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="number" class="form-control form-control-lg" id="visit_duration_0" name="visit_durations[]" min="0.5" step="0.5" placeholder="Example: 2.5">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-date mt-2" onclick="removeDate(this)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                                            </svg>
+                                            Remove Date
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-primary btn-lg add-row-btn mt-3" onclick="addDate()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                    Add Another Date
+                                </button>
+                            </div>
+                            
+                            <!-- Visitors Section -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Record who conducted the inspection or visit">
+                                        Who were the inspectors/visitors?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <div class="form-text mb-2">Enter the names of the people who came for the inspection. It's okay if you don't know all their names.</div>
+                                
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-lightbulb-fill text-warning me-2" viewBox="0 0 16 16">
+                                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13h-5a.5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm3 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1-.5-.5z"/>
+                                            </svg>
+                                            <strong>Why this matters:</strong>
+                                        </div>
+                                        <p class="card-text">Recording inspector names helps with follow-up communications and shows detailed record-keeping during future inspections.</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="visitors-container">
+                                    <div class="visitor-entry">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="visitor_name_0" class="form-label">Inspector Name</label>
+                                                <input type="text" class="form-control form-control-lg" id="visitor_name_0" name="visitor_names[]" placeholder="Example: John Smith">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="visitor_role_0" class="form-label">
+                                                    Their Position
+                                                    <small class="text-muted">(Optional)</small>
+                                                </label>
+                                                <input type="text" class="form-control form-control-lg" id="visitor_role_0" name="visitor_roles[]" placeholder="Example: CQC Lead Inspector">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-visitor mt-2" onclick="removeVisitor(this)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                                            </svg>
+                                            Remove Person
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-primary btn-lg add-row-btn mt-3" onclick="addVisitor()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                    Add Another Person
+                                </button>
+                            </div>
+                            
+                            <!-- Inspection Type Section -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Select whether this was an announced or unannounced visit">
+                                        Was this an announced or unannounced visit?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="visit_type" id="visit_announced" value="announced">
+                                    <label class="form-check-label" for="visit_announced">Announced</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="visit_type" id="visit_unannounced" value="unannounced" checked>
+                                    <label class="form-check-label" for="visit_unannounced">Unannounced</label>
+                                </div>
+                                <div class="form-text">This information is important for the compliance report</div>
+                            </div>
+                            
+                            <!-- Initial Feedback Section -->
+                            <div class="mb-4">
+                                <label for="initial_feedback" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Record any initial verbal feedback or observations shared by inspectors">
+                                        Initial Feedback Received
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <textarea class="form-control form-control-lg" id="initial_feedback" name="initial_feedback" rows="3" placeholder="Example: Verbal feedback indicated concerns about medication management procedures"></textarea>
+                                <div class="form-text">Enter any immediate verbal feedback provided by the inspector(s) before the official report</div>
+                            </div>
+                            
+                            <!-- Areas Reviewed Section -->
+                            <div class="mb-4">
+                                <label for="areas_reviewed" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="List the areas of the business that were examined during the inspection">
+                                        Areas That Were Reviewed
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                <textarea class="form-control form-control-lg" id="areas_reviewed" name="areas_reviewed" rows="3" placeholder="Example: Care plans, medication records, staff rotas, health & safety documentation"></textarea>
+                                <div class="form-text">List what paperwork, systems, procedures or areas of the building were checked</div>
+                            </div>
+
+                            <!-- Summary Section -->
+                            <div class="mb-4">
+                                <label for="report_summary" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="Summarize the key findings from the inspection">
+                                        Summary of Findings
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                                
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-lightbulb-fill text-warning me-2" viewBox="0 0 16 16">
+                                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13h-5a.5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm3 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1-.5-.5z"/>
+                                            </svg>
+                                            <strong>Helpful Tip:</strong>
+                                        </div>
+                                        <p class="card-text">Include both positive feedback and areas for improvement that were identified. This will be used in the final report and action plan.</p>
+                                    </div>
+                                </div>
+                                
+                                <textarea class="form-control form-control-lg" id="report_summary" name="report_summary" rows="5" placeholder="Example: The inspection identified several positive practices including person-centered care planning. Areas requiring improvement include medication management processes and staff training documentation."></textarea>
+                            </div>
+                            
+                            <!-- Draft Report Expected Section -->
+                            <div class="mb-4">
+                                <label for="draft_expected_date" class="form-label">
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="When do you expect to receive the draft report?">
+                                        When is the Draft Report Expected?
+                                        <small class="text-muted">(Optional)</small>
+                                    </span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg" id="draft_expected_date" name="draft_expected_date">
+                                <div class="form-text">The system will remind you when to expect the draft report for review</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Save Report Details</button>
+                                <a href="/generate-report" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables to track the number of rows
+        let dateCount = 1;
+        let visitorCount = 1;
+        
+        // Function to add a new date row
+        function addDate() {
+            const datesContainer = document.getElementById('dates-container');
+            const newDate = document.createElement('div');
+            newDate.className = 'date-entry';
+            newDate.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="visit_date_${dateCount}" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="visit_date_${dateCount}" name="visit_dates[]">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="visit_duration_${dateCount}" class="form-label">Duration (hours)</label>
+                        <input type="number" class="form-control" id="visit_duration_${dateCount}" name="visit_durations[]" min="0.5" step="0.5" placeholder="Optional">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-date" onclick="removeDate(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                    </svg>
+                </button>
+            `;
+            datesContainer.appendChild(newDate);
+            dateCount++;
+        }
+        
+        // Function to remove a date row
+        function removeDate(button) {
+            const dateEntry = button.closest('.date-entry');
+            if (document.querySelectorAll('.date-entry').length > 1) {
+                dateEntry.remove();
+            } else {
+                alert('At least one date is required');
+            }
+        }
+        
+        // Function to add a new visitor row
+        function addVisitor() {
+            const visitorsContainer = document.getElementById('visitors-container');
+            const newVisitor = document.createElement('div');
+            newVisitor.className = 'visitor-entry';
+            newVisitor.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="visitor_name_${visitorCount}" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="visitor_name_${visitorCount}" name="visitor_names[]" placeholder="Optional">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="visitor_role_${visitorCount}" class="form-label">Role/Title</label>
+                        <input type="text" class="form-control" id="visitor_role_${visitorCount}" name="visitor_roles[]" placeholder="Optional">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-visitor" onclick="removeVisitor(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                    </svg>
+                </button>
+            `;
+            visitorsContainer.appendChild(newVisitor);
+            visitorCount++;
+        }
+        
+        // Function to remove a visitor row
+        function removeVisitor(button) {
+            const visitorEntry = button.closest('.visitor-entry');
+            visitorEntry.remove();
+        }
+    </script>
+</body>
+</html>

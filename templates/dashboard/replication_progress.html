@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication Progress - Cathena Policy Management System{% endblock %}
+
+{% block styles %}
+<style>
+    .progress-card {
+        transition: all 0.3s ease;
+    }
+    .progress-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+    .category-progress {
+        height: 8px;
+        border-radius: 4px;
+    }
+    .policy-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .checklist-item {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s ease;
+    }
+    .checklist-item:hover {
+        background-color: rgba(0,0,0,0.03);
+    }
+    .category-section {
+        margin-bottom: 2rem;
+    }
+    .category-title {
+        border-bottom: 2px solid var(--bs-light);
+        padding-bottom: 0.5rem;
+    }
+    .policy-badge {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    .card-dashboard {
+        border-radius: 10px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    }
+    #completion-chart-container {
+        height: 200px;
+    }
+    #category-chart-container {
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Policy Replication Progress</h1>
+        <div>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+                <i class="bi bi-gear me-1"></i> Replication Tools
+            </a>
+            <a href="{{ url_for('dashboard.policies') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-list me-1"></i> View All Policies
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card card-dashboard h-100 progress-card">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">Overall Completion</h5>
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="position-relative" style="width: 150px; height: 150px;">
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <h2 class="mb-0">{{ stats.completion_percentage }}%</h2>
+                                <p class="mb-0 text-muted">Complete</p>
+                            </div>
+                            <canvas id="completion-chart"></canvas>
+                        </div>
+                    </div>
+                    <p class="card-text">{{ stats.total_policies }} of {{ stats.total_expected }} policies replicated</p>
+                    <p class="small text-muted">Last updated: {{ stats.last_updated }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-dashboard h-100 progress-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Format Distribution</h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>QCS Format</span>
+                            <span>{{ stats.format_types.qcs }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ (stats.format_types.qcs / stats.total_policies * 100) if stats.total_policies > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Company Format</span>
+                            <span>{{ stats.format_types.company }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (stats.format_types.company / stats.total_policies * 100) if stats.total_policies > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Custom Format</span>
+                            <span>{{ stats.format_types.custom }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ (stats.format_types.custom / stats.total_policies * 100) if stats.total_policies > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('dashboard.policies') }}" class="btn btn-outline-primary btn-sm">View All Policies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-dashboard h-100 progress-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Recent Activity</h5>
+                    <div class="policy-list">
+                        {% for activity in stats.recent_activity %}
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="policy-badge bg-{{ loop.cycle('primary', 'success', 'info', 'warning', 'danger') }} text-white me-2">
+                                {{ activity.title[0] }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ activity.title }}</h6>
+                                <div class="d-flex">
+                                    <small class="text-muted me-2">{{ activity.code }}</small>
+                                    <small class="text-muted">{{ activity.created_at }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-center text-muted">No recent activity found</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card card-dashboard">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Category Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div id="category-chart-container">
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-dashboard">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Top Categories</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for category in stats.category_stats[:5] %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ category.name }}</h6>
+                                <small class="text-muted">{{ category.code }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ category.count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-dashboard">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Common Policy Checklist</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">This checklist shows the status of common QCS policies that should be replicated in your system.</p>
+                    
+                    {% for category_name, policies in checklist.items() %}
+                    <div class="category-section">
+                        <h5 class="category-title mb-3">{{ category_name }}</h5>
+                        <div class="row">
+                            {% for policy in policies %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="checklist-item d-flex align-items-center">
+                                    <div class="me-3">
+                                        {% if policy.completed %}
+                                        <span class="badge rounded-pill bg-success">
+                                            <i class="bi bi-check-lg"></i>
+                                        </span>
+                                        {% else %}
+                                        <span class="badge rounded-pill bg-secondary">
+                                            <i class="bi bi-dash"></i>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div>{{ policy.code }} - {{ policy.title }}</div>
+                                        {% if policy.completed and policy.policy_id %}
+                                        <small><a href="{{ url_for('policy.view', policy_id=policy.policy_id) }}">View Policy</a></small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Completion chart
+        const completionCtx = document.getElementById('completion-chart').getContext('2d');
+        new Chart(completionCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [{{ stats.completion_percentage }}, {{ 100 - stats.completion_percentage }}],
+                    backgroundColor: ['#0d6efd', '#e9ecef'],
+                    borderWidth: 0,
+                    cutout: '75%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+        
+        // Category chart
+        const categoryData = {
+            labels: [{% for category in stats.category_stats %}
+                     '{{ category.name }}',
+                     {% endfor %}],
+            datasets: [{
+                label: 'Number of Policies',
+                data: [{% for category in stats.category_stats %}
+                       {{ category.count }},
+                       {% endfor %}],
+                backgroundColor: '#0d6efd',
+                borderWidth: 0,
+                borderRadius: 4
+            }]
+        };
+        
+        const categoryCtx = document.getElementById('category-chart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'bar',
+            data: categoryData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

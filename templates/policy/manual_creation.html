@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Manual Policy Creation - Cathena Policy Management System{% endblock %}
+
+{% block styles %}
+<style>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .rich-editor {
+        min-height: 300px;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
+    .help-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .instructions {
+        background-color: rgba(0, 123, 255, 0.1);
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Manual Policy Creation</h1>
+        <a href="{{ url_for('dashboard.policies') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Policies
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Instructions</h5>
+        </div>
+        <div class="card-body">
+            <div class="instructions">
+                <h5><i class="bi bi-info-circle me-2"></i>How to Manually Create a Policy</h5>
+                <ol>
+                    <li>Open the QCS website in another browser tab and navigate to the policy you want to replicate.</li>
+                    <li>Copy the policy title, reference code, and content from QCS.</li>
+                    <li>Paste the content into this form and fill in all required fields.</li>
+                    <li>Choose whether to keep QCS references or replace them with your company's name.</li>
+                    <li>Select the appropriate category and format type for the policy.</li>
+                    <li>Submit the form to create the policy in your system.</li>
+                </ol>
+                <p class="mb-0"><strong>Note:</strong> You can either paste the policy content directly into the form or upload a Word document.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Policy Details</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", placeholder="Enter the policy title") }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="help-text">Enter the full title of the policy as it appears on QCS</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {{ form.reference_code.label(class="form-label") }}
+                            {{ form.reference_code(class="form-control", placeholder="e.g., HS01, CR63") }}
+                            {% if form.reference_code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.reference_code.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="help-text">The QCS reference code (e.g., HS01, CR63)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.category_id.label(class="form-label") }}
+                            {{ form.category_id(class="form-select") }}
+                            {% if form.category_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.category_id.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.format_type.label(class="form-label") }}
+                            {{ form.format_type(class="form-select") }}
+                            {% if form.format_type.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.format_type.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="help-text">Select how the policy should be formatted</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                            {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.status.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.version.label(class="form-label") }}
+                            {{ form.version(class="form-control", placeholder="e.g., 1.0") }}
+                            {% if form.version.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.version.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="help-text">Version number of the policy</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows=3, placeholder="Brief description of the policy") }}
+                    {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.description.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.content.label(class="form-label") }}
+                    {{ form.content(class="form-control", rows=15, placeholder="Paste the full policy content here") }}
+                    {% if form.content.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.content.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="help-text">Copy and paste the full policy content from QCS, maintaining headings and formatting as much as possible</div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.policy_file.label(class="form-label") }}
+                    {{ form.policy_file(class="form-control") }}
+                    {% if form.policy_file.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.policy_file.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="help-text">Optional: Upload a Word document instead of pasting content</div>
+                </div>
+                
+                <div class="form-check mb-4">
+                    {{ form.replace_qcs_references(class="form-check-input") }}
+                    {{ form.replace_qcs_references.label(class="form-check-label") }}
+                    <div class="help-text">Replace QCS references with your company's name in the policy content</div>
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Create Policy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Confirm before leaving page if form has been modified
+        const form = document.querySelector('form');
+        let formModified = false;
+        
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                formModified = true;
+            });
+            
+            if (input.tagName === 'TEXTAREA' || input.type === 'text') {
+                input.addEventListener('keyup', function() {
+                    formModified = true;
+                });
+            }
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (formModified) {
+                // The message won't actually show in most browsers, but the confirmation will still be triggered
+                const message = 'You have unsaved changes. Are you sure you want to leave this page?';
+                e.returnValue = message;
+                return message;
+            }
+        });
+        
+        // Reset the form modified state when the form is submitted
+        form.addEventListener('submit', function() {
+            formModified = false;
+        });
+    });
+</script>
+{% endblock %}

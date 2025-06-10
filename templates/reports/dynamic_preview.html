@@ -1,0 +1,1143 @@
+{% extends "base.html" %}
+
+{% block title %}Dynamic Report Preview - Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .preview-container {
+        display: flex;
+        height: calc(100vh - 160px);
+        margin-top: 20px;
+    }
+    
+    .editor-section {
+        flex: 1;
+        padding: 15px;
+        border-right: 1px solid #dee2e6;
+        overflow-y: auto;
+    }
+    
+    .preview-section {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+    }
+    
+    .preview-frame {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #dee2e6;
+        background-color: white;
+    }
+    
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .toolbar-section {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .editor-controls {
+        margin-bottom: 15px;
+    }
+    
+    .tab-section {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        overflow: hidden;
+    }
+    
+    .tab-section:not(:last-child) {
+        margin-bottom: 20px;
+    }
+    
+    .tab-header {
+        display: flex;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .tab-button {
+        padding: 10px 15px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .tab-button.active {
+        color: #495057;
+        background-color: #fff;
+        border-bottom: 2px solid #007bff;
+    }
+    
+    .tab-content {
+        padding: 15px;
+        background-color: white;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .section-toggle {
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+    }
+    
+    .preview-controls {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-bottom: 1px solid #dee2e6;
+        z-index: 100;
+        margin-bottom: 15px;
+    }
+    
+    .preview-report {
+        padding: 30px;
+        background-color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        min-height: calc(100% - 115px);
+    }
+    
+    .preview-report h1,
+    .preview-report h2,
+    .preview-report h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .preview-report h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+    
+    .preview-report h2 {
+        font-size: 18px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    
+    .preview-report h3 {
+        font-size: 16px;
+    }
+    
+    .preview-report table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    
+    .preview-report table th,
+    .preview-report table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+    }
+    
+    .preview-report table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .preview-report table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .cover-page {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .cover-page h1 {
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cover-page p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .cover-page .reference {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 2rem;
+    }
+    
+    .field-container {
+        margin-bottom: 15px;
+    }
+    
+    .field-container label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    
+    .table-editor {
+        margin-top: 15px;
+    }
+    
+    .table-editor .table-actions {
+        margin-bottom: 10px;
+    }
+    
+    .table-row-editor {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-bottom: 10px;
+    }
+    
+    .editor-table {
+        width: 100%;
+    }
+    
+    .editor-table th,
+    .editor-table td {
+        padding: 8px;
+    }
+    
+    .editor-table th {
+        background-color: #f0f0f0;
+    }
+    
+    .editor-table tr:nth-child(even) td {
+        background-color: #f8f9fa;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="toolbar">
+        <div class="toolbar-section">
+            <button id="saveReportBtn" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Report
+            </button>
+            <button id="publishReportBtn" class="btn btn-success">
+                <i class="fas fa-file-export"></i> Publish Report
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                    <li><a class="dropdown-item" href="#" id="exportPdfBtn"><i class="far fa-file-pdf"></i> Export as PDF</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportWordBtn"><i class="far fa-file-word"></i> Export as Word</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="toolbar-section">
+            <button id="undoBtn" class="btn btn-outline-secondary">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button id="redoBtn" class="btn btn-outline-secondary">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button id="helpBtn" class="btn btn-outline-info">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+    </div>
+    
+    <div class="preview-container">
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <div class="editor-controls">
+                <h5>Report Editor</h5>
+                <p class="text-muted small">Edit your report content below. Changes will automatically appear in the preview.</p>
+            </div>
+            
+            <!-- Report Sections Tabs -->
+            <div class="tab-section">
+                <div class="tab-header">
+                    <button class="tab-button active" data-target="report-info">Report Info</button>
+                    <button class="tab-button" data-target="executive-summary">Summary</button>
+                    <button class="tab-button" data-target="findings">Findings</button>
+                    <button class="tab-button" data-target="action-plan">Action Plan</button>
+                </div>
+                
+                <!-- Report Info Tab -->
+                <div class="tab-content" id="report-info">
+                    <div class="field-container">
+                        <label for="reportTitle">Report Title</label>
+                        <input type="text" class="form-control" id="reportTitle" value="Comprehensive Compliance Report">
+                    </div>
+                    
+                    <div class="field-container">
+                        <label for="regulatoryBody">Regulatory Body</label>
+                        <select class="form-select" id="regulatoryBody">
+                            <option value="cqc">Care Quality Commission (CQC)</option>
+                            <option value="ofsted">Office for Standards in Education (Ofsted)</option>
+                            <option value="hse">Health and Safety Executive (HSE)</option>
+                            <option value="localAuthority">Local Authority</option>
+                            <option value="headOffice">Head Office</option>
+                            <option value="fire">Fire</option>
+                            <option value="healthAndSafety">Health and Safety</option>
+                            <option value="infectionControl">Infection Control</option>
+                            <option value="financial">Financial</option>
+                            <option value="cathena">Cathena Internal Audit</option>
+                            <option value="other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="field-container" id="otherRegulatoryBodyContainer" style="display: none;">
+                        <label for="otherRegulatoryBody">Other Regulatory Body Name</label>
+                        <input type="text" class="form-control" id="otherRegulatoryBody">
+                    </div>
+                    
+                    <div class="field-container">
+                        <label for="organizationName">Organization Name</label>
+                        <input type="text" class="form-control" id="organizationName" value="Quenby Rest Home">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="field-container">
+                                <label for="reportDate">Report Date</label>
+                                <input type="date" class="form-control" id="reportDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-container">
+                                <label for="reportReference">Reference Code</label>
+                                <input type="text" class="form-control" id="reportReference">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field-container">
+                        <label for="reportAuthor">Author</label>
+                        <input type="text" class="form-control" id="reportAuthor" value="Aj Sandhu">
+                    </div>
+                </div>
+                
+                <!-- Executive Summary Tab -->
+                <div class="tab-content" id="executive-summary" style="display: none;">
+                    <div class="field-container">
+                        <label for="executiveSummary">Executive Summary</label>
+                        <textarea class="form-control" id="executiveSummary" rows="8">This comprehensive compliance report has been prepared following an inspection of Quenby Rest Home. The inspection focused on assessing compliance with CQC regulations and standards. The report identifies key strengths in person-centered care and infection control practices, while highlighting areas requiring improvement in governance and staffing documentation.</textarea>
+                    </div>
+                </div>
+                
+                <!-- Findings Tab -->
+                <div class="tab-content" id="findings" style="display: none;">
+                    <div class="table-editor">
+                        <h5>Findings</h5>
+                        <div class="table-actions mb-3">
+                            <button class="btn btn-sm btn-primary" id="addFindingBtn">
+                                <i class="fas fa-plus"></i> Add Finding
+                            </button>
+                        </div>
+                        
+                        <table class="editor-table" id="findingsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Requirement</th>
+                                    <th>Status</th>
+                                    <th>Evidence</th>
+                                    <th style="width: 80px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                                    <td>Regulation 17: Good Governance - Systems and processes must be established and operated effectively to ensure compliance.</td>
+                                    <td>Partially Compliant</td>
+                                    <td>Governance meeting minutes show regular review but lack detailed action tracking. 3 of 5 action plans reviewed lacked clear deadlines and responsible persons.</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                                    <td>Regulation 12: Safe Care and Treatment - Sufficient assessment of risks to health and safety.</td>
+                                    <td>Compliant</td>
+                                    <td>Comprehensive risk assessments were in place for all 10 residents reviewed, with clear mitigation strategies.</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Action Plan Tab -->
+                <div class="tab-content" id="action-plan" style="display: none;">
+                    <div class="table-editor">
+                        <h5>Action Plan</h5>
+                        <div class="table-actions mb-3">
+                            <button class="btn btn-sm btn-primary" id="addActionBtn">
+                                <i class="fas fa-plus"></i> Add Action
+                            </button>
+                        </div>
+                        
+                        <table class="editor-table" id="actionPlanTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Action</th>
+                                    <th>Priority</th>
+                                    <th>Responsible</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                    <th style="width: 80px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                                    <td>Review and enhance governance documentation to include clear action tracking with deadlines and responsible persons.</td>
+                                    <td>High</td>
+                                    <td>Registered Manager</td>
+                                    <td>30 June 2025</td>
+                                    <td>Not Started</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                                    <td>Audit all staff training records and develop a tracking system to ensure all training is up to date.</td>
+                                    <td>High</td>
+                                    <td>HR Manager</td>
+                                    <td>15 June 2025</td>
+                                    <td>In Progress</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <div class="preview-controls">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Live Preview</h5>
+                    <div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary active" id="previewModeWeb">
+                                <i class="fas fa-desktop"></i> Web
+                            </button>
+                            <button class="btn btn-outline-secondary" id="previewModePdf">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-outline-secondary" id="previewModeWord">
+                                <i class="fas fa-file-word"></i> Word
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-report" id="reportPreview">
+                <!-- Cover Page -->
+                <div class="cover-page">
+                    <h1 id="previewTitle">Comprehensive Compliance Report</h1>
+                    <h2 id="previewRegulatoryBody">Care Quality Commission (CQC)</h2>
+                    <p id="previewDate">19 May 2025</p>
+                    <p id="previewOrganization">Quenby Rest Home</p>
+                    <p class="reference" id="previewReference">Reference: Rep/CQC/M/aj.sandhu/20250519/001</p>
+                </div>
+                
+                <!-- Executive Summary -->
+                <h2>Executive Summary</h2>
+                <div id="previewExecutiveSummary">
+                    <p>This comprehensive compliance report has been prepared following an inspection of Quenby Rest Home. The inspection focused on assessing compliance with CQC regulations and standards. The report identifies key strengths in person-centered care and infection control practices, while highlighting areas requiring improvement in governance and staffing documentation.</p>
+                </div>
+                
+                <!-- Findings -->
+                <h2>Findings</h2>
+                <table id="previewFindingsTable">
+                    <thead>
+                        <tr>
+                            <th>Requirement</th>
+                            <th>Status</th>
+                            <th>Evidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Regulation 17: Good Governance - Systems and processes must be established and operated effectively to ensure compliance.</td>
+                            <td>Partially Compliant</td>
+                            <td>Governance meeting minutes show regular review but lack detailed action tracking. 3 of 5 action plans reviewed lacked clear deadlines and responsible persons.</td>
+                        </tr>
+                        <tr>
+                            <td>Regulation 12: Safe Care and Treatment - Sufficient assessment of risks to health and safety.</td>
+                            <td>Compliant</td>
+                            <td>Comprehensive risk assessments were in place for all 10 residents reviewed, with clear mitigation strategies.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Action Plan -->
+                <h2>Action Plan</h2>
+                <table id="previewActionPlanTable">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Priority</th>
+                            <th>Responsible</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Review and enhance governance documentation to include clear action tracking with deadlines and responsible persons.</td>
+                            <td>High</td>
+                            <td>Registered Manager</td>
+                            <td>30 June 2025</td>
+                            <td>Not Started</td>
+                        </tr>
+                        <tr>
+                            <td>Audit all staff training records and develop a tracking system to ensure all training is up to date.</td>
+                            <td>High</td>
+                            <td>HR Manager</td>
+                            <td>15 June 2025</td>
+                            <td>In Progress</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing findings -->
+<div class="modal fade" id="findingModal" tabindex="-1" aria-labelledby="findingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="findingModalLabel">Edit Finding</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="findingForm">
+                    <input type="hidden" id="findingIndex">
+                    <div class="mb-3">
+                        <label for="findingRequirement" class="form-label">Requirement</label>
+                        <textarea class="form-control" id="findingRequirement" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="findingStatus" class="form-label">Status</label>
+                        <select class="form-select" id="findingStatus" required>
+                            <option value="Compliant">Compliant</option>
+                            <option value="Partially Compliant">Partially Compliant</option>
+                            <option value="Non-compliant">Non-compliant</option>
+                            <option value="Not Applicable">Not Applicable</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="findingEvidence" class="form-label">Evidence</label>
+                        <textarea class="form-control" id="findingEvidence" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveFindingBtn">Save Finding</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing actions -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionModalLabel">Edit Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="actionForm">
+                    <input type="hidden" id="actionIndex">
+                    <div class="mb-3">
+                        <label for="actionText" class="form-label">Action</label>
+                        <textarea class="form-control" id="actionText" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="actionPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="actionPriority" required>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="actionResponsible" class="form-label">Responsible</label>
+                                <input type="text" class="form-control" id="actionResponsible" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="actionDeadline" class="form-label">Deadline</label>
+                                <input type="text" class="form-control" id="actionDeadline" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="actionStatus" class="form-label">Status</label>
+                                <select class="form-select" id="actionStatus" required>
+                                    <option value="Not Started">Not Started</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Delayed">Delayed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveActionBtn">Save Action</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpModalLabel">Dynamic Report Preview Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>Getting Started</h5>
+                <p>The Dynamic Report Preview tool allows you to create and edit compliance reports while seeing a live preview of how they will appear in different formats.</p>
+                
+                <h5>Editor Features</h5>
+                <ul>
+                    <li><strong>Report Info Tab:</strong> Edit basic report information like title, regulatory body, and dates.</li>
+                    <li><strong>Summary Tab:</strong> Write or edit the executive summary of your report.</li>
+                    <li><strong>Findings Tab:</strong> Add, edit, or remove findings. Each finding includes the requirement, compliance status, and evidence.</li>
+                    <li><strong>Action Plan Tab:</strong> Create your action plan with prioritized actions, responsible persons, deadlines, and status.</li>
+                </ul>
+                
+                <h5>Preview Features</h5>
+                <ul>
+                    <li><strong>Live Preview:</strong> See your changes reflected immediately in the preview pane.</li>
+                    <li><strong>Preview Modes:</strong> Toggle between Web, PDF, and Word preview modes to see how your report will look in different formats.</li>
+                </ul>
+                
+                <h5>Export Options</h5>
+                <ul>
+                    <li><strong>PDF Export:</strong> Generate a professionally formatted PDF document.</li>
+                    <li><strong>Word Export:</strong> Create a Word document that can be further edited if needed.</li>
+                </ul>
+                
+                <h5>Saving and Publishing</h5>
+                <ul>
+                    <li><strong>Save Report:</strong> Save your work in progress without publishing.</li>
+                    <li><strong>Publish Report:</strong> Finalize your report for sharing with stakeholders.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="/static/js/report_exporter.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up export button handlers
+    document.getElementById('exportPdfBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const previewContent = document.querySelector('.preview-report');
+        const reportTitle = document.getElementById('reportTitle').value || 'Compliance Report';
+        reportExporter.exportAsPdf(reportTitle, previewContent);
+    });
+    
+    document.getElementById('exportWordBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const reportTitle = document.getElementById('reportTitle').value || 'Compliance Report';
+        reportExporter.exportAsWord(reportTitle, {});
+    });
+    // Initialize date inputs with current date
+    const today = new Date();
+    const formattedDate = today.toISOString().substr(0, 10);
+    document.getElementById('reportDate').value = formattedDate;
+    
+    // Generate a default reference code
+    const defaultReference = `Rep/CQC/M/aj.sandhu/${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}/001`;
+    document.getElementById('reportReference').value = defaultReference;
+    
+    // Tab navigation
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show selected tab content
+            const targetTab = this.getAttribute('data-target');
+            document.getElementById(targetTab).style.display = 'block';
+        });
+    });
+    
+    // Other regulatory body toggle
+    const regulatoryBodySelect = document.getElementById('regulatoryBody');
+    const otherRegulatoryBodyContainer = document.getElementById('otherRegulatoryBodyContainer');
+    
+    regulatoryBodySelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            otherRegulatoryBodyContainer.style.display = 'block';
+        } else {
+            otherRegulatoryBodyContainer.style.display = 'none';
+        }
+        updatePreview();
+    });
+    
+    // Live preview updates
+    const reportTitle = document.getElementById('reportTitle');
+    const organizationName = document.getElementById('organizationName');
+    const reportDate = document.getElementById('reportDate');
+    const reportReference = document.getElementById('reportReference');
+    const executiveSummary = document.getElementById('executiveSummary');
+    
+    // Connect inputs to preview
+    reportTitle.addEventListener('input', updatePreview);
+    regulatoryBodySelect.addEventListener('change', updatePreview);
+    document.getElementById('otherRegulatoryBody').addEventListener('input', updatePreview);
+    organizationName.addEventListener('input', updatePreview);
+    reportDate.addEventListener('input', updatePreview);
+    reportReference.addEventListener('input', updatePreview);
+    executiveSummary.addEventListener('input', updatePreview);
+    
+    // Preview mode switching
+    const previewModeWeb = document.getElementById('previewModeWeb');
+    const previewModePdf = document.getElementById('previewModePdf');
+    const previewModeWord = document.getElementById('previewModeWord');
+    
+    previewModeWeb.addEventListener('click', function() {
+        setActivePreviewMode(this);
+        document.getElementById('reportPreview').classList.remove('pdf-mode', 'word-mode');
+        document.getElementById('reportPreview').classList.add('web-mode');
+    });
+    
+    previewModePdf.addEventListener('click', function() {
+        setActivePreviewMode(this);
+        document.getElementById('reportPreview').classList.remove('web-mode', 'word-mode');
+        document.getElementById('reportPreview').classList.add('pdf-mode');
+    });
+    
+    previewModeWord.addEventListener('click', function() {
+        setActivePreviewMode(this);
+        document.getElementById('reportPreview').classList.remove('web-mode', 'pdf-mode');
+        document.getElementById('reportPreview').classList.add('word-mode');
+    });
+    
+    function setActivePreviewMode(button) {
+        previewModeWeb.classList.remove('active');
+        previewModePdf.classList.remove('active');
+        previewModeWord.classList.remove('active');
+        button.classList.add('active');
+    }
+    
+    // Finding modal functionality
+    const findingModal = new bootstrap.Modal(document.getElementById('findingModal'));
+    let editingFindingIndex = -1;
+    
+    // Open finding modal for adding
+    document.getElementById('addFindingBtn').addEventListener('click', function() {
+        editingFindingIndex = -1;
+        document.getElementById('findingForm').reset();
+        document.getElementById('findingModalLabel').textContent = 'Add Finding';
+        findingModal.show();
+    });
+    
+    // Open finding modal for editing
+    document.querySelectorAll('#findingsTable .edit-row-btn').forEach((button, index) => {
+        button.addEventListener('click', function() {
+            editingFindingIndex = index;
+            const row = this.closest('tr');
+            document.getElementById('findingRequirement').value = row.cells[1].textContent;
+            document.getElementById('findingStatus').value = row.cells[2].textContent;
+            document.getElementById('findingEvidence').value = row.cells[3].textContent;
+            document.getElementById('findingModalLabel').textContent = 'Edit Finding';
+            findingModal.show();
+        });
+    });
+    
+    // Save finding
+    document.getElementById('saveFindingBtn').addEventListener('click', function() {
+        const requirement = document.getElementById('findingRequirement').value;
+        const status = document.getElementById('findingStatus').value;
+        const evidence = document.getElementById('findingEvidence').value;
+        
+        if (!requirement || !status || !evidence) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        if (editingFindingIndex === -1) {
+            // Add new finding
+            const findingsTable = document.getElementById('findingsTable');
+            const newRow = findingsTable.tBodies[0].insertRow();
+            newRow.innerHTML = `
+                <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                <td>${requirement}</td>
+                <td>${status}</td>
+                <td>${evidence}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            // Add event listeners to new buttons
+            const editBtn = newRow.querySelector('.edit-row-btn');
+            const deleteBtn = newRow.querySelector('.delete-row-btn');
+            
+            editBtn.addEventListener('click', function() {
+                const rowIndex = Array.from(findingsTable.tBodies[0].rows).indexOf(newRow);
+                editingFindingIndex = rowIndex;
+                document.getElementById('findingRequirement').value = requirement;
+                document.getElementById('findingStatus').value = status;
+                document.getElementById('findingEvidence').value = evidence;
+                document.getElementById('findingModalLabel').textContent = 'Edit Finding';
+                findingModal.show();
+            });
+            
+            deleteBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this finding?')) {
+                    newRow.remove();
+                    updatePreview();
+                }
+            });
+        } else {
+            // Edit existing finding
+            const row = document.getElementById('findingsTable').tBodies[0].rows[editingFindingIndex];
+            row.cells[1].textContent = requirement;
+            row.cells[2].textContent = status;
+            row.cells[3].textContent = evidence;
+        }
+        
+        findingModal.hide();
+        updatePreview();
+    });
+    
+    // Action modal functionality
+    const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
+    let editingActionIndex = -1;
+    
+    // Open action modal for adding
+    document.getElementById('addActionBtn').addEventListener('click', function() {
+        editingActionIndex = -1;
+        document.getElementById('actionForm').reset();
+        document.getElementById('actionModalLabel').textContent = 'Add Action';
+        actionModal.show();
+    });
+    
+    // Open action modal for editing
+    document.querySelectorAll('#actionPlanTable .edit-row-btn').forEach((button, index) => {
+        button.addEventListener('click', function() {
+            editingActionIndex = index;
+            const row = this.closest('tr');
+            document.getElementById('actionText').value = row.cells[1].textContent;
+            document.getElementById('actionPriority').value = row.cells[2].textContent;
+            document.getElementById('actionResponsible').value = row.cells[3].textContent;
+            document.getElementById('actionDeadline').value = row.cells[4].textContent;
+            document.getElementById('actionStatus').value = row.cells[5].textContent;
+            document.getElementById('actionModalLabel').textContent = 'Edit Action';
+            actionModal.show();
+        });
+    });
+    
+    // Save action
+    document.getElementById('saveActionBtn').addEventListener('click', function() {
+        const action = document.getElementById('actionText').value;
+        const priority = document.getElementById('actionPriority').value;
+        const responsible = document.getElementById('actionResponsible').value;
+        const deadline = document.getElementById('actionDeadline').value;
+        const status = document.getElementById('actionStatus').value;
+        
+        if (!action || !priority || !responsible || !deadline || !status) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        if (editingActionIndex === -1) {
+            // Add new action
+            const actionPlanTable = document.getElementById('actionPlanTable');
+            const newRow = actionPlanTable.tBodies[0].insertRow();
+            newRow.innerHTML = `
+                <td><i class="fas fa-grip-vertical drag-handle"></i></td>
+                <td>${action}</td>
+                <td>${priority}</td>
+                <td>${responsible}</td>
+                <td>${deadline}</td>
+                <td>${status}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary edit-row-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-row-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            // Add event listeners to new buttons
+            const editBtn = newRow.querySelector('.edit-row-btn');
+            const deleteBtn = newRow.querySelector('.delete-row-btn');
+            
+            editBtn.addEventListener('click', function() {
+                const rowIndex = Array.from(actionPlanTable.tBodies[0].rows).indexOf(newRow);
+                editingActionIndex = rowIndex;
+                document.getElementById('actionText').value = action;
+                document.getElementById('actionPriority').value = priority;
+                document.getElementById('actionResponsible').value = responsible;
+                document.getElementById('actionDeadline').value = deadline;
+                document.getElementById('actionStatus').value = status;
+                document.getElementById('actionModalLabel').textContent = 'Edit Action';
+                actionModal.show();
+            });
+            
+            deleteBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this action?')) {
+                    newRow.remove();
+                    updatePreview();
+                }
+            });
+        } else {
+            // Edit existing action
+            const row = document.getElementById('actionPlanTable').tBodies[0].rows[editingActionIndex];
+            row.cells[1].textContent = action;
+            row.cells[2].textContent = priority;
+            row.cells[3].textContent = responsible;
+            row.cells[4].textContent = deadline;
+            row.cells[5].textContent = status;
+        }
+        
+        actionModal.hide();
+        updatePreview();
+    });
+    
+    // Delete row buttons
+    document.querySelectorAll('.delete-row-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this item?')) {
+                this.closest('tr').remove();
+                updatePreview();
+            }
+        });
+    });
+    
+    // Help button
+    document.getElementById('helpBtn').addEventListener('click', function() {
+        new bootstrap.Modal(document.getElementById('helpModal')).show();
+    });
+    
+    // Save and export buttons
+    document.getElementById('saveReportBtn').addEventListener('click', function() {
+        alert('Report saved successfully!');
+    });
+    
+    document.getElementById('publishReportBtn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to publish this report? Once published, it cannot be edited.')) {
+            alert('Report published successfully!');
+        }
+    });
+    
+    document.getElementById('exportPdfBtn').addEventListener('click', function() {
+        alert('Report exported as PDF. Downloading...');
+    });
+    
+    document.getElementById('exportWordBtn').addEventListener('click', function() {
+        alert('Report exported as Word document. Downloading...');
+    });
+    
+    // Update preview function
+    function updatePreview() {
+        // Update title and basic info
+        document.getElementById('previewTitle').textContent = reportTitle.value;
+        
+        // Update regulatory body
+        let regulatoryBodyText;
+        if (regulatoryBodySelect.value === 'cqc') {
+            regulatoryBodyText = 'Care Quality Commission (CQC)';
+        } else if (regulatoryBodySelect.value === 'ofsted') {
+            regulatoryBodyText = 'Office for Standards in Education (Ofsted)';
+        } else if (regulatoryBodySelect.value === 'hse') {
+            regulatoryBodyText = 'Health and Safety Executive (HSE)';
+        } else if (regulatoryBodySelect.value === 'cathena') {
+            regulatoryBodyText = 'Cathena Internal Audit';
+        } else {
+            regulatoryBodyText = document.getElementById('otherRegulatoryBody').value;
+        }
+        document.getElementById('previewRegulatoryBody').textContent = regulatoryBodyText;
+        
+        // Update other basic info
+        const dateValue = reportDate.value ? new Date(reportDate.value) : new Date();
+        const formattedDate = `${dateValue.getDate()} ${getMonthName(dateValue.getMonth())} ${dateValue.getFullYear()}`;
+        document.getElementById('previewDate').textContent = formattedDate;
+        document.getElementById('previewOrganization').textContent = organizationName.value;
+        document.getElementById('previewReference').textContent = `Reference: ${reportReference.value}`;
+        
+        // Update executive summary
+        document.getElementById('previewExecutiveSummary').innerHTML = `<p>${executiveSummary.value.replace(/\n/g, '</p><p>')}</p>`;
+        
+        // Update findings table
+        updateFindingsTable();
+        
+        // Update action plan table
+        updateActionPlanTable();
+    }
+    
+    function updateFindingsTable() {
+        const findingsTable = document.getElementById('findingsTable');
+        const previewFindingsTable = document.getElementById('previewFindingsTable');
+        
+        // Clear existing preview rows (except header)
+        while (previewFindingsTable.tBodies[0].firstChild) {
+            previewFindingsTable.tBodies[0].removeChild(previewFindingsTable.tBodies[0].firstChild);
+        }
+        
+        // Add rows from editor
+        for (const row of findingsTable.tBodies[0].rows) {
+            const newRow = previewFindingsTable.tBodies[0].insertRow();
+            
+            const requirementCell = newRow.insertCell();
+            requirementCell.textContent = row.cells[1].textContent;
+            
+            const statusCell = newRow.insertCell();
+            statusCell.textContent = row.cells[2].textContent;
+            
+            const evidenceCell = newRow.insertCell();
+            evidenceCell.textContent = row.cells[3].textContent;
+        }
+    }
+    
+    function updateActionPlanTable() {
+        const actionPlanTable = document.getElementById('actionPlanTable');
+        const previewActionPlanTable = document.getElementById('previewActionPlanTable');
+        
+        // Clear existing preview rows (except header)
+        while (previewActionPlanTable.tBodies[0].firstChild) {
+            previewActionPlanTable.tBodies[0].removeChild(previewActionPlanTable.tBodies[0].firstChild);
+        }
+        
+        // Add rows from editor
+        for (const row of actionPlanTable.tBodies[0].rows) {
+            const newRow = previewActionPlanTable.tBodies[0].insertRow();
+            
+            const actionCell = newRow.insertCell();
+            actionCell.textContent = row.cells[1].textContent;
+            
+            const priorityCell = newRow.insertCell();
+            priorityCell.textContent = row.cells[2].textContent;
+            
+            const responsibleCell = newRow.insertCell();
+            responsibleCell.textContent = row.cells[3].textContent;
+            
+            const deadlineCell = newRow.insertCell();
+            deadlineCell.textContent = row.cells[4].textContent;
+            
+            const statusCell = newRow.insertCell();
+            statusCell.textContent = row.cells[5].textContent;
+            
+            // Add styling based on priority
+            const priority = row.cells[2].textContent.toLowerCase();
+            if (priority === 'high') {
+                newRow.classList.add('table-danger');
+            } else if (priority === 'medium') {
+                newRow.classList.add('table-warning');
+            } else if (priority === 'low') {
+                newRow.classList.add('table-info');
+            }
+        }
+    }
+    
+    function getMonthName(monthIndex) {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return months[monthIndex];
+    }
+    
+    // Initial preview update
+    updatePreview();
+});
+</script>
+{% endblock %}

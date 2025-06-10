@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_analysis.index') }}">Policy Analysis</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_analysis.batch_analysis') }}">Batch Analysis</a></li>
+                    <li class="breadcrumb-item active">Results</li>
+                </ol>
+            </nav>
+            <h1>Batch Analysis Results</h1>
+            <p class="lead">
+                {% if analysis_type == 'structure' %}
+                    Structure Analysis Results
+                {% elif analysis_type == 'content' %}
+                    Content Analysis Results
+                {% elif analysis_type == 'compliance' %}
+                    Compliance Analysis Results
+                {% else %}
+                    Analysis Results
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    
+    <!-- Summary Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <div class="h1">{{ results|length }}</div>
+                    <p>Policies Analyzed</p>
+                </div>
+                
+                <div class="col-md-4 text-center">
+                    <div class="h1">{{ results|selectattr('status', 'equalto', 'success')|list|length }}</div>
+                    <p>Successful Analyses</p>
+                </div>
+                
+                <div class="col-md-4 text-center">
+                    <div class="h1">{{ results|selectattr('status', 'equalto', 'error')|list|length }}</div>
+                    <p>Failed Analyses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Cards -->
+    <div class="row">
+        {% for result in results %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm {% if result.status == 'error' %}border-danger{% else %}border-success{% endif %}">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ result.policy_title }}</h5>
+                        <span class="badge {% if result.status == 'error' %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ result.status|title }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if result.status == 'error' %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> {{ result.message }}
+                        </div>
+                    {% else %}
+                        {% if analysis_type == 'structure' %}
+                            <!-- Structure Analysis Results -->
+                            <div class="mb-3">
+                                <h6>Overall Structure Score</h6>
+                                <div class="progress" style="height: 25px;">
+                                    {% set structure_score = result.result.get('overall_score', 0) * 100 %}
+                                    <div class="progress-bar {% if structure_score > 80 %}bg-success{% elif structure_score > 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ structure_score }}%;" 
+                                         aria-valuenow="{{ structure_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ structure_score|round }}%
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Missing Sections</h6>
+                                {% if result.result.get('missing_sections') %}
+                                    <ul class="list-group">
+                                        {% for section in result.result.get('missing_sections', [])[:3] %}
+                                        <li class="list-group-item">
+                                            <span class="badge {% if section.get('importance') == 'high' %}bg-danger{% elif section.get('importance') == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                                {{ section.get('importance', 'low')|title }}
+                                            </span>
+                                            {{ section.get('name', '') }}
+                                        </li>
+                                        {% endfor %}
+                                        {% if result.result.get('missing_sections', [])|length > 3 %}
+                                        <li class="list-group-item text-muted">
+                                            ...and {{ result.result.get('missing_sections', [])|length - 3 }} more
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                {% else %}
+                                    <div class="alert alert-success">
+                                        No missing sections detected.
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <h6>Summary</h6>
+                                <p>{{ result.result.get('summary', 'No summary available') }}</p>
+                            </div>
+                        
+                        {% elif analysis_type == 'content' %}
+                            <!-- Content Analysis Results -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Key Extractions</h6>
+                                    <ul class="list-group">
+                                        {% if result.result.get('objective') %}
+                                        <li class="list-group-item">
+                                            <strong>Objective:</strong> {{ result.result.get('objective')|truncate(50) }}
+                                        </li>
+                                        {% endif %}
+                                        
+                                        {% if result.result.get('scope') %}
+                                        <li class="list-group-item">
+                                            <strong>Scope:</strong> {{ result.result.get('scope')|truncate(50) }}
+                                        </li>
+                                        {% endif %}
+                                        
+                                        {% if result.result.get('review_period') %}
+                                        <li class="list-group-item">
+                                            <strong>Review Period:</strong> {{ result.result.get('review_period') }}
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6>Content Elements</h6>
+                                    {% set key_elements = result.result.get('key_elements', {}) %}
+                                    {% if key_elements %}
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            {% set completeness = key_elements.get('completeness', 0) * 100 %}
+                                            <div class="progress-bar {% if completeness > 80 %}bg-success{% elif completeness > 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ completeness }}%;" 
+                                                 aria-valuenow="{{ completeness }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ completeness|round }}% Complete
+                                            </div>
+                                        </div>
+                                        
+                                        <ul class="list-group">
+                                            {% for element in key_elements.get('present', [])[:3] %}
+                                            <li class="list-group-item">
+                                                <i class="fas fa-check text-success"></i> {{ element }}
+                                            </li>
+                                            {% endfor %}
+                                            
+                                            {% if key_elements.get('missing') %}
+                                                {% for element in key_elements.get('missing', [])[:2] %}
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-times text-danger"></i> {{ element }}
+                                                </li>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            No key elements extracted.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        
+                        {% elif analysis_type == 'compliance' %}
+                            <!-- Compliance Analysis Results -->
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <h6>Legislation References</h6>
+                                    {% if result.result.get('legislation_references') %}
+                                        <ul class="list-group">
+                                            {% for ref in result.result.get('legislation_references', [])[:5] %}
+                                            <li class="list-group-item">{{ ref }}</li>
+                                            {% endfor %}
+                                            
+                                            {% if result.result.get('legislation_references', [])|length > 5 %}
+                                            <li class="list-group-item text-muted">
+                                                ...and {{ result.result.get('legislation_references', [])|length - 5 }} more
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            No legislation references found.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Missing Legislation</h6>
+                                    {% if result.result.get('comparison', {}).get('missing_from_policy') %}
+                                        <ul class="list-group">
+                                            {% for ref in result.result.get('comparison', {}).get('missing_from_policy', [])[:3] %}
+                                            <li class="list-group-item text-danger">{{ ref }}</li>
+                                            {% endfor %}
+                                            
+                                            {% if result.result.get('comparison', {}).get('missing_from_policy', [])|length > 3 %}
+                                            <li class="list-group-item text-muted">
+                                                ...and {{ result.result.get('comparison', {}).get('missing_from_policy', [])|length - 3 }} more
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="alert alert-success">
+                                            No missing legislation.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6>Compliance Status</h6>
+                                    {% set compliance_score = (result.result.get('comparison', {}).get('found_in_both', [])|length / (result.result.get('category_legislation', [])|length or 1)) * 100 if result.result.get('category_legislation') else 0 %}
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar {% if compliance_score > 80 %}bg-success{% elif compliance_score > 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ compliance_score }}%;" 
+                                             aria-valuenow="{{ compliance_score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ compliance_score|round }}% Compliant
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer">
+                    <a href="{{ url_for('policy_analysis.analyze_policy', policy_id=result.policy_id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-search"></i> Detailed Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-4 mb-5">
+        <a href="{{ url_for('policy_analysis.batch_analysis') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Batch Analysis
+        </a>
+        <a href="{{ url_for('policy_analysis.index') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Return to Analysis Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

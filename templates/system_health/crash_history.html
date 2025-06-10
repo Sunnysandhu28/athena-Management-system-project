@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Crash History{% endblock %}
+
+{% block extra_css %}
+<style>
+    .crash-card {
+        margin-bottom: 20px;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .crash-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .crash-type {
+        font-weight: bold;
+        font-family: monospace;
+    }
+    
+    .crash-message {
+        font-family: monospace;
+        white-space: pre-wrap;
+        font-size: 0.9rem;
+    }
+    
+    .crash-details {
+        max-height: 300px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+    
+    .ai-analysis {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-left: 4px solid #0d6efd;
+        padding: 10px 15px;
+        margin-top: 15px;
+    }
+    
+    .ai-analysis h6 {
+        color: #0d6efd;
+    }
+    
+    .recovery-action {
+        background-color: rgba(25, 135, 84, 0.05);
+        border-left: 4px solid #198754;
+        padding: 10px 15px;
+        margin-top: 10px;
+    }
+    
+    .no-crashes {
+        text-align: center;
+        padding: 60px 0;
+    }
+    
+    .no-crashes i {
+        font-size: 4rem;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Crash History</h1>
+        <a href="{{ url_for('system_health.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    {% if crashes %}
+        <div class="mb-3">
+            <p class="text-muted">Showing {{ crashes|length }} crashes from most recent to oldest.</p>
+        </div>
+        
+        {% for crash in crashes %}
+        <div class="card crash-card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="crash-type">{{ crash.error_type }}</span>
+                </div>
+                <span class="crash-meta">{{ crash.timestamp }}</span>
+            </div>
+            <div class="card-body">
+                <p class="crash-message">{{ crash.error_message }}</p>
+                
+                {% if crash.ai_analysis %}
+                <div class="ai-analysis">
+                    <h6><i class="fas fa-robot"></i> AI Analysis</h6>
+                    
+                    {% if crash.ai_analysis.summary %}
+                    <p><strong>Summary:</strong> {{ crash.ai_analysis.summary }}</p>
+                    {% endif %}
+                    
+                    {% if crash.ai_analysis.root_cause %}
+                    <p><strong>Root Cause:</strong> {{ crash.ai_analysis.root_cause }}</p>
+                    {% endif %}
+                    
+                    {% if crash.ai_analysis.severity %}
+                    <p><strong>Severity:</strong> 
+                        <span class="badge {% if crash.ai_analysis.severity == 'critical' %}bg-danger
+                              {% elif crash.ai_analysis.severity == 'high' %}bg-warning
+                              {% elif crash.ai_analysis.severity == 'medium' %}bg-info
+                              {% else %}bg-secondary{% endif %}">
+                            {{ crash.ai_analysis.severity|title }}
+                        </span>
+                    </p>
+                    {% endif %}
+                    
+                    {% if crash.ai_analysis.recovery_actions %}
+                    <div class="recovery-action">
+                        <h6><i class="fas fa-tools"></i> Recovery Actions</h6>
+                        <ul class="mb-0">
+                        {% for action in crash.ai_analysis.recovery_actions %}
+                            <li>{{ action.description }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-crashes">
+            <i class="fas fa-check-circle"></i>
+            <h3>No Crashes Detected</h3>
+            <p class="text-muted">Your system is running smoothly with no recorded crashes.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/js/all.min.js"></script>
+{% endblock %}

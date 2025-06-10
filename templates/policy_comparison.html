@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Comparison - QCS vs Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .comparison-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .stats-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .policy-table {
+        font-size: 0.9rem;
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .status-badge-complete {
+        background-color: #d1e7dd;
+        color: #146c43;
+    }
+    
+    .status-badge-missing {
+        background-color: #f8d7da;
+        color: #b02a37;
+    }
+    
+    .status-badge-partial {
+        background-color: #fff3cd;
+        color: #997404;
+    }
+    
+    .category-header {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        border-left: 5px solid #0d6efd;
+        font-weight: 600;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5">Policy Comparison</h1>
+            <p class="lead">Compare QCS policies with Cathena-adapted policies</p>
+        </div>
+    </div>
+    
+    <div class="row comparison-header">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h5>Total QCS Policies</h5>
+                <h2>{{ total_qcs_policies }}</h2>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h5>QCS Policies Available</h5>
+                <h2>{{ qcs_policies_available }}</h2>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ (qcs_policies_available / total_qcs_policies * 100)|round }}%"></div>
+                </div>
+                <p class="text-muted mt-2">{{ (qcs_policies_available / total_qcs_policies * 100)|round }}% Complete</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h5>Cathena Adapted</h5>
+                <h2>{{ cathena_adapted_policies }}</h2>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ (cathena_adapted_policies / total_qcs_policies * 100)|round }}%"></div>
+                </div>
+                <p class="text-muted mt-2">{{ (cathena_adapted_policies / total_qcs_policies * 100)|round }}% Adapted</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h5>Missing Policies</h5>
+                <h2>{{ missing_policies }}</h2>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (missing_policies / total_qcs_policies * 100)|round }}%"></div>
+                </div>
+                <p class="text-muted mt-2">{{ (missing_policies / total_qcs_policies * 100)|round }}% Missing</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="policySearch" placeholder="Search for policies...">
+                <button class="btn btn-primary" type="button">Search</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" id="categoryFilter">
+                <option value="all">All Categories</option>
+                <option value="Administration">Administration</option>
+                <option value="Care Management">Care Management</option>
+                <option value="Health and Safety">Health and Safety</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Medication">Medication</option>
+                <option value="Quality Assurance">Quality Assurance</option>
+                <option value="Information Governance">Information Governance</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Policy Comparison</span>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" id="showMissingOnly">
+                            <i class="fas fa-filter me-1"></i> Show Missing Only
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" id="showCompleteOnly">
+                            <i class="fas fa-check-circle me-1"></i> Show Complete Only
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Administration Policies -->
+                    <div class="category-header">Administration Policies</div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped policy-table">
+                            <thead>
+                                <tr>
+                                    <th>Policy Code</th>
+                                    <th>Policy Title</th>
+                                    <th>QCS Original</th>
+                                    <th>Cathena Adapted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in administration_policies %}
+                                <tr>
+                                    <td><span class="policy-code">{{ policy.code }}</span></td>
+                                    <td>{{ policy.title }}</td>
+                                    <td>
+                                        {% if policy.has_qcs_original %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_cathena_adapted %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_qcs_original and policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-complete">Complete</span>
+                                        {% elif policy.has_qcs_original %}
+                                        <span class="status-badge status-badge-partial">QCS Only</span>
+                                        {% elif policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-partial">Cathena Only</span>
+                                        {% else %}
+                                        <span class="status-badge status-badge-missing">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if policy.has_qcs_original %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=qcs" class="btn btn-sm btn-outline-primary" title="View QCS Original">
+                                                <i class="fas fa-eye"></i> QCS
+                                            </a>
+                                            {% endif %}
+                                            {% if policy.has_cathena_adapted %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=cathena" class="btn btn-sm btn-outline-info" title="View Cathena Adapted">
+                                                <i class="fas fa-eye"></i> Cathena
+                                            </a>
+                                            {% endif %}
+                                            {% if not policy.has_cathena_adapted and policy.has_qcs_original %}
+                                            <button class="btn btn-sm btn-outline-success" title="Create Adapted Version">
+                                                <i class="fas fa-plus"></i> Create
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Care Management Policies -->
+                    <div class="category-header">Care Management Policies</div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped policy-table">
+                            <thead>
+                                <tr>
+                                    <th>Policy Code</th>
+                                    <th>Policy Title</th>
+                                    <th>QCS Original</th>
+                                    <th>Cathena Adapted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in care_management_policies %}
+                                <tr>
+                                    <td><span class="policy-code">{{ policy.code }}</span></td>
+                                    <td>{{ policy.title }}</td>
+                                    <td>
+                                        {% if policy.has_qcs_original %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_cathena_adapted %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_qcs_original and policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-complete">Complete</span>
+                                        {% elif policy.has_qcs_original %}
+                                        <span class="status-badge status-badge-partial">QCS Only</span>
+                                        {% elif policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-partial">Cathena Only</span>
+                                        {% else %}
+                                        <span class="status-badge status-badge-missing">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if policy.has_qcs_original %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=qcs" class="btn btn-sm btn-outline-primary" title="View QCS Original">
+                                                <i class="fas fa-eye"></i> QCS
+                                            </a>
+                                            {% endif %}
+                                            {% if policy.has_cathena_adapted %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=cathena" class="btn btn-sm btn-outline-info" title="View Cathena Adapted">
+                                                <i class="fas fa-eye"></i> Cathena
+                                            </a>
+                                            {% endif %}
+                                            {% if not policy.has_cathena_adapted and policy.has_qcs_original %}
+                                            <button class="btn btn-sm btn-outline-success" title="Create Adapted Version">
+                                                <i class="fas fa-plus"></i> Create
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Medication Policies -->
+                    <div class="category-header">Medication Policies</div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped policy-table">
+                            <thead>
+                                <tr>
+                                    <th>Policy Code</th>
+                                    <th>Policy Title</th>
+                                    <th>QCS Original</th>
+                                    <th>Cathena Adapted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in medication_policies %}
+                                <tr>
+                                    <td><span class="policy-code">{{ policy.code }}</span></td>
+                                    <td>{{ policy.title }}</td>
+                                    <td>
+                                        {% if policy.has_qcs_original %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_cathena_adapted %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Available</span>
+                                        {% else %}
+                                        <span class="text-danger"><i class="fas fa-times-circle"></i> Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if policy.has_qcs_original and policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-complete">Complete</span>
+                                        {% elif policy.has_qcs_original %}
+                                        <span class="status-badge status-badge-partial">QCS Only</span>
+                                        {% elif policy.has_cathena_adapted %}
+                                        <span class="status-badge status-badge-partial">Cathena Only</span>
+                                        {% else %}
+                                        <span class="status-badge status-badge-missing">Missing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if policy.has_qcs_original %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=qcs" class="btn btn-sm btn-outline-primary" title="View QCS Original">
+                                                <i class="fas fa-eye"></i> QCS
+                                            </a>
+                                            {% endif %}
+                                            {% if policy.has_cathena_adapted %}
+                                            <a href="/policy/{{ policy.code|urlencode }}?source=cathena" class="btn btn-sm btn-outline-info" title="View Cathena Adapted">
+                                                <i class="fas fa-eye"></i> Cathena
+                                            </a>
+                                            {% endif %}
+                                            {% if not policy.has_cathena_adapted and policy.has_qcs_original %}
+                                            <button class="btn btn-sm btn-outline-success" title="Create Adapted Version">
+                                                <i class="fas fa-plus"></i> Create
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Policy search functionality
+        const searchInput = document.getElementById('policySearch');
+        const policyRows = document.querySelectorAll('tbody tr');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            policyRows.forEach(row => {
+                const policyCode = row.querySelector('td:first-child').textContent.toLowerCase();
+                const policyTitle = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                if (policyCode.includes(searchTerm) || policyTitle.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Filter by category
+        const categoryFilter = document.getElementById('categoryFilter');
+        const categoryHeaders = document.querySelectorAll('.category-header');
+        const categoryTables = document.querySelectorAll('.table-responsive');
+        
+        categoryFilter.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            
+            if (selectedCategory === 'all') {
+                categoryHeaders.forEach(header => { header.style.display = ''; });
+                categoryTables.forEach(table => { table.style.display = ''; });
+            } else {
+                categoryHeaders.forEach((header, index) => {
+                    if (header.textContent.includes(selectedCategory)) {
+                        header.style.display = '';
+                        categoryTables[index].style.display = '';
+                    } else {
+                        header.style.display = 'none';
+                        categoryTables[index].style.display = 'none';
+                    }
+                });
+            }
+        });
+        
+        // Show missing only
+        const showMissingOnlyBtn = document.getElementById('showMissingOnly');
+        
+        showMissingOnlyBtn.addEventListener('click', function() {
+            policyRows.forEach(row => {
+                const status = row.querySelector('td:nth-child(5) .status-badge').textContent;
+                
+                if (status === 'Missing' || status === 'QCS Only') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Show complete only
+        const showCompleteOnlyBtn = document.getElementById('showCompleteOnly');
+        
+        showCompleteOnlyBtn.addEventListener('click', function() {
+            policyRows.forEach(row => {
+                const status = row.querySelector('td:nth-child(5) .status-badge').textContent;
+                
+                if (status === 'Complete') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

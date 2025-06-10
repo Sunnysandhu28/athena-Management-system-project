@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Regulations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">Financial Regulations</h1>
+            <p class="lead">
+                Access and manage financial regulations including Finance Acts, UK Accounting Standards, and Company Regulations.
+            </p>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <p>
+                        <small class="text-muted">Last updated: {{ last_update.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('financial.update_regulations') }}" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Update Regulations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <form action="{{ url_for('financial.search') }}" method="get" class="form-inline d-flex">
+                <input type="text" name="query" class="form-control flex-grow-1 mr-2" placeholder="Search financial regulations..." required>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-pound-sign"></i> Finance Acts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Finance Acts from UK legislation including Finance Act 2021 and Finance Act 2023 (2).</p>
+                    
+                    {% if finance_acts %}
+                        <ul class="list-group mb-3">
+                            {% for act in finance_acts[:5] %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('financial.view_regulation', regulation_id=act.id) }}">
+                                        {{ act.title }}
+                                    </a>
+                                    {% if regulation_counts[act.id] > 0 %}
+                                        <span class="badge bg-primary rounded-pill">{{ regulation_counts[act.id] }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        {% if finance_acts|length > 5 %}
+                            <a href="{{ url_for('financial.list_by_type', regulation_type='finance-acts') }}" class="btn btn-sm btn-outline-primary">
+                                View all {{ finance_acts|length }} Finance Acts
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No Finance Acts available. Click "Update Regulations" to fetch them.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-invoice-dollar"></i> UK Accounting Standards
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">UK Accounting Standards including FRS 102 and other reporting standards.</p>
+                    
+                    {% if accounting_standards %}
+                        <ul class="list-group mb-3">
+                            {% for standard in accounting_standards[:5] %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('financial.view_regulation', regulation_id=standard.id) }}">
+                                        {{ standard.title }}
+                                    </a>
+                                    {% if regulation_counts[standard.id] > 0 %}
+                                        <span class="badge bg-success rounded-pill">{{ regulation_counts[standard.id] }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        {% if accounting_standards|length > 5 %}
+                            <a href="{{ url_for('financial.list_by_type', regulation_type='accounting-standards') }}" class="btn btn-sm btn-outline-success">
+                                View all {{ accounting_standards|length }} Standards
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No Accounting Standards available. Click "Update Regulations" to fetch them.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building"></i> Company Regulations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">UK Company regulations from Companies House covering company accounts and reporting.</p>
+                    
+                    {% if company_regulations %}
+                        <ul class="list-group mb-3">
+                            {% for regulation in company_regulations[:5] %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('financial.view_regulation', regulation_id=regulation.id) }}">
+                                        {{ regulation.title }}
+                                    </a>
+                                    {% if regulation_counts[regulation.id] > 0 %}
+                                        <span class="badge bg-info rounded-pill">{{ regulation_counts[regulation.id] }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        {% if company_regulations|length > 5 %}
+                            <a href="{{ url_for('financial.list_by_type', regulation_type='company-regulations') }}" class="btn btn-sm btn-outline-info">
+                                View all {{ company_regulations|length }} Regulations
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No Company Regulations available. Click "Update Regulations" to fetch them.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Financial Regulation Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h3>{{ finance_acts|length }}</h3>
+                            <p>Finance Act Items</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3>{{ accounting_standards|length }}</h3>
+                            <p>Accounting Standards</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3>{{ company_regulations|length }}</h3>
+                            <p>Company Regulations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

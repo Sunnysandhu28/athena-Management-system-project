@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Crawl CQC Site{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_ai.policy_learning') }}">Policy Learning</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crawl CQC Site</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Crawl CQC Site</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        This tool will crawl the CQC website to extract resource metadata and structure.
+                        The collected data will be used to build a comprehensive site map for better policy generation.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> CQC site crawling does not require login credentials as the site is publicly accessible.
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        <div class="alert alert-warning">
+                            <strong>Warning:</strong> This process may take several minutes to complete.
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-spider mr-1"></i> Start CQC Crawl
+                        </button>
+                        <a href="{{ url_for('policy_ai.policy_learning') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted">
+                        <small>
+                            <i class="fas fa-info-circle mr-1"></i> 
+                            The crawling process will collect metadata from CQC's sitemap and resource pages.
+                            You will be redirected to the Policy Learning dashboard when complete.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

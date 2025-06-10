@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Page - Cathena Policy Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 30px;
+        }
+        .footer {
+            padding-top: 20px;
+            color: #777;
+            border-top: 1px solid #e5e5e5;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header d-flex justify-content-between align-items-center">
+            <h3>Cathena Policy Management System</h3>
+            <div>
+                <span class="me-2">Welcome, {{ g.user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="alert alert-success">
+            <h4>Protected Content</h4>
+            <p>This page is only accessible to logged-in users. You are currently logged in as <strong>{{ g.user.username }}</strong>.</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Your User Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>User ID:</th>
+                        <td>{{ g.user.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Username:</th>
+                        <td>{{ g.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ g.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Admin Status:</th>
+                        <td>
+                            {% if g.user.is_admin %}
+                                <span class="badge bg-primary">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Standard User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Last Login:</th>
+                        <td>{{ g.user.last_login }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+            {% if g.user.is_admin %}
+                <a href="{{ url_for('admin') }}" class="btn btn-outline-primary">Admin Panel</a>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 Cathena Policy Management System</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

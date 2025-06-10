@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis: {{ policy.title }} | Cathena Policy System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/policies">Policies</a></li>
+            {% if policy.category %}
+            <li class="breadcrumb-item"><a href="/category/{{ policy.category_id }}">{{ policy.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item"><a href="/policy/{{ policy.id }}">{{ policy.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Analysis</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">AI Policy Analysis</h1>
+        <div>
+            <span class="badge bg-primary">{{ policy.code }}</span>
+            <span class="badge bg-info">AI Enhanced</span>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ policy.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="me-4">
+                            <div class="progress-circle" style="--percentage: {{ analysis.compliance_score }}; --size: 120px;">
+                                <div class="progress-circle-inner">
+                                    <div class="progress-circle-number">{{ analysis.compliance_score }}</div>
+                                    <div class="progress-circle-text">Score</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Policy Compliance Analysis</h4>
+                            <p class="lead">This policy has been analyzed using our AI-powered compliance engine.</p>
+                            <p class="mb-0">The analysis considers regulatory requirements, best practices, and industry standards.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Key Findings</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for finding in analysis.key_findings %}
+                        <li class="list-group-item d-flex">
+                            <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                            <span>{{ finding }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Improvement Suggestions</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for suggestion in analysis.improvement_suggestions %}
+                        <li class="list-group-item d-flex">
+                            <i class="bi bi-arrow-up-circle-fill text-warning me-2 mt-1"></i>
+                            <span>{{ suggestion }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Legislative Compliance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Legislation</th>
+                                    <th>Compliance Level</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in analysis.legislative_compliance %}
+                                <tr>
+                                    <td>{{ item.legislation }}</td>
+                                    <td>
+                                        {% if item.compliance_level == 'Full' %}
+                                        <span class="badge bg-success">{{ item.compliance_level }}</span>
+                                        {% elif item.compliance_level == 'High' %}
+                                        <span class="badge bg-primary">{{ item.compliance_level }}</span>
+                                        {% elif item.compliance_level == 'Moderate' %}
+                                        <span class="badge bg-warning">{{ item.compliance_level }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ item.compliance_level }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.notes }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="/policy/{{ policy.id }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Policy
+        </a>
+        <a href="/policy/{{ policy.id }}/download" class="btn btn-success">
+            <i class="bi bi-download"></i> Download Policy
+        </a>
+    </div>
+</div>
+
+<style>
+/* Custom progress circle styling */
+.progress-circle {
+    position: relative;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: conic-gradient(#0d6efd calc(var(--percentage) * 1%), #e9ecef 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-circle-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: calc(var(--size) - 15px);
+    height: calc(var(--size) - 15px);
+    border-radius: 50%;
+    background: white;
+}
+
+.progress-circle-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.progress-circle-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}

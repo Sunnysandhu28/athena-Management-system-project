@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cathena Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .widget-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .widget-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .widget-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .widget-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .policies-widget .widget-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .ml-widget .widget-icon {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .compliance-widget .widget-icon {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .illness-widget .widget-icon {
+            background: linear-gradient(135deg, #ff9a8b 0%, #fecfef 100%);
+            color: white;
+        }
+        
+        .medication-widget .widget-icon {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: white;
+        }
+        
+        .upload-widget .widget-icon {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9fb;
+        }
+        
+        .ml-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .ml-stat-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 20px;
+            margin-right: 0.5rem;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            z-index: 1000;
+        }
+        
+        .compliance-score {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        
+        .insight-item {
+            background: #e8f4fd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-tachometer-alt me-3"></i>Management Dashboard</h1>
+                    <p class="mb-0">Access Level: {{ user_access }} | Welcome to Cathena Policy Management System</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light btn-lg">
+                        <i class="fas fa-user-circle me-2"></i>Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation Pills -->
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="#dashboard" data-bs-toggle="pill">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </li>
+            {% if user_access in ['MA', 'RA', 'HO'] %}
+            <li class="nav-item">
+                <a class="nav-link" href="/ma/sites-management">
+                    <i class="fas fa-building me-2"></i>Sites Management
+                </a>
+            </li>
+            {% endif %}
+            {% if user_access in ['MA', 'RA'] %}
+            <li class="nav-item">
+                <a class="nav-link" href="/ma/policy-formatting">
+                    <i class="fas fa-edit me-2"></i>Policy Formatting
+                </a>
+            </li>
+            {% endif %}
+            {% if user_access in ['MA', 'RA', 'HO'] %}
+            <li class="nav-item">
+                <a class="nav-link" href="/ma/ml-communication">
+                    <i class="fas fa-robot me-2"></i>ML AI Chat
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="row">
+            <!-- Policies Widget -->
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card policies-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ widgets.policies.title }}</h5>
+                            <small class="text-muted">Policy Management System</small>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="metric-row">
+                                <span>Total Policies:</span>
+                                <span class="metric-value">{{ widgets.policies.total_policies }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-row">
+                                <span>Compliance Score:</span>
+                                <span class="compliance-score">{{ widgets.policies.compliance_score }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: {{ widgets.policies.compliance_score }}%"></div>
+                    </div>
+                    <small class="text-muted">Last Updated: {{ widgets.policies.last_updated }}</small>
+                </div>
+            </div>
+
+            <!-- ML Analytics Widget -->
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card ml-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">ML Analytics & Learning</h5>
+                            <small class="text-muted">AI System Performance</small>
+                        </div>
+                    </div>
+                    <div class="ml-stats-grid">
+                        <div class="ml-stat-item">
+                            <strong>{{ widgets.ml_analytics.total_learning_materials }}</strong>
+                            <div><small>Learning Materials</small></div>
+                        </div>
+                        <div class="ml-stat-item">
+                            <strong>{{ widgets.ml_analytics.system_improvements }}</strong>
+                            <div><small>System Improvements</small></div>
+                        </div>
+                        <div class="ml-stat-item">
+                            <strong>{{ widgets.ml_analytics.learning_efficiency }}%</strong>
+                            <div><small>Learning Efficiency</small></div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Recent Enhancements:</h6>
+                        {% for enhancement in widgets.ml_analytics.recent_enhancements %}
+                        <div class="insight-item">{{ enhancement }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ML Upload Widget -->
+            {% if user_access in ['MA', 'RA', 'HO'] %}
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card upload-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">ML Learning Material Upload</h5>
+                            <small class="text-muted">Enhance AI Knowledge Base</small>
+                        </div>
+                    </div>
+                    <form id="mlUploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Learning Category:</label>
+                            <select class="form-select" name="ml_category" required>
+                                <option value="">Select category...</option>
+                                <option value="books">1. Books</option>
+                                <option value="research_papers">2. Research Papers</option>
+                                <option value="illnesses">3. Illnesses</option>
+                                <option value="medicine">4. Medicine</option>
+                                <option value="mathematics">5. Mathematics</option>
+                                <option value="education">6. Education</option>
+                                <option value="computer_it_software">7. Computer, IT and Software Design</option>
+                                <option value="policies">8. Policies</option>
+                                <option value="other">9. Other</option>
+                            </select>
+                        </div>
+                        <div class="upload-area">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <p>Drag and drop files here or click to browse</p>
+                            <input type="file" name="ml_files" multiple class="d-none" id="fileInput">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                Choose Files
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-upload me-2"></i>Upload for ML Learning
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Regulatory Compliance Widget -->
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card compliance-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Regulatory Compliance</h5>
+                            <small class="text-muted">Report Writing & Analysis</small>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="metric-row">
+                                <span>CQC Compliance:</span>
+                                <span class="metric-value">{{ widgets.regulatory_compliance.cqc_compliance }}%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>GDPR Compliance:</span>
+                                <span class="metric-value">{{ widgets.regulatory_compliance.gdpr_compliance }}%</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-row">
+                                <span>Recent Reports:</span>
+                                <span class="metric-value">{{ widgets.regulatory_compliance.recent_reports }}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Pending Actions:</span>
+                                <span class="metric-value">{{ widgets.regulatory_compliance.pending_actions }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-primary w-100 mt-3">
+                        <i class="fas fa-plus me-2"></i>Create New Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Illnesses Widget -->
+            {% if 'illnesses_widget' in widgets %}
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card illness-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">NHS Illnesses Database</h5>
+                            <small class="text-muted">Medical Conditions Reference</small>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <span>Total Conditions:</span>
+                        <span class="metric-value">{{ widgets.illnesses.total_conditions }}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span>Care Plans Available:</span>
+                        <span class="metric-value">{{ widgets.illnesses.care_plans_available }}</span>
+                    </div>
+                    <h6 class="mt-3">Common Conditions:</h6>
+                    {% for condition in widgets.illnesses.common_conditions %}
+                    <div class="insight-item">{{ condition }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Medication Widget -->
+            {% if 'medication_widget' in widgets %}
+            <div class="col-lg-6 col-md-12">
+                <div class="widget-card medication-widget">
+                    <div class="widget-header">
+                        <div class="widget-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">NHS Medication Database</h5>
+                            <small class="text-muted">Prescribed Medications Reference</small>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <span>Total Medications:</span>
+                        <span class="metric-value">{{ widgets.medication.total_medications }}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span>Drug Interactions Tracked:</span>
+                        <span class="metric-value">{{ widgets.medication.drug_interactions_tracked }}</span>
+                    </div>
+                    <h6 class="mt-3">Common Medications:</h6>
+                    {% for medication in widgets.medication.common_medications %}
+                    <div class="insight-item">{{ medication }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ML AI Chat Button (for authorized users only) -->
+    {% if user_access in ['MA', 'RA', 'HO'] %}
+    <button class="chat-button" onclick="window.location.href='/ma/ml-communication'">
+        <i class="fas fa-robot"></i>
+    </button>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ML Upload Form Handler
+        document.getElementById('mlUploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const files = document.getElementById('fileInput').files;
+            
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+            
+            // Add all files to form data
+            for (let i = 0; i < files.length; i++) {
+                formData.append('ml_files', files[i]);
+            }
+            
+            fetch('/ma/upload-ml-material', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Successfully uploaded ${data.files_processed} files. Generated ${data.insights_generated} new insights.`);
+                    this.reset();
+                    location.reload(); // Refresh to show updated stats
+                } else {
+                    alert('Upload failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Upload failed. Please try again.');
+            });
+        });
+
+        // File input change handler
+        document.getElementById('fileInput').addEventListener('change', function() {
+            const files = this.files;
+            const uploadArea = document.querySelector('.upload-area p');
+            
+            if (files.length > 0) {
+                uploadArea.textContent = `${files.length} file(s) selected`;
+            } else {
+                uploadArea.textContent = 'Drag and drop files here or click to browse';
+            }
+        });
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#667eea';
+            this.style.background = '#f8f9fb';
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#dee2e6';
+            this.style.background = 'white';
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#dee2e6';
+            this.style.background = 'white';
+            
+            const files = e.dataTransfer.files;
+            document.getElementById('fileInput').files = files;
+            
+            const uploadText = this.querySelector('p');
+            uploadText.textContent = `${files.length} file(s) selected`;
+        });
+    </script>
+</body>
+</html>

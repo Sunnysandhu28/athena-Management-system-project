@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Replication Errors{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Policy Replication</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Errors</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Policy Replication Errors</h1>
+            <p class="text-muted">This page shows all errors encountered during policy replication.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if errors|length > 0 %}
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resolveAllModal">
+                    <i class="bi bi-check-circle"></i> Resolve All
+                </button>
+            {% endif %}
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Error Summary Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i> 
+                Error Summary
+                <span class="badge bg-light text-dark float-end">{{ errors|length }} Errors</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if errors|length > 0 %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ error_stats.critical }}</h3>
+                                <p class="mb-0 text-danger">Critical</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ error_stats.error }}</h3>
+                                <p class="mb-0 text-warning">Errors</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ error_stats.warning }}</h3>
+                                <p class="mb-0 text-info">Warnings</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <p class="mb-0">No errors have been detected during policy replication!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Errors List -->
+    {% if errors|length > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Error Details</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Policy</th>
+                                <th>Error Type</th>
+                                <th>Severity</th>
+                                <th>Message</th>
+                                <th>Detected</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for error in errors %}
+                                <tr>
+                                    <td>
+                                        {% if error.policy %}
+                                            <a href="{{ url_for('policy_replicator.view_job', job_id=error.policy.replication_job_id) if error.policy.replication_job_id else '#' }}" class="text-decoration-none">
+                                                {{ error.policy.qcs_name or error.policy.title or 'Unknown Policy' }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ error.error_type }}</td>
+                                    <td>
+                                        {% if error.severity == 'critical' %}
+                                            <span class="badge bg-danger">{{ error.severity }}</span>
+                                        {% elif error.severity == 'error' %}
+                                            <span class="badge bg-warning text-dark">{{ error.severity }}</span>
+                                        {% elif error.severity == 'warning' %}
+                                            <span class="badge bg-info">{{ error.severity }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ error.severity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ error.error_message }}</td>
+                                    <td>{{ error.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#errorDetails{{ error.id }}">
+                                            Details
+                                        </button>
+                                        <form method="post" action="/replication/resolve-error/{{ error.id }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                Resolve
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Error Details Modal -->
+                                <div class="modal fade" id="errorDetails{{ error.id }}" tabindex="-1" aria-labelledby="errorDetailsLabel{{ error.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="errorDetailsLabel{{ error.id }}">Error Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <dl>
+                                                    <dt>Policy</dt>
+                                                    <dd>
+                                                        {% if error.policy %}
+                                                            {{ error.policy.qcs_name or error.policy.title or 'Unknown Policy' }}
+                                                        {% else %}
+                                                            <span class="text-muted">N/A</span>
+                                                        {% endif %}
+                                                    </dd>
+                                                    
+                                                    <dt>Error Type</dt>
+                                                    <dd>{{ error.error_type }}</dd>
+                                                    
+                                                    <dt>Severity</dt>
+                                                    <dd>
+                                                        {% if error.severity == 'critical' %}
+                                                            <span class="badge bg-danger">{{ error.severity }}</span>
+                                                        {% elif error.severity == 'error' %}
+                                                            <span class="badge bg-warning text-dark">{{ error.severity }}</span>
+                                                        {% elif error.severity == 'warning' %}
+                                                            <span class="badge bg-info">{{ error.severity }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ error.severity }}</span>
+                                                        {% endif %}
+                                                    </dd>
+                                                    
+                                                    <dt>Error Message</dt>
+                                                    <dd>{{ error.error_message }}</dd>
+                                                    
+                                                    <dt>Status</dt>
+                                                    <dd>
+                                                        {% if error.status == 'open' %}
+                                                            <span class="badge bg-danger">{{ error.status }}</span>
+                                                        {% elif error.status == 'resolved' %}
+                                                            <span class="badge bg-success">{{ error.status }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ error.status }}</span>
+                                                        {% endif %}
+                                                    </dd>
+                                                    
+                                                    <dt>Detected At</dt>
+                                                    <dd>{{ error.detected_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                                    
+                                                    {% if error.resolved_at %}
+                                                        <dt>Resolved At</dt>
+                                                        <dd>{{ error.resolved_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                                        
+                                                        <dt>Resolved By</dt>
+                                                        <dd>
+                                                            {% if error.resolver %}
+                                                                {{ error.resolver.username }}
+                                                            {% else %}
+                                                                <span class="text-muted">System</span>
+                                                            {% endif %}
+                                                        </dd>
+                                                    {% endif %}
+                                                    
+                                                    {% if error.details %}
+                                                        <dt>Details</dt>
+                                                        <dd>
+                                                            <pre class="bg-light p-3 rounded"><code>{{ error.details }}</code></pre>
+                                                        </dd>
+                                                    {% endif %}
+                                                </dl>
+                                                
+                                                {% if error.policy %}
+                                                    <hr>
+                                                    <h6>Policy Details</h6>
+                                                    <dl>
+                                                        <dt>Policy ID</dt>
+                                                        <dd>{{ error.policy.id }}</dd>
+                                                        
+                                                        <dt>Status</dt>
+                                                        <dd>
+                                                            {% if error.policy.status == 'replicated' %}
+                                                                <span class="badge bg-success">{{ error.policy.status }}</span>
+                                                            {% elif error.policy.status == 'pending' %}
+                                                                <span class="badge bg-info">{{ error.policy.status }}</span>
+                                                            {% elif error.policy.status == 'formatted' %}
+                                                                <span class="badge bg-primary">{{ error.policy.status }}</span>
+                                                            {% else %}
+                                                                <span class="badge bg-warning text-dark">{{ error.policy.status }}</span>
+                                                            {% endif %}
+                                                        </dd>
+                                                        
+                                                        {% if error.policy.file_path %}
+                                                            <dt>File Path</dt>
+                                                            <dd>{{ error.policy.file_path }}</dd>
+                                                        {% endif %}
+                                                        
+                                                        {% if error.policy.qcs_url %}
+                                                            <dt>QCS URL</dt>
+                                                            <dd>
+                                                                <a href="{{ error.policy.qcs_url }}" target="_blank">{{ error.policy.qcs_url }}</a>
+                                                            </dd>
+                                                        {% endif %}
+                                                    </dl>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <form method="post" action="/replication/resolve-error/{{ error.id }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="bi bi-check-circle"></i> Resolve Error
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resolve All Modal -->
+        <div class="modal fade" id="resolveAllModal" tabindex="-1" aria-labelledby="resolveAllModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="resolveAllModalLabel">Resolve All Errors</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to mark all {{ errors|length }} errors as resolved?</p>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Warning:</strong> This action cannot be undone. 
+                            Resolving errors without fixing the underlying issues may lead to problems in the future.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="post" action="/replication/resolve-all-errors">
+                            <button type="submit" class="btn btn-danger">Resolve All Errors</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

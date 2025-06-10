@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}ML Analytics Dashboard{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .metrics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .metrics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .metrics-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    
+    .progress-bar {
+        height: 20px;
+        border-radius: 10px;
+    }
+    
+    .chart-container {
+        height: 300px;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>ML Analytics Dashboard</h1>
+            <p class="lead">Track machine learning progress and system improvements</p>
+        </div>
+    </div>
+    
+    <!-- Key Metrics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-4">
+            <div class="card metrics-card h-100 bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Current Learning Score</h5>
+                    <p class="metrics-value">{{ current_score|default('0') }}%</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-light" role="progressbar" style="width: {{ current_score|default('0') }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card metrics-card h-100 bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Documents Analysed</h5>
+                    <p class="metrics-value">{{ documents_analyzed|default('0') }}</p>
+                    <p class="card-text mt-3">Total documents processed by the system</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card metrics-card h-100 bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Insights Generated</h5>
+                    <p class="metrics-value">{{ insights_generated|default('0') }}</p>
+                    <p class="card-text mt-3">Total insights extracted from documents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card metrics-card h-100 bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Learning Efficiency</h5>
+                    <p class="metrics-value">{{ learning_efficiency|default('0') }}%</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-dark" role="progressbar" style="width: {{ learning_efficiency|default('0') }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learning Progress Chart -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card metrics-card">
+                <div class="card-header">
+                    <h5>ML Learning Progress Over Time</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="learningProgressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Regulatory Areas Expertise -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card metrics-card h-100">
+                <div class="card-header">
+                    <h5>Regulatory Areas Expertise</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="expertiseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card metrics-card h-100">
+                <div class="card-header">
+                    <h5>Top Regulatory Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% if insights %}
+                            {% for insight in insights %}
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ insight.title }}</h6>
+                                        <small>{{ insight.date }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ insight.description }}</p>
+                                    <small class="text-muted">{{ insight.area }}</small>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                No insights available yet. Analyse more documents to generate insights.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Learning Activities -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card metrics-card">
+                <div class="card-header">
+                    <h5>Recent Learning Activities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Activity Type</th>
+                                    <th>Document</th>
+                                    <th>Learning Score</th>
+                                    <th>Improvement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if activities %}
+                                    {% for activity in activities %}
+                                        <tr>
+                                            <td>{{ activity.timestamp }}</td>
+                                            <td>{{ activity.type }}</td>
+                                            <td>{{ activity.document }}</td>
+                                            <td>{{ activity.score }}%</td>
+                                            <td>
+                                                {% if activity.improvement > 0 %}
+                                                    <span class="text-success">+{{ activity.improvement }}%</span>
+                                                {% elif activity.improvement < 0 %}
+                                                    <span class="text-danger">{{ activity.improvement }}%</span>
+                                                {% else %}
+                                                    <span class="text-muted">0%</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            No learning activities recorded yet.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sample data for charts - will be replaced with real data
+    document.addEventListener('DOMContentLoaded', function() {
+        // Learning Progress Chart
+        const progressCtx = document.getElementById('learningProgressChart').getContext('2d');
+        const progressLabels = {{ progress_labels|tojson|safe if progress_labels else '[]'|safe }};
+        const progressData = {{ progress_data|tojson|safe if progress_data else '[]'|safe }};
+        
+        new Chart(progressCtx, {
+            type: 'line',
+            data: {
+                labels: progressLabels.length > 0 ? progressLabels : ['Initial', 'Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current'],
+                datasets: [{
+                    label: 'Learning Score (%)',
+                    data: progressData.length > 0 ? progressData : [10, 25, 40, 60, 75, {{ current_score|default('80') }}],
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Learning Score (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time Period'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Expertise Chart
+        const expertiseCtx = document.getElementById('expertiseChart').getContext('2d');
+        const expertiseData = {{ expertise_data|tojson|safe if expertise_data else '[]'|safe }};
+        
+        new Chart(expertiseCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Governance', 'Staffing', 'Training', 'Medication', 'Infection Control', 'Environment'],
+                datasets: [{
+                    label: 'Current Expertise Level',
+                    data: expertiseData.length > 0 ? expertiseData : [85, 70, 65, 80, 75, 60],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

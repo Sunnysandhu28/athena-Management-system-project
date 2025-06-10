@@ -1,0 +1,705 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit: {{ policy.title }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/policy_editor.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .metadata-bar {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('formatted_policies.list_policies') }}">Policies</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('formatted_policies.list_policies') }}">{{ policy.category|replace('_', ' ') }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit: {{ policy.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col d-flex justify-content-between">
+            <div>
+                <a href="{{ url_for('formatted_policies.view_policy', code=policy.code) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-eye"></i> View Policy
+                </a>
+            </div>
+            <div>
+                <button id="saveButton" class="btn btn-primary me-2">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i> Options
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" id="previewButton"><i class="fas fa-eye"></i> Preview</a></li>
+                        <li><a class="dropdown-item" href="#" id="exportButton"><i class="fas fa-file-export"></i> Export</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="templateButton"><i class="fas fa-paint-brush"></i> Apply Template</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="metadata-bar">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="policyCode">Policy Code</label>
+                            <input type="text" class="form-control" id="policyCode" value="{{ policy.code }}">
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="policyTitle">Title</label>
+                            <input type="text" class="form-control" id="policyTitle" value="{{ policy.title }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="policyVersion">Version</label>
+                            <input type="text" class="form-control" id="policyVersion" value="{{ policy.version }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="policyCategory">Category</label>
+                            <select class="form-control" id="policyCategory">
+                                {% for category in [
+                                    "Administration",
+                                    "Care_Management",
+                                    "Health_Safety",
+                                    "Human_Resources",
+                                    "Medication_Management",
+                                    "Governance_Policies",
+                                    "Information_Technology",
+                                    "Clinical_Procedures",
+                                    "Customer_Rights",
+                                    "Professional_Development",
+                                    "Recruitment",
+                                    "Uncategorized"
+                                ] %}
+                                <option value="{{ category }}" {% if policy.category == category %}selected{% endif %}>
+                                    {{ category|replace('_', ' ') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3 sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Template Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mt-3">
+                        <label>Default Font Settings</label>
+                        <div class="row">
+                            <div class="col-7">
+                                <label for="defaultFont">Font Family</label>
+                                <select class="form-control" id="defaultFont">
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="Calibri, sans-serif">Calibri</option>
+                                    <option value="Georgia, serif">Georgia</option>
+                                    <option value="Verdana, sans-serif">Verdana</option>
+                                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label for="defaultFontSize">Size</label>
+                                <select class="form-control" id="defaultFontSize">
+                                    <option value="10">10pt</option>
+                                    <option value="11">11pt</option>
+                                    <option value="12" selected>12pt</option>
+                                    <option value="14">14pt</option>
+                                    <option value="16">16pt</option>
+                                    <option value="18">18pt</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label>Color Scheme</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="primaryColor">Primary</label>
+                                <input type="color" class="form-control" id="primaryColor" value="#044e8c">
+                            </div>
+                            <div class="col-6">
+                                <label for="secondaryColor">Secondary</label>
+                                <input type="color" class="form-control" id="secondaryColor" value="#6c757d">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label for="accentColor">Accent</label>
+                                <input type="color" class="form-control" id="accentColor" value="#28a745">
+                            </div>
+                            <div class="col-6">
+                                <label for="textColor">Text</label>
+                                <input type="color" class="form-control" id="textColor" value="#212529">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Components</h5>
+                </div>
+                <div class="card-body">
+                    <div class="components-list">
+                        <div class="component-group">
+                            <h6>Structure</h6>
+                            <div class="component-item" draggable="true" data-component="header">
+                                <i class="fas fa-heading"></i> Header
+                            </div>
+                            <div class="component-item" draggable="true" data-component="section">
+                                <i class="fas fa-paragraph"></i> Section
+                            </div>
+                            <div class="component-item" draggable="true" data-component="subsection">
+                                <i class="fas fa-indent"></i> Subsection
+                            </div>
+                            <div class="component-item" draggable="true" data-component="footer">
+                                <i class="fas fa-shoe-prints"></i> Footer
+                            </div>
+                        </div>
+                        
+                        <div class="component-group">
+                            <h6>Content</h6>
+                            <div class="component-item" draggable="true" data-component="paragraph">
+                                <i class="fas fa-paragraph"></i> Paragraph
+                            </div>
+                            <div class="component-item" draggable="true" data-component="bulletList">
+                                <i class="fas fa-list-ul"></i> Bullet List
+                            </div>
+                            <div class="component-item" draggable="true" data-component="numberedList">
+                                <i class="fas fa-list-ol"></i> Numbered List
+                            </div>
+                            <div class="component-item" draggable="true" data-component="table">
+                                <i class="fas fa-table"></i> Table
+                            </div>
+                        </div>
+                        
+                        <div class="component-group">
+                            <h6>QCS Elements</h6>
+                            <div class="component-item" draggable="true" data-component="regulationReference">
+                                <i class="fas fa-gavel"></i> Regulation Reference
+                            </div>
+                            <div class="component-item" draggable="true" data-component="evidenceBase">
+                                <i class="fas fa-book"></i> Evidence Base
+                            </div>
+                            <div class="component-item" draggable="true" data-component="procedureSteps">
+                                <i class="fas fa-tasks"></i> Procedure Steps
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9 editor-main">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Policy Editor</h5>
+                    <div class="editor-tools">
+                        <div class="form-check form-switch d-inline-block me-2">
+                            <input class="form-check-input" type="checkbox" id="markdownToggle">
+                            <label class="form-check-label" for="markdownToggle">Markdown Mode</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="editor-toolbar border-bottom pb-2 mb-3">
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-secondary" data-command="undo">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="redo">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-secondary" data-command="bold">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="italic">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="underline">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-secondary" data-command="justifyLeft">
+                                <i class="fas fa-align-left"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="justifyCenter">
+                                <i class="fas fa-align-center"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="justifyRight">
+                                <i class="fas fa-align-right"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="justifyFull">
+                                <i class="fas fa-align-justify"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-heading"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" data-command="formatBlock" data-value="h1">Heading 1</a></li>
+                                <li><a class="dropdown-item" href="#" data-command="formatBlock" data-value="h2">Heading 2</a></li>
+                                <li><a class="dropdown-item" href="#" data-command="formatBlock" data-value="h3">Heading 3</a></li>
+                                <li><a class="dropdown-item" href="#" data-command="formatBlock" data-value="h4">Heading 4</a></li>
+                                <li><a class="dropdown-item" href="#" data-command="formatBlock" data-value="p">Paragraph</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="btn-group me-2">
+                            <button class="btn btn-sm btn-outline-secondary" data-command="insertUnorderedList">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="insertOrderedList">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" data-command="createLink">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="insertImage">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" data-command="insertTable">
+                                <i class="fas fa-table"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="policyEditor" class="policy-editor-content">{{ content|safe }}</div>
+                    <textarea id="markdownEditor" class="form-control" style="display: none; height: 600px;">{{ content }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Policy Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="policyPreview" class="policy-preview"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Export Options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <a href="{{ url_for('formatted_policies.export_policy', code=policy.code) }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-markdown"></i> Export as Markdown
+                    </a>
+                    <button type="button" class="list-group-item list-group-item-action" id="exportPdf">
+                        <i class="fas fa-file-pdf"></i> Export as PDF
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action" id="exportWord">
+                        <i class="fas fa-file-word"></i> Export as Word Document
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template Modal -->
+<div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="templateModalLabel">Apply Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <button class="nav-link active" id="v-pills-standard-tab" data-bs-toggle="pill" data-bs-target="#v-pills-standard" type="button" role="tab">Standard Templates</button>
+                            <button class="nav-link" id="v-pills-custom-tab" data-bs-toggle="pill" data-bs-target="#v-pills-custom" type="button" role="tab">Custom Templates</button>
+                            <button class="nav-link" id="v-pills-recent-tab" data-bs-toggle="pill" data-bs-target="#v-pills-recent" type="button" role="tab">Recently Used</button>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content" id="v-pills-tabContent">
+                            <div class="tab-pane fade show active" id="v-pills-standard" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card template-card">
+                                            <img src="{{ url_for('static', filename='images/template-thumbnails/standard.png') }}" class="card-img-top" alt="Standard Template">
+                                            <div class="card-body">
+                                                <h6 class="card-title">QCS Standard</h6>
+                                                <button class="btn btn-sm btn-primary apply-template" data-template="qcs-standard">Apply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card template-card">
+                                            <img src="{{ url_for('static', filename='images/template-thumbnails/modern.png') }}" class="card-img-top" alt="Modern Template">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Modern</h6>
+                                                <button class="btn btn-sm btn-primary apply-template" data-template="modern">Apply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card template-card">
+                                            <img src="{{ url_for('static', filename='images/template-thumbnails/minimal.png') }}" class="card-img-top" alt="Minimal Template">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Minimal</h6>
+                                                <button class="btn btn-sm btn-primary apply-template" data-template="minimal">Apply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="v-pills-custom" role="tabpanel">
+                                <div class="alert alert-info">
+                                    No custom templates found. Create a custom template by saving the current template settings.
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="v-pills-recent" role="tabpanel">
+                                <div class="alert alert-info">
+                                    No recently used templates found.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Modal -->
+<div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tableModalLabel">Insert Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tableRows">Rows</label>
+                    <input type="number" class="form-control" id="tableRows" min="1" max="20" value="3">
+                </div>
+                <div class="form-group mt-3">
+                    <label for="tableColumns">Columns</label>
+                    <input type="number" class="form-control" id="tableColumns" min="1" max="10" value="3">
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="tableIncludeHeader" checked>
+                    <label class="form-check-label" for="tableIncludeHeader">
+                        Include header row
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="insertTableBtn">Insert Table</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/policy_editor.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle between rich text and markdown
+        const markdownToggle = document.getElementById('markdownToggle');
+        const policyEditor = document.getElementById('policyEditor');
+        const markdownEditor = document.getElementById('markdownEditor');
+        const editorToolbar = document.querySelector('.editor-toolbar');
+        
+        markdownToggle.addEventListener('change', function() {
+            if (this.checked) {
+                // Switch to markdown mode
+                policyEditor.style.display = 'none';
+                markdownEditor.style.display = 'block';
+                editorToolbar.style.display = 'none';
+                
+                // Convert HTML to markdown (simple version)
+                markdownEditor.value = policyEditor.innerHTML
+                    .replace(/<h1>(.*?)<\/h1>/g, '# $1\n\n')
+                    .replace(/<h2>(.*?)<\/h2>/g, '## $1\n\n')
+                    .replace(/<h3>(.*?)<\/h3>/g, '### $1\n\n')
+                    .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+                    .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+                    .replace(/<em>(.*?)<\/em>/g, '*$1*')
+                    .replace(/<ul>(.*?)<\/ul>/gs, function(match, p1) {
+                        return p1.replace(/<li>(.*?)<\/li>/g, '- $1\n');
+                    })
+                    .replace(/<ol>(.*?)<\/ol>/gs, function(match, p1) {
+                        let index = 1;
+                        return p1.replace(/<li>(.*?)<\/li>/g, function(match, p1) {
+                            return index++ + '. ' + p1 + '\n';
+                        });
+                    })
+                    .replace(/<br>/g, '\n')
+                    .replace(/<[^>]*>/g, '');
+            } else {
+                // Switch to rich text mode
+                policyEditor.style.display = 'block';
+                markdownEditor.style.display = 'none';
+                editorToolbar.style.display = 'flex';
+                
+                // Convert markdown to HTML (simple version)
+                let html = markdownEditor.value
+                    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+                    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+                    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^- (.*?)$/gm, '<li>$1</li>')
+                    .replace(/^(\d+)\. (.*?)$/gm, '<li>$2</li>')
+                    .replace(/<li>.*?<\/li>(\n<li>.*?<\/li>)+/gs, function(match) {
+                        if (match.includes('1. ')) {
+                            return '<ol>' + match + '</ol>';
+                        } else {
+                            return '<ul>' + match + '</ul>';
+                        }
+                    })
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                
+                html = '<p>' + html + '</p>';
+                html = html.replace(/<p><h([1-6])>/g, '<h$1>').replace(/<\/h([1-6])><\/p>/g, '</h$1>');
+                html = html.replace(/<p><ul>/g, '<ul>').replace(/<\/ul><\/p>/g, '</ul>');
+                html = html.replace(/<p><ol>/g, '<ol>').replace(/<\/ol><\/p>/g, '</ol>');
+                
+                policyEditor.innerHTML = html;
+            }
+        });
+        
+        // Save button
+        document.getElementById('saveButton').addEventListener('click', function() {
+            const code = document.getElementById('policyCode').value;
+            const title = document.getElementById('policyTitle').value;
+            const version = document.getElementById('policyVersion').value;
+            const category = document.getElementById('policyCategory').value;
+            
+            // Get content
+            let content;
+            if (markdownToggle.checked) {
+                content = markdownEditor.value;
+            } else {
+                content = policyEditor.innerHTML;
+            }
+            
+            // Save the policy
+            fetch('/api/policies/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    title: title,
+                    category: category,
+                    version: version,
+                    date: new Date().toISOString().split('T')[0],
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Policy saved successfully');
+                } else {
+                    alert('Error saving policy: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving policy: ' + error.message);
+            });
+        });
+        
+        // Preview button
+        document.getElementById('previewButton').addEventListener('click', function() {
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            const previewContainer = document.getElementById('policyPreview');
+            
+            let content;
+            if (markdownToggle.checked) {
+                // Convert markdown to HTML for preview
+                content = markdownEditor.value
+                    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+                    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+                    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^- (.*?)$/gm, '<li>$1</li>')
+                    .replace(/^(\d+)\. (.*?)$/gm, '<li>$2</li>')
+                    .replace(/<li>.*?<\/li>(\n<li>.*?<\/li>)+/gs, function(match) {
+                        if (match.includes('1. ')) {
+                            return '<ol>' + match + '</ol>';
+                        } else {
+                            return '<ul>' + match + '</ul>';
+                        }
+                    })
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                
+                content = '<p>' + content + '</p>';
+                content = content.replace(/<p><h([1-6])>/g, '<h$1>').replace(/<\/h([1-6])><\/p>/g, '</h$1>');
+                content = content.replace(/<p><ul>/g, '<ul>').replace(/<\/ul><\/p>/g, '</ul>');
+                content = content.replace(/<p><ol>/g, '<ol>').replace(/<\/ol><\/p>/g, '</ol>');
+            } else {
+                // Use rich text content directly
+                content = policyEditor.innerHTML;
+            }
+            
+            previewContainer.innerHTML = content;
+            previewModal.show();
+        });
+        
+        // Export button
+        document.getElementById('exportButton').addEventListener('click', function() {
+            const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+            exportModal.show();
+        });
+        
+        // Template button
+        document.getElementById('templateButton').addEventListener('click', function() {
+            const templateModal = new bootstrap.Modal(document.getElementById('templateModal'));
+            templateModal.show();
+        });
+        
+        // Apply template buttons
+        document.querySelectorAll('.apply-template').forEach(button => {
+            button.addEventListener('click', function() {
+                const template = this.dataset.template;
+                
+                switch (template) {
+                    case 'qcs-standard':
+                        document.getElementById('defaultFont').value = "'Times New Roman', serif";
+                        document.getElementById('primaryColor').value = '#044e8c';
+                        break;
+                    case 'modern':
+                        document.getElementById('defaultFont').value = "Arial, sans-serif";
+                        document.getElementById('primaryColor').value = '#3498db';
+                        break;
+                    case 'minimal':
+                        document.getElementById('defaultFont').value = "Calibri, sans-serif";
+                        document.getElementById('primaryColor').value = '#2c3e50';
+                        break;
+                }
+                
+                // Apply the template
+                applyTemplateStyles();
+                
+                // Close the modal
+                const templateModal = bootstrap.Modal.getInstance(document.getElementById('templateModal'));
+                templateModal.hide();
+            });
+        });
+        
+        // Apply template styles from settings
+        function applyTemplateStyles() {
+            const editor = document.getElementById('policyEditor');
+            
+            // Get color values
+            const primaryColor = document.getElementById('primaryColor').value;
+            const secondaryColor = document.getElementById('secondaryColor').value;
+            const accentColor = document.getElementById('accentColor').value;
+            const textColor = document.getElementById('textColor').value;
+            
+            // Get font settings
+            const fontFamily = document.getElementById('defaultFont').value;
+            const fontSize = document.getElementById('defaultFontSize').value + 'pt';
+            
+            // Apply to editor
+            editor.style.fontFamily = fontFamily;
+            editor.style.fontSize = fontSize;
+            editor.style.color = textColor;
+            
+            // Apply colors to specific elements
+            const titles = editor.querySelectorAll('h1, h2');
+            titles.forEach(title => {
+                title.style.color = primaryColor;
+            });
+            
+            const subtitles = editor.querySelectorAll('h3, h4');
+            subtitles.forEach(subtitle => {
+                subtitle.style.color = secondaryColor;
+            });
+        }
+        
+        // Apply initial template styles
+        applyTemplateStyles();
+        
+        // Font and color settings events
+        document.getElementById('defaultFont').addEventListener('change', applyTemplateStyles);
+        document.getElementById('defaultFontSize').addEventListener('change', applyTemplateStyles);
+        document.getElementById('primaryColor').addEventListener('change', applyTemplateStyles);
+        document.getElementById('secondaryColor').addEventListener('change', applyTemplateStyles);
+        document.getElementById('accentColor').addEventListener('change', applyTemplateStyles);
+        document.getElementById('textColor').addEventListener('change', applyTemplateStyles);
+    });
+</script>
+{% endblock %}

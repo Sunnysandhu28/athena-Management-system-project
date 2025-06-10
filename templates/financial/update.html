@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Update Financial Regulations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('financial.index') }}">Financial Regulations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Update Regulations</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4">Update Financial Regulations</h1>
+            <p class="lead">
+                Update financial regulations from official sources including Finance Acts, UK Accounting Standards, and Company Regulations.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> Current Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3>{{ counts.finance_acts }}</h3>
+                            <p>Finance Act Items</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>{{ counts.accounting_standards }}</h3>
+                            <p>Accounting Standards</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>{{ counts.company_regulations }}</h3>
+                            <p>Company Regulations</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>{{ counts.total }}</h3>
+                            <p>Total Regulations</p>
+                        </div>
+                    </div>
+                    
+                    {% if last_update %}
+                        <div class="text-center mt-3">
+                            <p>Last updated: {{ last_update.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sync-alt"></i> Update Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('financial.update_regulations') }}" method="post">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="force_update" name="force">
+                            <label class="form-check-label" for="force_update">
+                                Force update (updates all regulations, even if they already exist)
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync-alt"></i> Update Financial Regulations
+                            </button>
+                            <a href="{{ url_for('financial.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Financial Regulations
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> Data Sources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item">
+                            <strong>Finance Acts</strong>
+                            <p class="mb-0">Finance Act 2021 and Finance (2) Act 2023 from UK legislation.</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>UK Accounting Standards</strong>
+                            <p class="mb-0">Standards from the Financial Reporting Council (FRC).</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>FRS 102</strong>
+                            <p class="mb-0">FRS 102 The Financial Reporting Standard applicable in the UK.</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Company Regulations</strong>
+                            <p class="mb-0">Regulations for company accounts from Companies House.</p>
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> The update process fetches data from official sources and stores it in the database for use in policy generation and compliance tracking.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

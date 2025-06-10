@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Policy Documents - Cathena</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .navbar {
+            background-color: #0f3460;
+        }
+        
+        .upload-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-file-upload {
+            border: 2px dashed #dce7f1;
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .form-file-upload:hover {
+            border-color: #0d6efd;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+        
+        .category-select {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt me-2"></i> Cathena Policy Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-clipboard-check"></i> Regulatory Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/upload"><i class="fas fa-upload"></i> Upload Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/machine-learning"><i class="fas fa-brain"></i> ML Insights</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="upload-container">
+            <h2 class="mb-4 text-center">Upload Policy Documents</h2>
+            <p class="text-muted text-center mb-4">Add new policy documents for AI analysis and regulatory compliance assessment.</p>
+            
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <!-- File Upload Area -->
+                <div class="form-file-upload mb-4">
+                    <div class="upload-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h5>Drag and drop files here</h5>
+                    <p class="text-muted">or</p>
+                    <input type="file" name="document" id="document" class="form-control" required>
+                    <small class="text-muted d-block mt-2">Supported formats: PDF, DOCX, TXT</small>
+                </div>
+                
+                <!-- Document Information -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="policy_code" class="form-label">Policy Code</label>
+                        <input type="text" class="form-control" id="policy_code" name="policy_code" placeholder="e.g., HS36, CC87, CP02">
+                        <small class="text-muted">Enter the document's policy code if available</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="" selected>Select a category (optional)</option>
+                            <option value="Care Management Policy">Care Management</option>
+                            <option value="Health & Safety Policy">Health & Safety</option>
+                            <option value="Administration Policy">Administration</option>
+                            <option value="Governance Policy">Governance</option>
+                            <option value="HR & Staffing Policy">HR & Staffing</option>
+                        </select>
+                        <small class="text-muted">AI will suggest a category if none selected</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="framework" class="form-label">Regulatory Framework</label>
+                    <select class="form-select" id="framework" name="framework">
+                        <option value="" selected>Select a framework (optional)</option>
+                        <option value="CQC Framework">CQC Framework</option>
+                        <option value="HSE Standards">HSE Standards</option>
+                        <option value="Data Protection">Data Protection</option>
+                        <option value="Business Standards">Business Standards</option>
+                        <option value="Employment Standards">Employment Standards</option>
+                    </select>
+                    <small class="text-muted">AI will suggest a framework if none selected</small>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-robot me-2"></i> <strong>AI Processing Information</strong>
+                    <p class="mb-0 mt-2">Your document will be analyzed using machine learning to:</p>
+                    <ul class="mb-0">
+                        <li>Identify key regulatory concepts</li>
+                        <li>Assess compliance with selected framework</li>
+                        <li>Suggest improvements to enhance policy quality</li>
+                        <li>Learn from your document to improve future analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="/" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i> Upload & Analyze Document
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Training Info -->
+        <div class="card mb-5 mx-auto" style="max-width: 700px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-brain me-2"></i> Machine Learning Training</h5>
+            </div>
+            <div class="card-body">
+                <p>Each document you upload helps train the AI system to better understand your specific policy requirements and organizational patterns.</p>
+                
+                <h6>Benefits of AI Document Training:</h6>
+                <ul>
+                    <li>More accurate compliance assessments</li>
+                    <li>Better pattern recognition across policy types</li>
+                    <li>Improved suggestions tailored to your organization</li>
+                    <li>Enhanced automated categorization</li>
+                </ul>
+                
+                <p class="mb-0">For best results, upload a variety of policy documents from different categories.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

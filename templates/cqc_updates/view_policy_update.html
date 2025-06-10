@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Update: {{ policy.title }}{% endblock %}
+
+{% block head %}
+<style>
+    .policy-header {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .policy-priority {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+    }
+    .priority-high {
+        background-color: #ffcdd2;
+        color: #b71c1c;
+    }
+    .priority-medium {
+        background-color: #ffe0b2;
+        color: #e65100;
+    }
+    .priority-low {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .policy-content {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .status-pending {
+        background-color: #ffecb3;
+        color: #ff6f00;
+    }
+    .status-in-progress {
+        background-color: #bbdefb;
+        color: #0d47a1;
+    }
+    .status-completed {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .status-ignored {
+        background-color: #e0e0e0;
+        color: #616161;
+    }
+    .section-heading {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    .recommendations {
+        background-color: #e8eaf6;
+        border-left: 4px solid #3f51b5;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 0 4px 4px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <a href="{{ url_for('cqc_updates.policies_need_update') }}" class="btn btn-sm btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left"></i> Back to Policies
+            </a>
+            <h1>{{ policy.title }}</h1>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="policy-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">{{ policy.reference }}</span>
+                            
+                            {% if policy.priority == 'high' %}
+                            <span class="policy-priority priority-high">High Priority</span>
+                            {% elif policy.priority == 'medium' %}
+                            <span class="policy-priority priority-medium">Medium Priority</span>
+                            {% elif policy.priority == 'low' %}
+                            <span class="policy-priority priority-low">Low Priority</span>
+                            {% endif %}
+                            
+                            {% if policy.status == 'pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                            {% elif policy.status == 'in_progress' %}
+                            <span class="status-badge status-in-progress">In Progress</span>
+                            {% elif policy.status == 'completed' %}
+                            <span class="status-badge status-completed">Completed</span>
+                            {% elif policy.status == 'ignored' %}
+                            <span class="status-badge status-ignored">Ignored</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="mb-1">Based on CQC update: <a href="{{ url_for('cqc_updates.view_update', update_id=policy.update_id) }}">{{ policy.update_title }}</a></p>
+                        <p class="mb-0 small text-muted">Added on {{ policy.created_at.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="policy-content">
+                <h5 class="section-heading">Why This Policy Needs Updating</h5>
+                <div class="mb-4">
+                    {% if policy.reason %}
+                    <p>{{ policy.reason | nl2br }}</p>
+                    {% else %}
+                    <p class="text-muted">No specific reason provided.</p>
+                    {% endif %}
+                </div>
+                
+                {% if policy.recommendations %}
+                <h5 class="section-heading">Update Recommendations</h5>
+                <div class="recommendations mb-4">
+                    <p>{{ policy.recommendations | nl2br }}</p>
+                </div>
+                {% endif %}
+                
+                {% if policy.original_content %}
+                <h5 class="section-heading">Current Policy Content</h5>
+                <div class="current-content">
+                    <p class="text-muted small mb-3">This is the current content of the policy that needs updating:</p>
+                    <div class="border p-3 bg-light">
+                        <pre>{{ policy.original_content | truncate(1000) }}</pre>
+                        {% if policy.original_content|length > 1000 %}
+                        <p class="text-muted text-center mt-2">Content truncated for readability...</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('cqc_updates.update_policy_status', policy_id=policy.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Change Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="pending" {% if policy.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="in_progress" {% if policy.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="completed" {% if policy.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="ignored" {% if policy.status == 'ignored' %}selected{% endif %}>Ignored</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Related Links</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ policy.update_url }}" target="_blank">
+                                <i class="fas fa-external-link-alt mr-2"></i> View CQC Update
+                            </a>
+                        </li>
+                        {% if policy.original_id %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('policies.view_policy', policy_id=policy.original_id) }}">
+                                <i class="fas fa-file-alt mr-2"></i> View Full Policy
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('cqc_updates.view_update', update_id=policy.update_id) }}">
+                                <i class="fas fa-info-circle mr-2"></i> View Full Update Details
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

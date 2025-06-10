@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Evidence - Cathena Regulatory Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .form-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #aaa;
+            background-color: #f9f9f9;
+        }
+        .compliance-level-label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Cathena Regulatory Assistant</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/requirements">Requirements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/evidence">Evidence</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="form-header text-center">
+                    <h2>Upload Compliance Evidence</h2>
+                    <p class="lead">Upload documents that provide evidence of compliance with regulatory requirements</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" action="/evidence/add" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Evidence Title</label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Staff Training Records Q1 2025">
+                                <div class="form-text">Optional - system will generate a title based on uploaded file name</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Evidence Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Optional - content will be extracted from uploaded documents"></textarea>
+                                <div class="form-text">System will automatically analyze uploaded documents for content</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requirement_id" class="form-label">Related Requirement *</label>
+                                <select class="form-select" id="requirement_id" name="requirement_id">
+                                    {% if requirements|length == 0 %}
+                                    <option value="1" selected>Default Requirement</option>
+                                    {% else %}
+                                    <option value="" disabled {% if not request.args.get('requirement_id') %}selected{% endif %}>Select a requirement</option>
+                                    {% for req in requirements %}
+                                    <option value="{{ req.id }}" {% if request.args.get('requirement_id')|int == req.id %}selected{% endif %}>{{ req.code }}: {{ req.title }}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                                <div class="form-text">Select which requirement this evidence supports</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Compliance Level</label>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="compliance-level-label">Non-Compliant</span>
+                                    <span class="compliance-level-label">Partially Compliant</span>
+                                    <span class="compliance-level-label">Mostly Compliant</span>
+                                    <span class="compliance-level-label">Fully Compliant</span>
+                                </div>
+                                <input type="range" class="form-range" min="0" max="4" step="1" id="compliance_level" name="compliance_level" value="2">
+                                <div class="form-text">Rate how well this evidence demonstrates compliance with the requirement</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="file" class="form-label">Evidence Document</label>
+                                <div class="file-upload" onclick="document.getElementById('file').click()">
+                                    <i class="bi bi-cloud-arrow-up fs-1"></i>
+                                    <p class="mb-0 mt-2">Click to select or drag and drop your file here</p>
+                                    <p class="text-muted small">(PDF, Word, Excel, Images)</p>
+                                </div>
+                                <input type="file" class="form-control d-none" id="file" name="file">
+                                <div id="selected-file" class="form-text"></div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">Upload Evidence</button>
+                                <a href="/evidence" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Cathena Regulatory Assistant</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Display selected filename
+        document.getElementById('file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+            document.getElementById('selected-file').textContent = 'Selected file: ' + fileName;
+        });
+
+        // Make the whole upload area clickable
+        document.querySelector('.file-upload').addEventListener('click', function() {
+            document.getElementById('file').click();
+        });
+    </script>
+</body>
+</html>

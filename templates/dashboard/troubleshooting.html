@@ -1,0 +1,1020 @@
+{% extends "base.html" %}
+
+{% block title %}Troubleshooting Guide - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    .guide-section {
+        margin-bottom: 30px;
+    }
+    .guide-section h3 {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .guide-card {
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+    .guide-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .guide-card .card-header {
+        font-weight: bold;
+    }
+    .solution-steps {
+        padding-left: 20px;
+    }
+    .solution-steps li {
+        margin-bottom: 10px;
+    }
+    .code-block {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        overflow-x: auto;
+    }
+    .search-container {
+        margin-bottom: 30px;
+    }
+    .guide-tags .badge {
+        margin-right: 5px;
+    }
+    .expand-btn {
+        cursor: pointer;
+        color: #0d6efd;
+    }
+    .expand-btn:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">CathenaSentry Troubleshooting Guide</h1>
+    
+    <div class="search-container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="troubleshootingSearch" placeholder="Search for issues or solutions...">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="database">Database</option>
+                    <option value="policy">Policy Management</option>
+                    <option value="qcs">QCS Integration</option>
+                    <option value="security">Security</option>
+                    <option value="system">System</option>
+                    <option value="network">Network</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Note:</strong> CathenaSentry is designed to automatically diagnose and provide solutions for most common issues. This guide covers cases where manual intervention may be required.
+    </div>
+    
+    <!-- Database Issues -->
+    <div class="guide-section" id="database-issues">
+        <h3>
+            <i class="fas fa-database me-2"></i>
+            Database Issues
+        </h3>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-warning text-dark">
+                Database Connection Failures
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>Error messages containing "database connection error" or "could not connect to server"</li>
+                        <li>CathenaSentry reports database connection as critical</li>
+                        <li>Application fails to start or crashes with PostgreSQL-related errors</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">PostgreSQL</span>
+                        <span class="badge bg-secondary">Configuration</span>
+                        <span class="badge bg-secondary">Network</span>
+                        <span class="badge bg-secondary">Credentials</span>
+                    </div>
+                    <ul>
+                        <li>PostgreSQL service is not running</li>
+                        <li>Incorrect database credentials in environment variables</li>
+                        <li>Database server is unreachable due to network issues</li>
+                        <li>PostgreSQL configuration is restricting connections</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Verify PostgreSQL Service:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check if PostgreSQL is running
+                                sudo systemctl status postgresql
+                                
+                                # If not running, start the service
+                                sudo systemctl start postgresql
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Check Database Credentials:</strong>
+                            <p>Verify that the following environment variables are correctly set:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Format should be postgresql://username:password@host:port/database
+                                DATABASE_URL
+                                
+                                # Or individual components
+                                PGUSER
+                                PGPASSWORD
+                                PGHOST
+                                PGPORT
+                                PGDATABASE
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Test Database Connection:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database using psql
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Or using the connection string
+                                psql "$DATABASE_URL"
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Check PostgreSQL Configuration:</strong>
+                            <p>Verify that PostgreSQL is configured to accept connections:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Check PostgreSQL configuration files
+                                sudo nano /etc/postgresql/13/main/postgresql.conf
+                                sudo nano /etc/postgresql/13/main/pg_hba.conf
+                                
+                                # Make sure postgresql.conf has:
+                                listen_addresses = '*'
+                                
+                                # Make sure pg_hba.conf allows your connection
+                                # by having appropriate entries for your IP range
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Restart Services:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Restart PostgreSQL
+                                sudo systemctl restart postgresql
+                                
+                                # Restart the application
+                                sudo systemctl restart cathena
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-warning text-dark">
+                Slow Database Queries
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>Policy searches and listings take longer than usual to load</li>
+                        <li>CathenaSentry reports database performance warnings</li>
+                        <li>Increased CPU usage on the database server</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Performance</span>
+                        <span class="badge bg-secondary">Indexing</span>
+                        <span class="badge bg-secondary">Memory</span>
+                    </div>
+                    <ul>
+                        <li>Missing database indexes</li>
+                        <li>Database needs maintenance (vacuum, analyze)</li>
+                        <li>Insufficient resources allocated to PostgreSQL</li>
+                        <li>Large result sets being returned without pagination</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Run Database Maintenance:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Run VACUUM to reclaim space and update statistics
+                                VACUUM ANALYZE;
+                                
+                                # For more aggressive cleanup (locks tables)
+                                VACUUM FULL ANALYZE;
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Check Missing Indexes:</strong>
+                            <p>Run the following query to identify tables that might need indexes:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Find tables with sequential scans
+                                SELECT
+                                    schemaname, relname, seq_scan, seq_tup_read,
+                                    idx_scan, idx_tup_fetch
+                                FROM
+                                    pg_stat_user_tables
+                                WHERE
+                                    seq_scan > 0
+                                ORDER BY
+                                    seq_scan DESC;
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Adjust PostgreSQL Configuration:</strong>
+                            <p>Consider increasing memory allocation based on system capabilities:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Edit PostgreSQL configuration
+                                sudo nano /etc/postgresql/13/main/postgresql.conf
+                                
+                                # Adjust these parameters based on available memory
+                                shared_buffers = 2GB       # 25% of system memory
+                                work_mem = 64MB            # Increase for complex queries
+                                maintenance_work_mem = 256MB
+                                effective_cache_size = 6GB # 75% of system memory
+                                
+                                # Restart PostgreSQL
+                                sudo systemctl restart postgresql
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Policy Management Issues -->
+    <div class="guide-section" id="policy-issues">
+        <h3>
+            <i class="fas fa-file-alt me-2"></i>
+            Policy Management Issues
+        </h3>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-danger text-white">
+                Policy Generation Failures
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>Error messages when attempting to generate or download policies</li>
+                        <li>Policies show as "Processing" but never complete</li>
+                        <li>CathenaSentry reports policy_generation issues</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Storage</span>
+                        <span class="badge bg-secondary">Permissions</span>
+                        <span class="badge bg-secondary">Templates</span>
+                    </div>
+                    <ul>
+                        <li>Insufficient disk space for generated documents</li>
+                        <li>Permission issues on policy directories</li>
+                        <li>Template errors or missing template files</li>
+                        <li>Corrupt or invalid source policy data</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Check Disk Space:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check available disk space
+                                df -h
+                                
+                                # Free up space if needed
+                                sudo apt clean
+                                find /tmp -type f -atime +10 -delete
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Verify Directory Permissions:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check permissions on policy directories
+                                ls -la policies formatted_policies
+                                
+                                # Fix permissions if needed
+                                sudo chown -R www-data:www-data policies formatted_policies
+                                sudo chmod -R 755 policies formatted_policies
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Inspect Processing Log:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check specific policy generation logs
+                                cat logs/policy_generation.log
+                                cat logs/policy_formatter.log
+                                
+                                # Look for specific error messages or stack traces
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Test Template Rendering:</strong>
+                            <p>Run a diagnostic test to verify template rendering:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Run test template rendering
+                                python -c "from utils.policy_formatter import test_template_rendering; test_template_rendering()"
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Reset Processing State:</strong>
+                            <p>If policies are stuck in "Processing" state, reset their status:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Reset processing statuses
+                                UPDATE policy_documents SET status = 'error' WHERE status = 'processing' AND updated_at < NOW() - INTERVAL '1 hour';
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-warning text-dark">
+                Missing or Corrupted Policy Files
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>"File not found" errors when attempting to download or view policies</li>
+                        <li>Policy document shows in database but file is missing or corrupted</li>
+                        <li>CathenaSentry reports policy_storage issues</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Files</span>
+                        <span class="badge bg-secondary">Storage</span>
+                        <span class="badge bg-secondary">Sync</span>
+                    </div>
+                    <ul>
+                        <li>Files were deleted or moved manually</li>
+                        <li>Generation process was interrupted</li>
+                        <li>Disk errors or corruption</li>
+                        <li>Database record path doesn't match actual file location</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Identify Affected Policies:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Find policies with missing files
+                                SELECT id, name, file_path FROM policy_documents WHERE file_path IS NOT NULL;
+                                
+                                # Then check which files actually exist using Python
+                                python -c "
+                                import os
+                                from app import db
+                                from models import PolicyDocument
+                                
+                                missing = []
+                                for policy in PolicyDocument.query.filter(PolicyDocument.file_path.isnot(None)).all():
+                                    if not os.path.exists(policy.file_path):
+                                        missing.append((policy.id, policy.name))
+                                
+                                print(f'Found {len(missing)} policies with missing files:')
+                                for id, name in missing:
+                                    print(f'ID: {id}, Name: {name}')
+                                "
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Regenerate Missing Policies:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Regenerate specific policies
+                                python -c "
+                                from app import db
+                                from models import PolicyDocument
+                                from utils.policy_generator import regenerate_policy
+                                
+                                for policy_id in [123, 456, 789]:  # Replace with actual IDs
+                                    policy = PolicyDocument.query.get(policy_id)
+                                    if policy:
+                                        print(f'Regenerating policy: {policy.name}')
+                                        regenerate_policy(policy)
+                                "
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Update File Paths:</strong>
+                            <p>If files exist but paths are incorrect, update the paths:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Run path correction script
+                                python -c "
+                                import os
+                                from app import db
+                                from models import PolicyDocument
+                                
+                                # Base directories to check
+                                base_dirs = ['policies', 'formatted_policies', 'policy_variations']
+                                
+                                # For each policy with a file_path
+                                for policy in PolicyDocument.query.filter(PolicyDocument.file_path.isnot(None)).all():
+                                    # If the file doesn't exist at the current path
+                                    if not os.path.exists(policy.file_path):
+                                        filename = os.path.basename(policy.file_path)
+                                        
+                                        # Search for the file in various directories
+                                        for base_dir in base_dirs:
+                                            for root, dirs, files in os.walk(base_dir):
+                                                if filename in files:
+                                                    full_path = os.path.join(root, filename)
+                                                    print(f'Updating path for policy {policy.id}: {policy.file_path} -> {full_path}')
+                                                    policy.file_path = full_path
+                                                    db.session.add(policy)
+                                                    break
+                                
+                                # Commit changes
+                                db.session.commit()
+                                "
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Check Disk Health:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check disk for errors
+                                sudo fsck -f /dev/sdXY  # Replace with actual device
+                                
+                                # Check disk health (if supported)
+                                sudo smartctl -a /dev/sdX
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QCS Integration Issues -->
+    <div class="guide-section" id="qcs-issues">
+        <h3>
+            <i class="fas fa-cloud me-2"></i>
+            QCS Integration Issues
+        </h3>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-danger text-white">
+                QCS Authentication Failures
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>Error messages containing "QCS login failed" or "authentication error"</li>
+                        <li>Unable to download new policies from QCS</li>
+                        <li>CathenaSentry reports qcs_integration issues</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Credentials</span>
+                        <span class="badge bg-secondary">API</span>
+                        <span class="badge bg-secondary">Session</span>
+                    </div>
+                    <ul>
+                        <li>QCS credentials have expired or been changed</li>
+                        <li>QCS website structure has changed, breaking the integration</li>
+                        <li>Network connectivity issues to QCS servers</li>
+                        <li>QCS account has been locked due to too many failed attempts</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Verify QCS Credentials:</strong>
+                            <p>Check the stored QCS credentials:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Check if credentials are set
+                                echo $QCS_USERNAME
+                                echo $QCS_PASSWORD
+                                
+                                # If not set or incorrect, update them
+                                export QCS_USERNAME="correct_username"
+                                export QCS_PASSWORD="correct_password"
+                                
+                                # Add to environment file for persistence
+                                echo "QCS_USERNAME=correct_username" >> .env
+                                echo "QCS_PASSWORD=correct_password" >> .env
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Test QCS Login Manually:</strong>
+                            <p>Try logging in to QCS manually to verify credentials:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Run QCS login test
+                                python -c "
+                                from direct_qcs_downloader import DirectQCSDownloader
+                                import os
+                                
+                                downloader = DirectQCSDownloader()
+                                success = downloader.login(
+                                    os.environ.get('QCS_USERNAME'),
+                                    os.environ.get('QCS_PASSWORD')
+                                )
+                                
+                                print(f'Login {"successful" if success else "failed"}')
+                                "
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Check Network Connectivity:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Test connectivity to QCS website
+                                curl -I https://app.qcs.co.uk
+                                
+                                # Check DNS resolution
+                                nslookup app.qcs.co.uk
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Update QCS Integration Module:</strong>
+                            <p>If the QCS website structure has changed, update the integration module:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Pull latest code updates
+                                git pull origin main
+                                
+                                # Or manually update selectors in the QCS downloader
+                                nano direct_qcs_downloader.py
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Reset QCS Session:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Remove any stored session data
+                                rm -f cookies.txt qcs_session.pickle
+                                
+                                # Clear browser cookies (if using browser automation)
+                                python -c "
+                                from selenium import webdriver
+                                from selenium.webdriver.chrome.options import Options
+                                
+                                options = Options()
+                                options.add_argument('--headless')
+                                driver = webdriver.Chrome(options=options)
+                                driver.get('https://app.qcs.co.uk')
+                                driver.delete_all_cookies()
+                                driver.quit()
+                                "
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Resource Issues -->
+    <div class="guide-section" id="system-issues">
+        <h3>
+            <i class="fas fa-server me-2"></i>
+            System Resource Issues
+        </h3>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-warning text-dark">
+                High CPU Usage
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>System is sluggish or unresponsive</li>
+                        <li>CathenaSentry reports high CPU usage warnings</li>
+                        <li>Application response times are slow</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Resources</span>
+                        <span class="badge bg-secondary">Performance</span>
+                        <span class="badge bg-secondary">Processes</span>
+                    </div>
+                    <ul>
+                        <li>Excessive policy generation requests</li>
+                        <li>Background tasks consuming too many resources</li>
+                        <li>Database queries causing high CPU load</li>
+                        <li>System services competing for resources</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Identify CPU-Intensive Processes:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check top processes by CPU usage
+                                top -o %CPU
+                                
+                                # Or more detailed with ps
+                                ps aux --sort=-%cpu | head -10
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Adjust Worker Processes:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Edit Gunicorn configuration
+                                nano /etc/systemd/system/cathena.service
+                                
+                                # Adjust worker count to match available CPU cores
+                                # Change --workers N to an appropriate value (usually CPU cores * 2 + 1)
+                                
+                                # Reload and restart
+                                sudo systemctl daemon-reload
+                                sudo systemctl restart cathena
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Optimize Background Tasks:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Identify active background tasks
+                                ps aux | grep python
+                                
+                                # Check scheduled tasks
+                                crontab -l
+                                
+                                # If needed, update job scheduling
+                                crontab -e
+                                
+                                # Example: spread out heavy tasks
+                                # Instead of: 0 * * * * python heavy_task.py
+                                # Use: 0 */2 * * * python heavy_task.py
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Limit Concurrent Operations:</strong>
+                            <p>Adjust rate limiting to prevent resource spikes:</p>
+                            <div class="code-block mt-2 mb-2">
+                                # Edit rate limiting configuration
+                                nano utils/integrations.py
+                                
+                                # Adjust limits as needed
+                                # Example: reduce from "60 per minute" to "30 per minute"
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-warning text-dark">
+                Memory Leaks or High Usage
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>System memory usage grows over time</li>
+                        <li>Application becomes slower or crashes after running for a while</li>
+                        <li>CathenaSentry reports high memory usage warnings</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Memory</span>
+                        <span class="badge bg-secondary">Leaks</span>
+                        <span class="badge bg-secondary">Cache</span>
+                    </div>
+                    <ul>
+                        <li>Memory leaks in application code</li>
+                        <li>Large document processing without proper cleanup</li>
+                        <li>Excessive caching of policy documents</li>
+                        <li>Insufficient memory for the workload</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Monitor Memory Usage:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check memory usage of processes
+                                ps aux --sort=-%mem | head -10
+                                
+                                # More detailed memory analysis
+                                sudo apt install -y smem
+                                smem -k -p -s swap
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Restart Application Services:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Restart Gunicorn workers
+                                sudo systemctl restart cathena
+                                
+                                # Implement auto-restart for memory threshold
+                                # Add to crontab
+                                
+                                # Check memory and restart if above threshold
+                                * * * * * if [ $(free -m | grep Mem | awk '{print $3/$2 * 100.0}') -gt 90 ]; then systemctl restart cathena; fi
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Clear Temporary Files:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Clear temporary policy files
+                                find /tmp -name "policy_temp_*" -mtime +1 -delete
+                                
+                                # Clear old reports and logs
+                                find diagnostic_reports -mtime +30 -delete
+                                find logs -mtime +30 -delete
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Adjust Memory Limits:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Set memory limits for the application
+                                nano /etc/systemd/system/cathena.service
+                                
+                                # Add memory limit
+                                # [Service]
+                                # ...
+                                # MemoryLimit=2G
+                                
+                                # Apply changes
+                                sudo systemctl daemon-reload
+                                sudo systemctl restart cathena
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Security Issues -->
+    <div class="guide-section" id="security-issues">
+        <h3>
+            <i class="fas fa-shield-alt me-2"></i>
+            Security Issues
+        </h3>
+        
+        <div class="card guide-card">
+            <div class="card-header bg-danger text-white">
+                Unauthorized Access Attempts
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Symptoms:</h5>
+                    <ul>
+                        <li>Multiple failed login attempts in logs</li>
+                        <li>CathenaSentry reports security warnings</li>
+                        <li>Unusual access patterns or unexpected account activities</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Possible Causes:</h5>
+                    <div class="guide-tags mb-2">
+                        <span class="badge bg-secondary">Security</span>
+                        <span class="badge bg-secondary">Authentication</span>
+                        <span class="badge bg-secondary">Breach</span>
+                    </div>
+                    <ul>
+                        <li>Brute force login attempts</li>
+                        <li>Compromised user account credentials</li>
+                        <li>Internal misuse of system access</li>
+                        <li>Application security vulnerabilities</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h5>Solutions:</h5>
+                    <ol class="solution-steps">
+                        <li>
+                            <strong>Review Security Logs:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Check authentication logs
+                                cat auth.log
+                                
+                                # Look for patterns in access logs
+                                cat logs/access.log | grep "login failed"
+                                
+                                # Check for suspicious IP addresses
+                                cat logs/access.log | awk '{print $1}' | sort | uniq -c | sort -nr | head -10
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Reset Compromised Accounts:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Connect to database
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE
+                                
+                                # Reset password for compromised account
+                                UPDATE users SET password_hash = NULL, active = false WHERE username = 'compromised_user';
+                                
+                                # Or using Python
+                                python -c "
+                                from app import db
+                                from models import User
+                                from werkzeug.security import generate_password_hash
+                                
+                                user = User.query.filter_by(username='admin').first()
+                                if user:
+                                    user.password_hash = generate_password_hash('strong_new_password')
+                                    db.session.commit()
+                                    print('Password reset successfully')
+                                "
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Implement IP Blocking:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # Use fail2ban to automatically block suspicious IPs
+                                sudo apt install -y fail2ban
+                                
+                                # Configure fail2ban for the application
+                                sudo nano /etc/fail2ban/jail.d/cathena.conf
+                                
+                                # Add configuration
+                                [cathena]
+                                enabled = true
+                                port = 80,443
+                                filter = cathena
+                                logpath = /path/to/logs/access.log
+                                maxretry = 5
+                                bantime = 3600
+                                
+                                # Create filter
+                                sudo nano /etc/fail2ban/filter.d/cathena.conf
+                                
+                                # Add filter definition
+                                [Definition]
+                                failregex = ^.* \[error\] .* login failed for user .* from IP <HOST>
+                                ignoreregex = 
+                                
+                                # Restart fail2ban
+                                sudo systemctl restart fail2ban
+                            </div>
+                        </li>
+                        <li>
+                            <strong>Audit User Permissions:</strong>
+                            <div class="code-block mt-2 mb-2">
+                                # List all users and their roles
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE -c "SELECT id, username, role, active, last_login FROM users;"
+                                
+                                # Identify unused accounts
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE -c "SELECT id, username, role, active, last_login FROM users WHERE last_login < NOW() - INTERVAL '90 days';"
+                                
+                                # Disable unused accounts
+                                psql -U $PGUSER -h $PGHOST -p $PGPORT -d $PGDATABASE -c "UPDATE users SET active = false WHERE last_login < NOW() - INTERVAL '90 days';"
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Resources -->
+    <div class="card mt-5">
+        <div class="card-header">
+            <h5 class="mb-0">Additional Resources</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-file-pdf text-danger fs-2 me-3"></i>
+                        <div>
+                            <h6 class="mb-1">Complete Troubleshooting Guide</h6>
+                            <a href="{{ url_for('dashboard.download_troubleshooting_pdf') }}" class="btn btn-sm btn-outline-primary">Download PDF</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-video text-primary fs-2 me-3"></i>
+                        <div>
+                            <h6 class="mb-1">Video Tutorials</h6>
+                            <a href="{{ url_for('dashboard.maintenance_tutorials') }}" class="btn btn-sm btn-outline-primary">View Videos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-question-circle text-success fs-2 me-3"></i>
+                        <div>
+                            <h6 class="mb-1">Get Support</h6>
+                            <a href="mailto:support@cathena.com" class="btn btn-sm btn-outline-primary">Contact Support</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('troubleshootingSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const guideSections = document.querySelectorAll('.guide-section');
+        const guideCards = document.querySelectorAll('.guide-card');
+        
+        function filterGuides() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const categoryValue = categoryFilter.value.toLowerCase();
+            
+            // First hide all sections
+            guideSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Then show cards that match the search and category
+            guideCards.forEach(card => {
+                const cardText = card.textContent.toLowerCase();
+                const cardParent = card.closest('.guide-section');
+                const cardCategory = cardParent.id.replace('-issues', '');
+                
+                const matchesSearch = !searchTerm || cardText.includes(searchTerm);
+                const matchesCategory = !categoryValue || cardCategory === categoryValue;
+                
+                if (matchesSearch && matchesCategory) {
+                    card.style.display = 'block';
+                    cardParent.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // If section has no visible cards, hide it
+            guideSections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.guide-card[style="display: block;"]');
+                if (visibleCards.length === 0) {
+                    section.style.display = 'none';
+                }
+            });
+        }
+        
+        // Add event listeners for search and filter
+        searchInput.addEventListener('input', filterGuides);
+        categoryFilter.addEventListener('change', filterGuides);
+    });
+</script>
+{% endblock %}

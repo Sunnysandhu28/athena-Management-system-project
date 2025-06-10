@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Policies - Cathena Policy Downloader</title>
+    <!-- Bootstrap CSS (Replit-themed) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h3 mb-0"><i class="fas fa-exchange-alt me-2"></i>Compare & Deduplicate Policies</h1>
+                            <div>
+                                <a href="{{ url_for('cross_reference_policies') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-project-diagram me-1"></i>Cross-Reference
+                                </a>
+                                <a href="{{ url_for('format_policies') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-file-export me-1"></i>Format Policies
+                                </a>
+                                <a href="{{ url_for('downloads') }}" class="btn btn-sm btn-outline-light me-2">
+                                    <i class="fas fa-file-word me-1"></i>Downloaded Policies
+                                </a>
+                                <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-home me-1"></i>Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% if error_message %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ error_message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+                        
+                        {% if success_message %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ success_message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>This tool compares policies downloaded from QCS with other local policies, identifies duplicates, and creates a deduplicated set.
+                        </div>
+                        
+                        <!-- Comparison Form -->
+                        <form action="{{ url_for('compare_policies') }}" method="post">
+                            <div class="mb-3">
+                                <label for="qcs_dir" class="form-label">QCS Policies Directory</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-folder"></i></span>
+                                    <input type="text" class="form-control" id="qcs_dir" name="qcs_dir" 
+                                           placeholder="C:\QCS_Policies" value="{{ qcs_dir }}" required>
+                                </div>
+                                <div class="form-text">Directory containing policies downloaded from QCS</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="local_dir" class="form-label">Local Policies Directory</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-folder"></i></span>
+                                    <input type="text" class="form-control" id="local_dir" name="local_dir" 
+                                           placeholder="C:\Local_Policies" value="{{ local_dir }}" required>
+                                </div>
+                                <div class="form-text">Directory containing your existing local policies</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="output_dir" class="form-label">New Amalgamated Policies Directory</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-folder-plus"></i></span>
+                                    <input type="text" class="form-control" id="output_dir" name="output_dir" 
+                                           placeholder="C:\New Amalgamated Policies" value="{{ output_dir }}" required>
+                                </div>
+                                <div class="form-text">Directory where the combined policy set will be saved</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="replaced_dir" class="form-label">Replaced Company Policies Directory</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-folder-archive"></i></span>
+                                    <input type="text" class="form-control" id="replaced_dir" name="replaced_dir" 
+                                           placeholder="C:\Replaced Company Policies" value="{{ replaced_dir }}">
+                                </div>
+                                <div class="form-text">Optional directory to store replaced company policies (for backup)</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <!-- Hidden field for prefer_qcs, always set to "yes" -->
+                                    <input type="hidden" id="prefer_qcs" name="prefer_qcs" value="yes">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="similarity" class="form-label">
+                                        Similarity Threshold
+                                        <i class="fas fa-info-circle ms-1 text-info" data-bs-toggle="tooltip" 
+                                           title="The similarity score determines how closely two documents need to match to be considered duplicates. 1.0 = 100% exact match, 0.5 = 50% similarity. QCS policies will always override company policy duplicates."></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="range" class="form-range" id="similarity" name="similarity" 
+                                               min="0.5" max="1.0" step="0.05" value="0.8" 
+                                               oninput="document.getElementById('similarity_value').textContent = this.value">
+                                    </div>
+                                    <div class="form-text">
+                                        Minimum similarity score (<span id="similarity_value">0.8</span>) for detecting duplicates
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Results Section -->
+                        {% if qcs_count > 0 or local_count > 0 %}
+                        <div class="mt-5">
+                            <h4 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Comparison Results</h4>
+                            
+                            <!-- Step 1: Initial Statistics -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="display-4">{{ qcs_count }}</h3>
+                                            <p class="mb-0">QCS Policies</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="display-4">{{ local_count }}</h3>
+                                            <p class="mb-0">Local Policies</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="display-4">{{ dedup_stats.total_count|default(0) }}</h3>
+                                            <p class="mb-0">Combined Policies</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body text-center">
+                                            <h3 class="display-4">{{ dedup_stats.replaced_count|default(0) }}</h3>
+                                            <p class="mb-0">Replaced Policies</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed Statistics -->
+                            {% if dedup_stats %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Detailed Results</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded mb-3">
+                                                <h4 class="text-primary">{{ dedup_stats.qcs_kept_count|default(0) }}</h4>
+                                                <p class="mb-0">QCS Policies Kept</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded mb-3">
+                                                <h4 class="text-info">{{ dedup_stats.company_kept_count|default(0) }}</h4>
+                                                <p class="mb-0">Company Policies Kept</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 border rounded mb-3">
+                                                <h4 class="text-success">{{ dedup_stats.unique_qcs_count|default(0) + dedup_stats.unique_company_count|default(0) }}</h4>
+                                                <p class="mb-0">Unique Policies</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Site-specific Formatting Options -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-building me-2"></i>Site-Specific Formatting</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form action="{{ url_for('compare_policies') }}" method="post">
+                                        <input type="hidden" name="qcs_dir" value="{{ qcs_dir }}">
+                                        <input type="hidden" name="local_dir" value="{{ local_dir }}">
+                                        <input type="hidden" name="output_dir" value="{{ output_dir }}">
+                                        <input type="hidden" name="replaced_dir" value="{{ replaced_dir }}">
+                                        <input type="hidden" name="prefer_qcs" value="yes">
+                                        <input type="hidden" name="apply_site_formats" value="true">
+                                        
+                                        <div class="alert alert-info mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Select sites and choose formatting style for each site's policies
+                                        </div>
+                                        
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th style="width: 50px;"><input type="checkbox" id="select-all-sites" class="form-check-input"></th>
+                                                        <th>Site Name</th>
+                                                        <th>Manager</th>
+                                                        <th>Formatting Style</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for site in sites %}
+                                                    <tr>
+                                                        <td>
+                                                            <input type="checkbox" name="selected_sites" value="{{ site.id }}" class="form-check-input site-checkbox">
+                                                        </td>
+                                                        <td>{{ site.name }}</td>
+                                                        <td>{{ site.manager_name }}</td>
+                                                        <td>
+                                                            <select class="form-select" name="format_preference_{{ site.id }}">
+                                                                <option value="qcs">QCS Format (Original)</option>
+                                                                <option value="company">Company Format (Rebranded)</option>
+                                                            </select>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 mt-3">
+                                            <button type="submit" class="btn btn-info">
+                                                <i class="fas fa-check-circle me-2"></i>Apply Site Formatting Preferences
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Side-by-Side Comparison and Finalization -->
+                            {% if dedup_stats.side_by_side_pairs %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-columns me-2"></i>Side-by-Side Comparison</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form action="{{ url_for('compare_policies') }}" method="post">
+                                        <input type="hidden" name="qcs_dir" value="{{ qcs_dir }}">
+                                        <input type="hidden" name="local_dir" value="{{ local_dir }}">
+                                        <input type="hidden" name="output_dir" value="{{ output_dir }}">
+                                        <input type="hidden" name="replaced_dir" value="{{ replaced_dir }}">
+                                        <input type="hidden" name="finalize_comparison" value="true">
+                                        
+                                        <div class="alert alert-success mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Review and finalize changes with consistent wording style
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Wording Preference</label>
+                                            <select class="form-select" name="wording_preference">
+                                                <option value="qcs">QCS Wording Style</option>
+                                                <option value="company">Company Wording Style</option>
+                                                <option value="rewrite">AI-Assisted Rewording</option>
+                                            </select>
+                                            <div class="form-text">Final wording style to apply for consistency across all policies</div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-flag-checkered me-2"></i>Finalize Policy Comparison
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            
+                            <!-- Similar Policies Table -->
+                            {% if similar_policies %}
+                            <div class="mb-4">
+                                <h5><i class="fas fa-clone me-2"></i>Similar Policies Detected</h5>
+                                
+                                <div class="accordion" id="similarPoliciesAccordion">
+                                    {% for category, policy_pairs in similar_policies.items() %}
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                    data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                                                    aria-controls="collapse{{ loop.index }}">
+                                                <strong>{{ category }}</strong> - {{ policy_pairs|length }} similar pairs
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+                                             aria-labelledby="heading{{ loop.index }}" data-bs-parent="#similarPoliciesAccordion">
+                                            <div class="accordion-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-hover">
+                                                        <thead class="table-dark">
+                                                            <tr>
+                                                                <th>QCS Policy</th>
+                                                                <th>Local Policy</th>
+                                                                <th>Similarity</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for qcs_policy, local_policy, similarity in policy_pairs %}
+                                                            <tr>
+                                                                <td>
+                                                                    <i class="fas fa-file-word text-primary me-2"></i>
+                                                                    {{ qcs_policy.name }}
+                                                                </td>
+                                                                <td>
+                                                                    <i class="fas fa-file-word text-info me-2"></i>
+                                                                    {{ local_policy.name }}
+                                                                </td>
+                                                                <td>
+                                                                    <div class="progress" style="height: 20px;" data-bs-toggle="tooltip" 
+                                                                         title="{{ (similarity * 100)|int }}% similar">
+                                                                        <div class="progress-bar" role="progressbar" 
+                                                                             style="width: {{ (similarity * 100)|int }}%" 
+                                                                             aria-valuenow="{{ (similarity * 100)|int }}" 
+                                                                             aria-valuemin="0" aria-valuemax="100">
+                                                                            {{ (similarity * 100)|int }}%
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                            onclick="window.open('#', '_blank')">
+                                                                        <i class="fas fa-eye me-1"></i>Compare
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Initialize tooltips -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Handle select all sites checkbox
+            const selectAllCheckbox = document.getElementById('select-all-sites');
+            const siteCheckboxes = document.querySelectorAll('.site-checkbox');
+            
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const isChecked = this.checked;
+                    siteCheckboxes.forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                    });
+                });
+                
+                // Update "select all" checkbox when individual checkboxes change
+                siteCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const allChecked = Array.from(siteCheckboxes).every(cb => cb.checked);
+                        const anyChecked = Array.from(siteCheckboxes).some(cb => cb.checked);
+                        
+                        selectAllCheckbox.checked = allChecked;
+                        // For indeterminate state (some but not all checked)
+                        selectAllCheckbox.indeterminate = anyChecked && !allChecked;
+                    });
+                });
+            }
+            
+            // Track similarity slider value dynamically
+            const similaritySlider = document.getElementById('similarity');
+            const similarityValue = document.getElementById('similarity_value');
+            
+            if (similaritySlider && similarityValue) {
+                similaritySlider.addEventListener('input', function() {
+                    similarityValue.textContent = this.value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

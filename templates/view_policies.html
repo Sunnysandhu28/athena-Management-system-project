@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: #004080;
+        }
+        
+        .policy-group {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .category-header {
+            background-color: #004080;
+            color: white;
+            padding: 10px 15px;
+            margin: 0;
+            font-size: 1.2em;
+        }
+        
+        .policy-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .policy-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .policy-item:last-child {
+            border-bottom: none;
+        }
+        
+        .policy-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .policy-title {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .policy-reference {
+            color: #6c757d;
+            font-size: 0.9em;
+            min-width: 100px;
+        }
+        
+        .policy-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #004080;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .button:hover {
+            background-color: #002850;
+        }
+        
+        .button.secondary {
+            background-color: #6c757d;
+        }
+        
+        .button.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .summary {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .navigation {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ page_title }}</h1>
+        
+        <div class="navigation">
+            <a href="/" class="button">Home</a>
+            <a href="/validation" class="button secondary">Validation Dashboard</a>
+        </div>
+        
+        <div class="filter-options" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <a href="/policies?type=all" class="button {% if show_type == 'all' %}secondary{% endif %}">All Policies</a>
+            <a href="/policies?type=enhanced" class="button {% if show_type == 'enhanced' %}secondary{% endif %}">Enhanced Copies</a>
+            <a href="/policies?type=original" class="button {% if show_type == 'original' %}secondary{% endif %}">Original QCS</a>
+        </div>
+        
+        <div class="summary">
+            <p><strong>Total Policies:</strong> {{ total_policies }}</p>
+            {% if show_type == 'enhanced' %}
+            <p>These policies have been enhanced with proper QCS formatting and section structure.</p>
+            {% elif show_type == 'original' %}
+            <p>These are the original QCS policies that have been imported into the system.</p>
+            {% else %}
+            <p>Showing all policies in the system. Use the filters above to show specific types.</p>
+            {% endif %}
+        </div>
+        
+        {% for category in categories %}
+            <div class="policy-group">
+                <h2 class="category-header">{{ category }}</h2>
+                <ul class="policy-list">
+                    {% for policy in policies_by_category[category] %}
+                        <li class="policy-item">
+                            <div class="policy-title">{{ policy.title }}</div>
+                            <div class="policy-reference">{{ policy.reference_code if policy.reference_code else "N/A" }}</div>
+                            <div class="policy-actions">
+                                {% if policy.reference_code %}
+                                    <a href="/policies/view/{{ policy.reference_code }}" class="button">View</a>
+                                {% else %}
+                                    <a href="/policies/view/by-id/{{ policy.id }}" class="button">View</a>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="policy-item">No policies in this category</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        
+        <div class="navigation">
+            <a href="/" class="button">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

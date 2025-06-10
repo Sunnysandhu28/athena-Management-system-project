@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+
+{% block title %}Validate: {{ policy.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="/">Home</a> &gt; 
+    <a href="{{ url_for('validation.index') }}">Policy Validation</a> &gt; 
+    <span>Validate Policy</span>
+</div>
+
+<div class="page-header">
+    <h1>Policy Validation: {{ policy.title }}</h1>
+    <p class="subtitle">
+        {% if policy.reference_code %}Reference: {{ policy.reference_code }}{% endif %}
+        {% if policy.code and policy.code != policy.reference_code %}Code: {{ policy.code }}{% endif %}
+    </p>
+</div>
+
+<div class="validation-container">
+    <!-- Policy Details Card -->
+    <div class="policy-details card">
+        <h2>Policy Overview</h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">Category:</span>
+                <span class="detail-value">{{ policy.category.name if policy.category else 'Uncategorized' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Word Count:</span>
+                <span class="detail-value">{{ validation.metrics.word_count if validation and validation.metrics else 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value status-badge {{ 'status-valid' if validation and validation.is_valid else 'status-invalid' }}">
+                    {{ 'Valid' if validation and validation.is_valid else 'Invalid' if validation else 'Not Validated' }}
+                </span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Issue Count:</span>
+                <span class="detail-value">{{ validation.issues|length if validation and validation.issues else 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Last Validated:</span>
+                <span class="detail-value">{{ validation.updated_at if validation and validation.updated_at else 'Never' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">QCS Policy:</span>
+                <span class="detail-value">{{ 'Yes' if policy.is_qcs_policy else 'No' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Form -->
+    <div class="validation-form card">
+        <h2>Run Validation</h2>
+        <form method="post" action="{{ url_for('validation.validate_policy', policy_id=policy.id) }}">
+            <div class="form-group">
+                <label for="strict_mode">
+                    <input type="checkbox" id="strict_mode" name="strict_mode" value="true">
+                    Strict Mode (more detailed validation)
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="button primary">Validate Policy</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Validation Results -->
+    {% if validation %}
+    <div class="validation-results card">
+        <h2>Validation Results</h2>
+        <div class="result-summary">
+            <div class="result-status {{ 'valid' if validation.is_valid else 'invalid' }}">
+                <i class="fas {{ 'fa-check-circle' if validation.is_valid else 'fa-exclamation-triangle' }}"></i>
+                <span>Policy is {{ 'Valid' if validation.is_valid else 'Invalid' }}</span>
+            </div>
+            <div class="metrics-summary">
+                <div class="metric-item">
+                    <span class="metric-label">Format Compliance:</span>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ validation.metrics.format_compliance }}%"></div>
+                    </div>
+                    <span class="metric-value">{{ validation.metrics.format_compliance }}%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">Content Similarity:</span>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ validation.metrics.content_similarity }}%"></div>
+                    </div>
+                    <span class="metric-value">{{ validation.metrics.content_similarity }}%</span>
+                </div>
+            </div>
+        </div>
+
+        {% if validation.issues %}
+        <div class="issues-list">
+            <h3>Issues Found ({{ validation.issues|length }})</h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Issue Type</th>
+                            <th>Message</th>
+                            <th>Severity</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue in validation.issues %}
+                        <tr>
+                            <td>{{ issue.type }}</td>
+                            <td>{{ issue.message }}</td>
+                            <td>
+                                <span class="severity-badge severity-{{ issue.severity }}">
+                                    {{ issue.severity|title }}
+                                </span>
+                            </td>
+                            <td>{{ issue.location }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-issues">
+            <i class="fas fa-check-circle"></i>
+            <span>No issues found. This policy meets all validation criteria.</span>
+        </div>
+        {% endif %}
+
+        {% if validation.metrics.legislation_references %}
+        <div class="legislation-references">
+            <h3>Legislation References</h3>
+            <ul class="reference-list">
+                {% for reference in validation.metrics.legislation_references %}
+                <li>{{ reference }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Neural Memory Analysis -->
+    <div class="neural-memory card">
+        <h2>Neural Memory Analysis</h2>
+        <p class="memory-explanation">The neural memory system analyzes policies against learned patterns to ensure compliance with QCS standards.</p>
+
+        <h3>Structure Patterns</h3>
+        <div class="pattern-grid">
+            {% for pattern in patterns if pattern.type == 'structure' %}
+            <div class="pattern-card">
+                <div class="pattern-name">{{ pattern.name }}</div>
+                <div class="pattern-strength">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ pattern.strength * 100 }}%"></div>
+                    </div>
+                    <span class="value">{{ (pattern.strength * 100)|round(1) }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3>Content Patterns</h3>
+        <div class="pattern-grid">
+            {% for pattern in patterns if pattern.type == 'content' %}
+            <div class="pattern-card">
+                <div class="pattern-name">{{ pattern.name }}</div>
+                <div class="pattern-strength">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ pattern.strength * 100 }}%"></div>
+                    </div>
+                    <span class="value">{{ (pattern.strength * 100)|round(1) }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3>Section Benchmarks</h3>
+        <div class="benchmark-grid">
+            {% for section_name, benchmark in benchmarks.items() %}
+            <div class="benchmark-card">
+                <div class="benchmark-name">{{ section_name|title }}</div>
+                <div class="benchmark-range">
+                    <span class="min">{{ benchmark.min_words }}</span>
+                    <span class="separator">-</span>
+                    <span class="max">{{ benchmark.max_words }}</span>
+                    <span class="unit">words</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="policy-actions card">
+        <h2>Actions</h2>
+        <div class="action-buttons">
+            <a href="{{ url_for('validation.policy_list') }}" class="button secondary">
+                <i class="fas fa-arrow-left"></i> Back to Policies
+            </a>
+            
+            {% if policy.content %}
+            <a href="{{ url_for('view_policy_detail', policy_id=policy.id) }}" class="button">
+                <i class="fas fa-eye"></i> View Full Policy
+            </a>
+            {% endif %}
+            
+            {% if validation and not validation.is_valid %}
+            <form method="post" action="{{ url_for('validation.regenerate_policy', policy_id=policy.id) }}" class="inline-form">
+                <button type="submit" class="button primary">
+                    <i class="fas fa-sync-alt"></i> Regenerate Policy
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .validation-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+    
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .detail-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .detail-value {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .status-valid {
+        background-color: #e7f4e4;
+        color: #2e7d32;
+    }
+    
+    .status-invalid {
+        background-color: #fdecea;
+        color: #d32f2f;
+    }
+    
+    .result-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .result-status {
+        display: flex;
+        align-items: center;
+        font-size: 18px;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .result-status.valid {
+        background-color: #e7f4e4;
+        color: #2e7d32;
+    }
+    
+    .result-status.invalid {
+        background-color: #fdecea;
+        color: #d32f2f;
+    }
+    
+    .result-status i {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+    
+    .metrics-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .metric-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .progress-bar {
+        height: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .progress {
+        height: 100%;
+        background-color: #1d6baa;
+        border-radius: 5px;
+    }
+    
+    .severity-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .severity-high {
+        background-color: #fdecea;
+        color: #d32f2f;
+    }
+    
+    .severity-medium {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    
+    .severity-low {
+        background-color: #e1f5fe;
+        color: #0277bd;
+    }
+    
+    .no-issues {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #e7f4e4;
+        border-radius: 4px;
+        color: #2e7d32;
+    }
+    
+    .no-issues i {
+        font-size: 20px;
+        margin-right: 10px;
+    }
+    
+    .reference-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+        padding-left: 0;
+        list-style: none;
+    }
+    
+    .reference-list li {
+        padding: 5px 10px;
+        background-color: #e1f5fe;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .pattern-grid, .benchmark-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .pattern-card, .benchmark-card {
+        background: #f9f9f9;
+        border-radius: 4px;
+        padding: 12px;
+    }
+    
+    .pattern-name, .benchmark-name {
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    
+    .pattern-strength {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .pattern-strength .progress-bar {
+        flex-grow: 1;
+    }
+    
+    .benchmark-range {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .benchmark-range .min, .benchmark-range .max {
+        font-weight: bold;
+    }
+    
+    .benchmark-range .unit {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .inline-form {
+        display: inline;
+    }
+    
+    @media (min-width: 768px) {
+        .validation-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .policy-details, .validation-form, 
+        .validation-results, .neural-memory,
+        .policy-actions {
+            grid-column: span 2;
+        }
+    }
+</style>
+{% endblock %}

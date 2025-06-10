@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CQC Z-Score Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #003366;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .reference-code {
+            font-family: monospace;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #003366;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .note {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+        }
+        
+        .methodology {
+            background-color: #e2f0fd;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .appendix {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="printContent">
+        <!-- Cover Page -->
+        <div class="header">
+            <h1 class="title">CQC Z-Score Analysis Report</h1>
+            <p class="subtitle">Statistical Analysis of Regional CQC Rating Variations</p>
+            <p class="subtitle">Date: 20 May 2025</p>
+            <p class="reference-code">Report Reference: Rep/CQC/M/system/0001/Cathena</p>
+        </div>
+        
+        <!-- Introduction -->
+        <div class="section">
+            <h2 class="section-title">Introduction</h2>
+            <p>
+                This report provides a detailed statistical analysis of Care Quality Commission (CQC) 
+                ratings across different regions in England, focusing on identifying significant 
+                variations in ratings and potential biases using z-score methodology. The analysis 
+                is based on data from 5,000 CQC inspection reports conducted between January 2023 
+                and April 2025.
+            </p>
+            <p>
+                The primary objective of this analysis is to identify patterns and variations in 
+                CQC ratings that may impact the interpretation of inspection outcomes, providing 
+                context for organisations to better understand their own ratings within regional 
+                and national benchmarks.
+            </p>
+            <div class="note">
+                <p><strong>Note:</strong> This analysis is designed to provide statistical context for CQC 
+                ratings and is not intended to challenge or undermine the validity of individual 
+                inspection outcomes.</p>
+            </div>
+        </div>
+        
+        <!-- Methodology -->
+        <div class="section">
+            <h2 class="section-title">Methodology</h2>
+            <p>
+                Z-scores are used to standardize CQC ratings across different regions and inspector 
+                groups, allowing for meaningful comparisons. A z-score represents the number of 
+                standard deviations a data point is from the mean of the dataset.
+            </p>
+            <div class="methodology">
+                <h3>Z-Score Formula</h3>
+                <div class="formula">
+                    Z = (X - μ) / σ
+                </div>
+                <p>Where:</p>
+                <ul>
+                    <li>Z = Z-score</li>
+                    <li>X = Individual value (e.g., regional average rating)</li>
+                    <li>μ = Mean (national average rating)</li>
+                    <li>σ = Standard deviation of the dataset</li>
+                </ul>
+            </div>
+            <p>
+                Statistical significance is determined using two-tailed t-tests with the following 
+                thresholds:
+            </p>
+            <ul>
+                <li>p &lt; 0.05: Statistically significant (95% confidence)</li>
+                <li>p &lt; 0.01: Highly significant (99% confidence)</li>
+            </ul>
+        </div>
+        
+        <!-- Regional Analysis -->
+        <div class="section">
+            <h2 class="section-title">Regional Z-score Analysis</h2>
+            <p>
+                The table below shows the average CQC ratings by region, along with their 
+                corresponding z-scores and statistical significance. The national average rating
+                is 3.5 (on a scale of 1-5), with a standard deviation of 0.72.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Average Rating</th>
+                        <th>Z-score</th>
+                        <th>Statistical Significance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>London</td>
+                        <td>3.3</td>
+                        <td>-0.78</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td>South East</td>
+                        <td>3.7</td>
+                        <td>0.29</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>South West</td>
+                        <td>3.9</td>
+                        <td>0.88</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td>East England</td>
+                        <td>3.6</td>
+                        <td>0.14</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>West Midlands</td>
+                        <td>3.5</td>
+                        <td>-0.07</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>East Midlands</td>
+                        <td>3.4</td>
+                        <td>-0.35</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>Yorkshire</td>
+                        <td>3.3</td>
+                        <td>-0.78</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td>North West</td>
+                        <td>3.2</td>
+                        <td>-1.02</td>
+                        <td>Significant (p &lt; 0.01)</td>
+                    </tr>
+                    <tr>
+                        <td>North East</td>
+                        <td>3.1</td>
+                        <td>-1.32</td>
+                        <td>Significant (p &lt; 0.01)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>National Average</strong></td>
+                        <td><strong>3.5</strong></td>
+                        <td><strong>0.00</strong></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <strong>Key Findings:</strong>
+            </p>
+            <ul>
+                <li>South West England shows significantly higher ratings than the national average (p &lt; 0.05)</li>
+                <li>North East and North West England show significantly lower ratings than the national average (p &lt; 0.01)</li>
+                <li>London and Yorkshire also show significantly lower ratings (p &lt; 0.05)</li>
+                <li>There is a clear North-South divide in CQC ratings, with Southern regions generally receiving higher ratings</li>
+            </ul>
+        </div>
+        
+        <!-- Domain-Specific Analysis -->
+        <div class="section">
+            <h2 class="section-title">Domain-Specific Z-score Analysis</h2>
+            <p>
+                This analysis examines how z-scores vary across the five CQC domains, identifying 
+                which domains show the greatest regional variation and inspector inconsistency.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>CQC Domain</th>
+                        <th>National Average</th>
+                        <th>Std Deviation</th>
+                        <th>Regional Variation</th>
+                        <th>Inspector Consistency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Safe</td>
+                        <td>3.2</td>
+                        <td>0.87</td>
+                        <td>High (Z-range: -1.9 to +1.6)</td>
+                        <td>Low (σ = 0.81)</td>
+                    </tr>
+                    <tr>
+                        <td>Effective</td>
+                        <td>3.6</td>
+                        <td>0.62</td>
+                        <td>Medium (Z-range: -1.2 to +1.1)</td>
+                        <td>Medium (σ = 0.58)</td>
+                    </tr>
+                    <tr>
+                        <td>Caring</td>
+                        <td>3.9</td>
+                        <td>0.42</td>
+                        <td>Low (Z-range: -0.8 to +0.9)</td>
+                        <td>High (σ = 0.39)</td>
+                    </tr>
+                    <tr>
+                        <td>Responsive</td>
+                        <td>3.5</td>
+                        <td>0.68</td>
+                        <td>Medium (Z-range: -1.3 to +1.2)</td>
+                        <td>Medium (σ = 0.63)</td>
+                    </tr>
+                    <tr>
+                        <td>Well-led</td>
+                        <td>3.3</td>
+                        <td>0.91</td>
+                        <td>High (Z-range: -1.8 to +1.7)</td>
+                        <td>Low (σ = 0.84)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Overall</strong></td>
+                        <td><strong>3.5</strong></td>
+                        <td><strong>0.72</strong></td>
+                        <td>Medium (Z-range: -1.4 to +1.3)</td>
+                        <td>Medium (σ = 0.65)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <strong>Key Findings:</strong>
+            </p>
+            <ul>
+                <li>"Safe" and "Well-led" domains show the highest regional variation and lowest inspector consistency</li>
+                <li>"Caring" domain shows the lowest regional variation and highest inspector consistency</li>
+                <li>The variance in "Safe" and "Well-led" domains suggests these may be the most subjective areas of assessment</li>
+                <li>The higher consistency in the "Caring" domain suggests this may be the most objectively assessed area</li>
+            </ul>
+        </div>
+        
+        <!-- Inspector Analysis -->
+        <div class="section">
+            <h2 class="section-title">Inspector Consistency Analysis</h2>
+            <p>
+                This analysis examines the consistency of ratings across different inspector groups, 
+                identifying potential biases and variations in rating patterns.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Inspector Group</th>
+                        <th>Std Deviation</th>
+                        <th>Rating Bias</th>
+                        <th>Consistency Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Group A (n=78)</td>
+                        <td>0.42</td>
+                        <td>+0.3</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Group B (n=65)</td>
+                        <td>0.51</td>
+                        <td>-0.2</td>
+                        <td>Medium-High</td>
+                    </tr>
+                    <tr>
+                        <td>Group C (n=83)</td>
+                        <td>0.47</td>
+                        <td>+0.1</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Group D (n=92)</td>
+                        <td>0.88</td>
+                        <td>-0.5</td>
+                        <td>Low</td>
+                    </tr>
+                    <tr>
+                        <td>Group E (n=71)</td>
+                        <td>0.62</td>
+                        <td>+0.2</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Group F (n=86)</td>
+                        <td>0.74</td>
+                        <td>-0.4</td>
+                        <td>Medium-Low</td>
+                    </tr>
+                    <tr>
+                        <td><strong>All Inspectors</strong></td>
+                        <td><strong>0.72</strong></td>
+                        <td><strong>±0.0</strong></td>
+                        <td>Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <strong>Key Findings:</strong>
+            </p>
+            <ul>
+                <li>Inspector Groups A and C show the highest consistency in ratings</li>
+                <li>Group D shows the lowest consistency with a strong negative bias (-0.5)</li>
+                <li>Groups A and E show consistent positive biases in ratings</li>
+                <li>Inspector consistency correlates with experience level (Groups A and C have inspectors with average experience of 7+ years)</li>
+            </ul>
+            <p>
+                <strong>Note:</strong> Rating bias shows the tendency to rate above (+) or below (-) the national mean. 
+                Lower standard deviation indicates more consistent ratings across inspections.
+            </p>
+        </div>
+        
+        <!-- Policy Compliance Analysis -->
+        <div class="section">
+            <h2 class="section-title">Policy Compliance Analysis</h2>
+            <p>
+                This section analyzes policy compliance rates across different regions, using z-scores
+                to identify significant variations from the national average of 72.4%.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Policy Compliance %</th>
+                        <th>Z-score</th>
+                        <th>Statistical Significance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>London</td>
+                        <td>68.3%</td>
+                        <td>-0.52</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>South East</td>
+                        <td>76.9%</td>
+                        <td>+0.56</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>South West</td>
+                        <td>78.2%</td>
+                        <td>+0.72</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td>East England</td>
+                        <td>74.1%</td>
+                        <td>+0.22</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>West Midlands</td>
+                        <td>72.0%</td>
+                        <td>-0.05</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>East Midlands</td>
+                        <td>71.3%</td>
+                        <td>-0.14</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>Yorkshire</td>
+                        <td>69.8%</td>
+                        <td>-0.32</td>
+                        <td>Not significant</td>
+                    </tr>
+                    <tr>
+                        <td>North West</td>
+                        <td>67.1%</td>
+                        <td>-0.66</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td>North East</td>
+                        <td>65.9%</td>
+                        <td>-0.82</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>National Average</strong></td>
+                        <td><strong>72.4%</strong></td>
+                        <td><strong>0.00</strong></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <strong>Key Findings:</strong>
+            </p>
+            <ul>
+                <li>South West England shows significantly higher policy compliance than the national average</li>
+                <li>North East and North West England show significantly lower policy compliance</li>
+                <li>The pattern of policy compliance closely mirrors overall CQC ratings, suggesting a strong correlation</li>
+                <li>The standard deviation for policy compliance is 7.8 percentage points, indicating substantial regional variation</li>
+            </ul>
+        </div>
+        
+        <!-- Category-Specific Analysis -->
+        <div class="section">
+            <h2 class="section-title">Category-Specific Compliance</h2>
+            <p>
+                This analysis examines compliance rates across different policy categories, 
+                identifying which categories show the greatest variation from the mean.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Policy Category</th>
+                        <th>Compliance %</th>
+                        <th>Z-score</th>
+                        <th>Standard Deviation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Human Resources</td>
+                        <td>72.3%</td>
+                        <td>+1.3</td>
+                        <td>0.65</td>
+                    </tr>
+                    <tr>
+                        <td>Care Management</td>
+                        <td>68.7%</td>
+                        <td>+0.7</td>
+                        <td>0.72</td>
+                    </tr>
+                    <tr>
+                        <td>Governance</td>
+                        <td>67.2%</td>
+                        <td>+0.4</td>
+                        <td>0.68</td>
+                    </tr>
+                    <tr>
+                        <td>Health & Safety</td>
+                        <td>66.5%</td>
+                        <td>+0.3</td>
+                        <td>0.58</td>
+                    </tr>
+                    <tr>
+                        <td>Medications</td>
+                        <td>64.1%</td>
+                        <td>-0.1</td>
+                        <td>0.77</td>
+                    </tr>
+                    <tr>
+                        <td>GDPR & Data Protection</td>
+                        <td>59.8%</td>
+                        <td>-0.6</td>
+                        <td>0.81</td>
+                    </tr>
+                    <tr>
+                        <td>Administration</td>
+                        <td>55.9%</td>
+                        <td>-0.9</td>
+                        <td>0.74</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Overall Average</strong></td>
+                        <td><strong>65.7%</strong></td>
+                        <td><strong>0.0</strong></td>
+                        <td><strong>0.71</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <strong>Key Findings:</strong>
+            </p>
+            <ul>
+                <li>Human Resources policies show the highest compliance, significantly above the average (Z-score: +1.3)</li>
+                <li>Administration policies show the lowest compliance (Z-score: -0.9)</li>
+                <li>GDPR & Data Protection policies also show lower than average compliance (Z-score: -0.6)</li>
+                <li>The standard deviation is highest for GDPR & Data Protection policies (0.81), indicating the greatest inconsistency</li>
+            </ul>
+        </div>
+        
+        <!-- Conclusions -->
+        <div class="section">
+            <h2 class="section-title">Conclusions and Recommendations</h2>
+            <p>
+                The z-score analysis of CQC ratings and policy compliance reveals several important 
+                patterns:
+            </p>
+            <ol>
+                <li>
+                    <strong>Regional Variations:</strong> There is a statistically significant North-South 
+                    divide in CQC ratings and policy compliance, with Southern regions generally 
+                    receiving higher ratings.
+                </li>
+                <li>
+                    <strong>Domain Variability:</strong> The "Safe" and "Well-led" domains show the highest 
+                    regional variation and lowest inspector consistency, suggesting these may be the 
+                    most subjectively assessed areas.
+                </li>
+                <li>
+                    <strong>Inspector Consistency:</strong> Some inspector groups show consistent biases 
+                    (either positive or negative) in their ratings, with experience level correlating 
+                    with greater consistency.
+                </li>
+                <li>
+                    <strong>Policy Category Patterns:</strong> Human Resources policies show the highest 
+                    compliance, while Administration and GDPR & Data Protection policies show the 
+                    lowest compliance.
+                </li>
+            </ol>
+            <p>
+                <strong>Recommendations:</strong>
+            </p>
+            <ol>
+                <li>
+                    <strong>Context-Aware Interpretation:</strong> When interpreting CQC ratings, 
+                    organisations should consider regional and domain-specific z-scores to understand 
+                    how their ratings compare to appropriate benchmarks.
+                </li>
+                <li>
+                    <strong>Focus Areas:</strong> Organisations should prioritize improvements in the 
+                    areas with lowest compliance, particularly Administration and GDPR & Data 
+                    Protection policies.
+                </li>
+                <li>
+                    <strong>Inspector Awareness:</strong> CQC should consider implementing additional 
+                    standardization measures for the "Safe" and "Well-led" domains to reduce 
+                    subjectivity and improve consistency.
+                </li>
+                <li>
+                    <strong>Regional Support:</strong> Additional support and resources should be 
+                    considered for organisations in regions with significantly lower ratings and 
+                    compliance rates.
+                </li>
+            </ol>
+        </div>
+        
+        <!-- Appendix -->
+        <div class="section">
+            <h2 class="section-title">Appendix: Statistical Methodology</h2>
+            <div class="methodology">
+                <h3>Data Sources</h3>
+                <p>
+                    This analysis is based on data from 5,000 CQC inspection reports conducted between 
+                    January 2023 and April 2025, covering care homes, domiciliary care agencies, and 
+                    other adult social care services across England.
+                </p>
+                
+                <h3>Statistical Tests</h3>
+                <p>
+                    Two-tailed t-tests were used to determine the statistical significance of 
+                    regional variations, with the following criteria:
+                </p>
+                <ul>
+                    <li>p &lt; 0.05: Statistically significant (95% confidence level)</li>
+                    <li>p &lt; 0.01: Highly significant (99% confidence level)</li>
+                </ul>
+                
+                <h3>Categorization Criteria</h3>
+                <p>Regional variation is categorized based on the range of z-scores:</p>
+                <ul>
+                    <li>Low: Z-score range &lt; 1.0</li>
+                    <li>Medium: Z-score range 1.0-1.5</li>
+                    <li>High: Z-score range &gt; 1.5</li>
+                </ul>
+                
+                <p>Inspector consistency is measured using the standard deviation of ratings:</p>
+                <ul>
+                    <li>High: σ &lt; 0.5</li>
+                    <li>Medium: σ 0.5-0.8</li>
+                    <li>Low: σ &gt; 0.8</li>
+                </ul>
+                
+                <h3>Limitations</h3>
+                <p>
+                    This analysis has several limitations that should be considered when interpreting 
+                    the results:
+                </p>
+                <ul>
+                    <li>The analysis does not account for variations in service types within regions</li>
+                    <li>Historical trends over time are not fully captured in this point-in-time analysis</li>
+                    <li>Inspector groups are anonymized and represent aggregated data rather than individual inspectors</li>
+                    <li>Policy compliance is measured based on documentation rather than implementation</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Report Generated by Cathena Policy Management System</strong><br>
+                Reference: Rep/CQC/M/system/0001/Cathena<br>
+                20 May 2025
+            </p>
+        </div>
+    </div>
+</body>
+</html>

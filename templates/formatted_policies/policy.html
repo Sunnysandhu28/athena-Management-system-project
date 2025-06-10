@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('formatted_policies_bp.policy_list') }}">Categories</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('formatted_policies_bp.category_view', category_name=category.name) }}">{{ category.display_name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ policy.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ policy.title }}</h5>
+                        <span class="badge bg-light text-primary">{{ policy.code }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="policy-content">
+                        <!-- Convert Markdown to HTML -->
+                        {% set content_lines = policy.content.split('\n') %}
+                        
+                        {% for line in content_lines %}
+                            {% if line.startswith('## ') %}
+                                <h2 class="mt-4 mb-3">{{ line.replace('## ', '') }}</h2>
+                            {% elif line.startswith('### ') %}
+                                <h3 class="mt-3 mb-2">{{ line.replace('### ', '') }}</h3>
+                            {% elif line.startswith('#### ') %}
+                                <h4 class="mt-3 mb-2">{{ line.replace('#### ', '') }}</h4>
+                            {% elif line.startswith('- ') %}
+                                <ul class="mb-0"><li>{{ line.replace('- ', '') }}</li></ul>
+                            {% elif line.startswith('1. ') %}
+                                <ol class="mb-0"><li>{{ line.replace('1. ', '') }}</li></ol>
+                            {% elif line.strip() == '' %}
+                                <p></p>
+                            {% else %}
+                                <p>{{ line }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Policy Code:</strong> {{ policy.code }}</p>
+                    <p><strong>Category:</strong> {{ category.display_name }}</p>
+                    
+                    <hr>
+                    
+                    <h6>Related Policies</h6>
+                    <div class="list-group mt-2">
+                        <!-- Sample related policies - would be dynamically populated in a real implementation -->
+                        <a href="#" class="list-group-item list-group-item-action disabled">No related policies</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('formatted_policies_bp.category_view', category_name=category.name) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to {{ category.display_name }}
+                        </a>
+                        <button class="btn btn-outline-success">
+                            <i class="fas fa-print me-2"></i> Print Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

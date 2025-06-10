@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Policy Enhancement{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Batch Policy Enhancement</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Batch Policy Enhancement</h1>
+            <p class="lead">Use AI to analyze and enhance metadata for multiple policies at once</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Batch Processing Configuration</h2>
+                </div>
+                <div class="card-body">
+                    <p>This process will use machine learning to enhance multiple policies at once:</p>
+                    <ul>
+                        <li>Analyze policy structure and content</li>
+                        <li>Identify missing metadata sections</li>
+                        <li>Generate appropriate content through triangulation of existing data</li>
+                        <li>Update policies with enhanced metadata</li>
+                    </ul>
+                    
+                    <p class="alert alert-info">This process may take several minutes to complete depending on how many policies are processed.</p>
+                    
+                    <form method="POST" action="{{ url_for('ai_policy_learning.batch_enhance') }}">
+                        <div class="form-group">
+                            <label for="limit">Maximum number of policies to process:</label>
+                            <input type="number" class="form-control" id="limit" name="limit" 
+                                value="100" min="1" max="500">
+                            <small class="form-text text-muted">Limit the number of policies to process (1-500)</small>
+                        </div>
+                        
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary">Run Batch Enhancement</button>
+                            <a href="{{ current_url }}" class="btn btn-secondary ml-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">Information</h2>
+                </div>
+                <div class="card-body">
+                    <p>Batch enhancement applies machine learning to automatically enhance policy metadata at scale.</p>
+                    <p>The system will prioritize:</p>
+                    <ul>
+                        <li>Policies with missing required sections</li>
+                        <li>Recently updated policies</li>
+                        <li>Policies with minimal existing metadata</li>
+                    </ul>
+                    <p>A detailed report will be provided after processing is complete.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

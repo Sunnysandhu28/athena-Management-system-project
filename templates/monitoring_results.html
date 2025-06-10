@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitoring Results - Cathena Policy Downloader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>System Monitoring Results</h1>
+    <p class="lead">Results of system checks</p>
+
+    {% if check_type == 'security' %}
+        <div class="alert alert-{{ results.status == 'success' ? 'success' : (results.status == 'warning' ? 'warning' : 'danger') }}">
+            <h4 class="alert-heading">{{ results.message }}</h4>
+        </div>
+
+        {% for check in results.checks %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                    <h2 class="h5 mb-0">{{ check.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <p>{{ check.message }}</p>
+                    
+                    {% if check.details %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        {% for key in check.details[0] | keys %}
+                                            <th>{{ key | title }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in check.details %}
+                                        <tr>
+                                            {% for key, value in item.items() %}
+                                                <td>
+                                                    {% if key == 'modified' %}
+                                                        {{ value.strftime('%d-%m-%Y %H:%M') if value is datetime else value }}
+                                                    {% elif key == 'size' %}
+                                                        {{ (value / 1024) | round(1) }} KB
+                                                    {% else %}
+                                                        {{ value }}
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    {% elif check_type == 'performance' %}
+        <div class="alert alert-{{ results.status == 'success' ? 'success' : (results.status == 'warning' ? 'warning' : 'danger') }}">
+            <h4 class="alert-heading">{{ results.message }}</h4>
+        </div>
+
+        {% for check in results.checks %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                    <h2 class="h5 mb-0">{{ check.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <p>{{ check.message }}</p>
+                    
+                    {% if check.details %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <tbody>
+                                    {% for key, value in check.details.items() %}
+                                        <tr>
+                                            <th scope="row">{{ key | title }}</th>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    {% elif check_type == 'data' %}
+        <div class="alert alert-{{ results.status == 'success' ? 'success' : (results.status == 'warning' ? 'warning' : 'danger') }}">
+            <h4 class="alert-heading">{{ results.message }}</h4>
+        </div>
+
+        {% for check in results.checks %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                    <h2 class="h5 mb-0">{{ check.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <p>{{ check.message }}</p>
+                    
+                    {% if check.details %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        {% for key in check.details[0] | keys %}
+                                            <th>{{ key | title }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in check.details %}
+                                        <tr>
+                                            {% for key, value in item.items() %}
+                                                <td>{{ value }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    {% else %}  <!-- All checks -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="true">Security</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">Performance</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab" aria-controls="data" aria-selected="false">Data Integrity</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="security" role="tabpanel" aria-labelledby="security-tab">
+                <div class="alert alert-{{ results.security.status == 'success' ? 'success' : (results.security.status == 'warning' ? 'warning' : 'danger') }}">
+                    <h4 class="alert-heading">{{ results.security.message }}</h4>
+                </div>
+
+                {% for check in results.security.checks %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                            <h2 class="h5 mb-0">{{ check.name }}</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ check.message }}</p>
+                            
+                            {% if check.details %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                {% for key in check.details[0] | keys %}
+                                                    <th>{{ key | title }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in check.details %}
+                                                <tr>
+                                                    {% for key, value in item.items() %}
+                                                        <td>
+                                                            {% if key == 'modified' %}
+                                                                {{ value.strftime('%d-%m-%Y %H:%M') if value is datetime else value }}
+                                                            {% elif key == 'size' %}
+                                                                {{ (value / 1024) | round(1) }} KB
+                                                            {% else %}
+                                                                {{ value }}
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade" id="performance" role="tabpanel" aria-labelledby="performance-tab">
+                <div class="alert alert-{{ results.performance.status == 'success' ? 'success' : (results.performance.status == 'warning' ? 'warning' : 'danger') }}">
+                    <h4 class="alert-heading">{{ results.performance.message }}</h4>
+                </div>
+
+                {% for check in results.performance.checks %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                            <h2 class="h5 mb-0">{{ check.name }}</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ check.message }}</p>
+                            
+                            {% if check.details %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <tbody>
+                                            {% for key, value in check.details.items() %}
+                                                <tr>
+                                                    <th scope="row">{{ key | title }}</th>
+                                                    <td>{{ value }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade" id="data" role="tabpanel" aria-labelledby="data-tab">
+                <div class="alert alert-{{ results.data.status == 'success' ? 'success' : (results.data.status == 'warning' ? 'warning' : 'danger') }}">
+                    <h4 class="alert-heading">{{ results.data.message }}</h4>
+                </div>
+
+                {% for check in results.data.checks %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-{{ check.status == 'success' ? 'success' : (check.status == 'warning' ? 'warning' : (check.status == 'info' ? 'info' : 'danger')) }} text-white">
+                            <h2 class="h5 mb-0">{{ check.name }}</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ check.message }}</p>
+                            
+                            {% if check.details %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                {% for key in check.details[0] | keys %}
+                                                    <th>{{ key | title }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in check.details %}
+                                                <tr>
+                                                    {% for key, value in item.items() %}
+                                                        <td>{{ value }}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="mb-4">
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('monitor_system') }}" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i> Run More Checks
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

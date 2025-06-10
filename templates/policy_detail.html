@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy.code }} - {{ policy.title }} | Cathena{% endblock %}
+
+{% block head %}
+<style>
+    .policy-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 5px solid #0d6efd;
+    }
+    
+    .policy-code {
+        font-family: monospace;
+        background-color: #e9ecef;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 1rem;
+        margin-right: 10px;
+    }
+    
+    .policy-tag {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        margin-right: 5px;
+        color: #495057;
+    }
+    
+    .policy-tag.tag-core {
+        background-color: #cfe2ff;
+        color: #0d6efd;
+    }
+    
+    .policy-tag.tag-qcs {
+        background-color: #d1e7dd;
+        color: #198754;
+    }
+    
+    .policy-tag.tag-cqc {
+        background-color: #f8d7da;
+        color: #dc3545;
+    }
+    
+    .policy-tag.tag-nhs {
+        background-color: #fff3cd;
+        color: #fd7e14;
+    }
+    
+    .policy-tag.tag-operational {
+        background-color: #e0f7fa;
+        color: #0097a7;
+        font-weight: 500;
+        border: 1px solid #b2ebf2;
+    }
+    
+    .policy-metadata {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .metadata-item {
+        margin-bottom: 10px;
+    }
+    
+    .metadata-label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+    
+    .policy-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        line-height: 1.6;
+        white-space: pre-wrap;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .policy-formatted-content {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .policy-formatted-content h1 {
+        color: #0d6efd;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    
+    .policy-formatted-content h2 {
+        color: #495057;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .policy-formatted-content h3 {
+        color: #495057;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .policy-formatted-content p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .policy-formatted-content ul, 
+    .policy-formatted-content ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+    }
+    
+    .policy-formatted-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .policy-metadata-section {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .policy-content-section {
+        line-height: 1.6;
+    }
+    
+    .policy-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/policy-repository">Policy Repository</a></li>
+                    <li class="breadcrumb-item"><a href="/full-policies">All Policies</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ policy.code }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="policy-header">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="policy-code">{{ policy.code }}</span>
+                        {% if policy.code and policy.code.startswith('0') %}
+                        <span class="policy-tag tag-operational" title="Operational policies (0-prefix) govern day-to-day management and administrative procedures within the organization.">Operational</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% for tag in policy.tags %}
+                        <span class="policy-tag tag-{{ tag.lower() }}">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <h1 class="mb-2">{{ policy.title }}</h1>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-folder me-1"></i> {{ policy.category }} 
+                    <span class="mx-2">•</span> 
+                    <i class="fas fa-clock me-1"></i> Last updated: {{ policy.last_modified }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="action-buttons">
+                <a href="/full-policies" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back to All Policies
+                </a>
+                <a href="/download-policy/{{ policy.code }}" class="btn btn-primary">
+                    <i class="fas fa-download me-1"></i> Download Policy
+                </a>
+                <button class="btn btn-outline-success ms-2">
+                    <i class="fas fa-print me-1"></i> Print
+                </button>
+                <button class="btn btn-outline-info ms-2">
+                    <i class="fas fa-file-pdf me-1"></i> Export to PDF
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3 order-md-2">
+            <div class="policy-metadata">
+                <h5 class="mb-4">Policy Information</h5>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Policy Code</div>
+                    <div>{{ policy.code }}</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Category</div>
+                    <div>{{ policy.category }}</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Status</div>
+                    <div>
+                        <span class="badge bg-success">{{ policy.status }}</span>
+                    </div>
+                </div>
+                
+                {% if policy.source %}
+                <div class="metadata-item">
+                    <div class="metadata-label">Source</div>
+                    <div>
+                        {% if 'Cathena' in policy.source %}
+                        <span class="badge bg-primary">{{ policy.source }}</span>
+                        {% else %}
+                        <span class="badge bg-info">{{ policy.source }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if policy.format_status %}
+                <div class="metadata-item">
+                    <div class="metadata-label">Format Status</div>
+                    <div>
+                        {% if policy.format_status == 'Enhanced Format' %}
+                        <span class="badge bg-success">{{ policy.format_status }}</span>
+                        {% elif policy.format_status == 'Original Format' %}
+                        <span class="badge bg-warning">{{ policy.format_status }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ policy.format_status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Last Updated</div>
+                    <div>{{ policy.last_modified }}</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Related Policies</div>
+                    <div>
+                        <a href="#">AB03 - Staff Supervision</a><br>
+                        <a href="#">HR05 - Training and Development</a>
+                    </div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">CQC Standards</div>
+                    <div>
+                        <a href="#">Regulation 12</a><br>
+                        <a href="#">Regulation 17</a>
+                    </div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">NHS Conditions</div>
+                    <div>
+                        <a href="#">Clinical Governance</a><br>
+                        <a href="#">Information Governance</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9 order-md-1">
+            <div class="policy-content">
+                {{ content | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Print functionality
+        document.querySelector('.btn-outline-success').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}

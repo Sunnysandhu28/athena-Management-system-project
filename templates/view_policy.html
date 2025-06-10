@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}{{ policy.title }} | Policy Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            {% if policy.category %}
+            <li class="breadcrumb-item"><a href="{{ url_for('view_category', category_id=policy.category.id) }}">{{ policy.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ policy.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        {% if policy.code and policy.title.startswith(policy.code) %}
+                            {# If title already contains the code as a prefix, display it properly #}
+                            <span class="badge bg-light text-dark me-2">{{ policy.code }}</span>
+                            {{ policy.title[policy.code|length+3:] if policy.title[policy.code|length:policy.code|length+3] == " - " else policy.title }}
+                        {% else %}
+                            {% if policy.code %}
+                                <span class="badge bg-light text-dark me-2">{{ policy.code }}</span>
+                            {% endif %}
+                            {{ policy.title }}
+                        {% endif %}
+                    </h1>
+                </div>
+                <div>
+                    {% if policy.category %}
+                        <span class="badge bg-info">{{ policy.category.name }}</span>
+                    {% else %}
+                        <span class="badge bg-warning">Uncategorized</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Created:</strong> {{ policy.format_created_date if hasattr(policy, 'format_created_date') else (policy.created_at.strftime('%Y-%m-%d %H:%M') if policy.created_at else 'N/A') }}</p>
+                    <p><strong>Last Updated:</strong> {{ policy.format_updated_date if hasattr(policy, 'format_updated_date') else (policy.updated_at.strftime('%Y-%m-%d %H:%M') if policy.updated_at else 'N/A') }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Version:</strong> {{ policy.version if policy.version else '1.0' }}</p>
+                    <p><strong>Source:</strong> {{ policy.source_filename if hasattr(policy, 'source_filename') and policy.source_filename else 'N/A' }}</p>
+                </div>
+            </div>
+            
+            {% if policy.metadata is defined and policy.metadata %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Additional Metadata</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <tbody>
+                                    {% for key, value in policy.metadata.items() %}
+                                    <tr>
+                                        <th style="width: 150px;">{{ key|title }}</th>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if policy.file_path %}
+            <div class="mb-4">
+                <!-- Add info about the file path for debugging -->
+                <div class="small text-muted mb-2">File path: {{ policy.file_path }}</div>
+                
+                <!-- Use url_for with static_file route for reliable file access -->
+                <a href="{{ url_for('static_file', filename=policy.file_path) }}" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> View Original Document
+                </a>
+            </div>
+            {% endif %}
+
+            {% if policy.content %}
+            <div class="policy-sections">
+                <!-- Policy Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Policy</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-content">
+                            {% set markdown_content = policy.content %}
+                            {% set policy_section = "" %}
+                            
+                            {% if "### Policy" in markdown_content or "## Policy" in markdown_content or "\nPolicy\n" in markdown_content %}
+                                {% if "### Policy" in markdown_content %}
+                                    {% set policy_section = markdown_content.split("### Policy")[1].split("###")[0] if "###" in markdown_content.split("### Policy")[1] else markdown_content.split("### Policy")[1] %}
+                                {% elif "## Policy" in markdown_content %}
+                                    {% set policy_section = markdown_content.split("## Policy")[1].split("##")[0] if "##" in markdown_content.split("## Policy")[1] else markdown_content.split("## Policy")[1] %}
+                                {% elif "\nPolicy\n" in markdown_content %}
+                                    {% set policy_section = markdown_content.split("\nPolicy\n")[1].split("\n\n")[0] if "\n\n" in markdown_content.split("\nPolicy\n")[1] else markdown_content.split("\nPolicy\n")[1] %}
+                                {% endif %}
+                                
+                                {% if policy_section %}
+                                    {% from 'macros/markdown_renderer.html' import render_markdown with context %}
+                                    {{ render_markdown(policy_section)|safe }}
+                                {% else %}
+                                    <p class="text-muted">No policy statement section found</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">No policy statement section found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Procedures Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Procedures</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-content">
+                            {% set procedures_section = "" %}
+                            
+                            {% if "### Procedures" in markdown_content or "## Procedures" in markdown_content or "\nProcedures\n" in markdown_content %}
+                                {% if "### Procedures" in markdown_content %}
+                                    {% set procedures_section = markdown_content.split("### Procedures")[1].split("###")[0] if "###" in markdown_content.split("### Procedures")[1] else markdown_content.split("### Procedures")[1] %}
+                                {% elif "## Procedures" in markdown_content %}
+                                    {% set procedures_section = markdown_content.split("## Procedures")[1].split("##")[0] if "##" in markdown_content.split("## Procedures")[1] else markdown_content.split("## Procedures")[1] %}
+                                {% elif "\nProcedures\n" in markdown_content %}
+                                    {% set procedures_section = markdown_content.split("\nProcedures\n")[1].split("\n\n")[0] if "\n\n" in markdown_content.split("\nProcedures\n")[1] else markdown_content.split("\nProcedures\n")[1] %}
+                                {% endif %}
+                                
+                                {% if procedures_section %}
+                                    {% from 'macros/markdown_renderer.html' import render_markdown with context %}
+                                    {{ render_markdown(procedures_section)|safe }}
+                                {% else %}
+                                    <p class="text-muted">No procedures section found</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">No procedures section found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- References Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">References</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-content">
+                            {% set references_section = "" %}
+                            
+                            {% if "### References" in markdown_content or "## References" in markdown_content or "\nReferences\n" in markdown_content %}
+                                {% if "### References" in markdown_content %}
+                                    {% set references_section = markdown_content.split("### References")[1].split("###")[0] if "###" in markdown_content.split("### References")[1] else markdown_content.split("### References")[1] %}
+                                {% elif "## References" in markdown_content %}
+                                    {% set references_section = markdown_content.split("## References")[1].split("##")[0] if "##" in markdown_content.split("## References")[1] else markdown_content.split("## References")[1] %}
+                                {% elif "\nReferences\n" in markdown_content %}
+                                    {% set references_section = markdown_content.split("\nReferences\n")[1].split("\n\n")[0] if "\n\n" in markdown_content.split("\nReferences\n")[1] else markdown_content.split("\nReferences\n")[1] %}
+                                {% endif %}
+                                
+                                {% if references_section %}
+                                    {% from 'macros/markdown_renderer.html' import render_markdown with context %}
+                                    {{ render_markdown(references_section)|safe }}
+                                {% else %}
+                                    <p class="text-muted">No references section found</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">No references section found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Full Content (Hidden by Default) -->
+                <div class="card mb-4 collapse" id="fullContentSection">
+                    <div class="card-header">
+                        <h5 class="mb-0">Full Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-content" style="max-height: 500px; overflow-y: auto;">
+                            {% if policy.content %}
+                                {% if markdown_content.startswith('#') or '---' in markdown_content or '*' in markdown_content or '-' in markdown_content %}
+                                    <!-- This is markdown content - use the markdown processor -->
+                                    {% from 'macros/markdown_renderer.html' import render_markdown with context %}
+                                    {{ render_markdown(policy.content)|safe }}
+                                {% else %}
+                                    <!-- Fallback to simple line breaks -->
+                                    {{ policy.content|replace('\n', '<br>')|safe }}
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">No content available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Toggle Button for Full Content -->
+                <div class="text-center mb-4">
+                    <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="collapse" data-bs-target="#fullContentSection" aria-expanded="false" aria-controls="fullContentSection">
+                        <span class="toggle-text">Show Full Content</span>
+                    </button>
+                    <a href="{{ url_for('carbon_copy_policies') }}" class="btn btn-primary">Back to Policies</a>
+                </div>
+                
+                <!-- Custom JavaScript for toggle button text -->
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Get the toggle button
+                    var toggleButton = document.querySelector('[data-bs-target="#fullContentSection"]');
+                    if (toggleButton) {
+                        var toggleText = toggleButton.querySelector('.toggle-text');
+                        
+                        // Add event listener to update text when collapsed/expanded
+                        toggleButton.addEventListener('click', function() {
+                            if (toggleButton.getAttribute('aria-expanded') === 'false') {
+                                toggleText.textContent = 'Hide Full Content';
+                            } else {
+                                toggleText.textContent = 'Show Full Content';
+                            }
+                        });
+                        
+                        // Listen for bootstrap collapse events
+                        document.getElementById('fullContentSection').addEventListener('shown.bs.collapse', function() {
+                            toggleText.textContent = 'Hide Full Content';
+                        });
+                        
+                        document.getElementById('fullContentSection').addEventListener('hidden.bs.collapse', function() {
+                            toggleText.textContent = 'Show Full Content';
+                        });
+                    }
+                });
+                </script>
+            </div>
+            {% endif %}
+
+            {% if policy.legislation_acts %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Related Legislation</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for legislation in policy.legislation_acts %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ legislation.legislation_act.name }}
+                                {% if legislation.legislation_act.year %}
+                                    <span class="badge bg-secondary">{{ legislation.legislation_act.year }}</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                {% if referrer_url %}
+                    <!-- Use referrer URL if available -->
+                    <a href="{{ referrer_url }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Go Back
+                    </a>
+                {% elif policy.category %}
+                    <!-- If policy is categorized, go back to category view -->
+                    <a href="{{ url_for('view_category', category_id=policy.category.id) }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to {{ policy.category.name }}
+                    </a>
+                {% elif from_uncategorized %}
+                    <!-- If from uncategorized, go back to uncategorized view -->
+                    <a href="{{ url_for('uncategorized_policies') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Uncategorized Policies
+                    </a>
+                {% else %}
+                    <!-- Default: go back to home page -->
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to All Policies
+                    </a>
+                {% endif %}
+                
+                <!-- Category change form -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="policyActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear"></i> Policy Actions
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="policyActionsDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeCategoryModal">
+                                <i class="bi bi-folder-symlink"></i> Change Category
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editMetadataModal">
+                                <i class="bi bi-pencil"></i> Edit Metadata
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Category Modal -->
+<div class="modal fade" id="changeCategoryModal" tabindex="-1" aria-labelledby="changeCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('change_policy_category', policy_id=policy.id) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeCategoryModalLabel">Change Policy Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="category_id" class="form-label">Select New Category</label>
+                        <select name="category_id" id="category_id" class="form-select" required>
+                            <option value="">Select a category</option>
+                            {% for category in all_categories %}
+                                <option value="{{ category.id }}" {% if policy.category and policy.category.id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="update_reference_code" id="update_reference_code" value="1">
+                        <label class="form-check-label" for="update_reference_code">
+                            Update reference code to match new category
+                        </label>
+                        <div class="form-text">If checked, a new reference code will be generated based on the new category.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Metadata Modal -->
+<div class="modal fade" id="editMetadataModal" tabindex="-1" aria-labelledby="editMetadataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('update_policy_metadata', policy_id=policy.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMetadataModalLabel">Edit Policy Metadata</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                            value="{% if policy.code and policy.title.startswith(policy.code) %}{{ policy.title[policy.code|length+3:] if policy.title[policy.code|length:policy.code|length+3] == ' - ' else policy.title }}{% else %}{{ policy.title }}{% endif %}" 
+                            required>
+                        <div class="form-text">Enter only the title without the reference code.</div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="reference_code" class="form-label">Reference Code</label>
+                        <input type="text" class="form-control" id="reference_code" name="reference_code" value="{{ policy.code }}" placeholder="e.g., CC87, UC01">
+                        <div class="form-text">The reference code will be displayed as a badge and prefixed to the title.</div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="version" class="form-label">Version</label>
+                        <input type="text" class="form-control" id="version" name="version" value="{{ policy.version }}" placeholder="e.g., 1.0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

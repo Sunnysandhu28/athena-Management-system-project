@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML AI Communication - Cathena MA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.ai {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 1rem;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: 1rem;
+        }
+        
+        .message.ai .message-content {
+            background: white;
+            color: #333;
+            border: 2px solid #e9ecef;
+            margin-right: 1rem;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .ai-avatar {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .chat-input-container {
+            padding: 1rem;
+            background: white;
+            border-top: 2px solid #f8f9fa;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-control {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-send {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .quick-actions {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-action-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            background: #fff;
+            transform: translateY(-2px);
+        }
+        
+        .interface-creator {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .creator-header {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .widget-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .widget-option:hover {
+            border-color: #667eea;
+            background: #fff;
+        }
+        
+        .widget-option.selected {
+            border-color: #667eea;
+            background: #e8f4fd;
+        }
+        
+        .suggestion-item {
+            background: #e8f4fd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-online {
+            width: 10px;
+            height: 10px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/ma/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active">ML AI Communication</li>
+                </ol>
+            </nav>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-robot me-3"></i>ML AI Communication System</h1>
+                    <div class="ai-status">
+                        <div class="status-online"></div>
+                        <span>AI System Online - Enhanced with 10,774 learning materials</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light btn-lg" id="newSessionBtn">
+                        <i class="fas fa-plus me-2"></i>New Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="quick-action-btn" data-action="compliance">
+                        <i class="fas fa-clipboard-check fa-2x text-primary mb-2"></i>
+                        <div><strong>Compliance Analysis</strong></div>
+                        <small>Get CQC compliance insights</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="quick-action-btn" data-action="policy">
+                        <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
+                        <div><strong>Policy Guidance</strong></div>
+                        <small>Policy recommendations</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="quick-action-btn" data-action="care-plans">
+                        <i class="fas fa-heart fa-2x text-warning mb-2"></i>
+                        <div><strong>Care Plan Audit</strong></div>
+                        <small>Person-centred care analysis</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="quick-action-btn" data-action="analytics">
+                        <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                        <div><strong>System Analytics</strong></div>
+                        <small>Performance insights</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface Creator (RA Only) -->
+        <div class="interface-creator" id="interfaceCreator" style="display: none;">
+            <div class="creator-header">
+                <h4><i class="fas fa-magic me-2"></i>Interface & Widget Creator</h4>
+                <p class="mb-0">Create new interfaces and widgets for MA and other users (RA Access Level)</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Create New Interface</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Interface Name:</label>
+                        <input type="text" class="form-control" id="interfaceName" placeholder="e.g., Audit Care Plans">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Target Users:</label>
+                        <select class="form-select" id="targetUsers" multiple>
+                            <option value="MA">Management Admin (MA)</option>
+                            <option value="RA">Regional Admin (RA)</option>
+                            <option value="HO">Head Office (HO)</option>
+                            <option value="SM">Site Manager (SM)</option>
+                            <option value="Staff">Staff Members</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Interface Description:</label>
+                        <textarea class="form-control" id="interfaceDescription" rows="3" placeholder="Describe the purpose and functionality..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Select Widgets</h5>
+                    <div class="widget-option" data-widget="care-plan-audit">
+                        <i class="fas fa-heart-pulse me-2 text-danger"></i>
+                        <strong>Care Plan Audit Widget</strong>
+                        <div><small>Audit care plans based on CQC Quality Statements and person-centred care requirements</small></div>
+                    </div>
+                    <div class="widget-option" data-widget="regulatory-tracker">
+                        <i class="fas fa-balance-scale me-2 text-primary"></i>
+                        <strong>Regulatory Tracker Widget</strong>
+                        <div><small>Track compliance across all regulatory frameworks</small></div>
+                    </div>
+                    <div class="widget-option" data-widget="quality-metrics">
+                        <i class="fas fa-star me-2 text-warning"></i>
+                        <strong>Quality Metrics Widget</strong>
+                        <div><small>Monitor CQC Quality Statements performance</small></div>
+                    </div>
+                    <div class="widget-option" data-widget="ml-insights">
+                        <i class="fas fa-brain me-2 text-info"></i>
+                        <strong>ML Insights Widget</strong>
+                        <div><small>AI-powered recommendations and insights</small></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <button class="btn btn-primary btn-lg" id="createInterfaceBtn">
+                    <i class="fas fa-rocket me-2"></i>Create Interface
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Chat Interface -->
+            <div class="col-md-8">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="d-flex align-items-center">
+                            <div class="ai-avatar me-3">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">Cathena ML AI Assistant</h5>
+                                <small>Advanced AI trained on 10,774+ documents</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message ai">
+                            <div class="message-avatar ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p><strong>Welcome to the Cathena ML AI System!</strong></p>
+                                <p>I'm here to help with policy management, compliance analysis, and care home operations. I have extensive knowledge from:</p>
+                                <div class="suggestion-item">📚 Books and research papers</div>
+                                <div class="suggestion-item">🏥 Medical conditions and treatments</div>
+                                <div class="suggestion-item">📋 Policy frameworks and compliance</div>
+                                <div class="suggestion-item">💊 NHS medications and interactions</div>
+                                <div class="suggestion-item">💻 Software and system optimization</div>
+                                <p>What would you like assistance with today?</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-pills mb-3" id="communicationTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="message-tab" data-bs-toggle="pill" data-bs-target="#message-panel" type="button" role="tab">
+                                    <i class="fas fa-comments me-2"></i>Message
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="image-tab" data-bs-toggle="pill" data-bs-target="#image-panel" type="button" role="tab">
+                                    <i class="fas fa-image me-2"></i>Image Analysis
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="communicationTabContent">
+                            <!-- Message Tab -->
+                            <div class="tab-pane fade show active" id="message-panel" role="tabpanel">
+                                <div class="chat-input">
+                                    <input type="text" class="form-control" id="messageInput" placeholder="Ask me about policies, compliance, care plans, or any aspect of care home management...">
+                                    <button class="btn-send" id="sendBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Image Analysis Tab -->
+                            <div class="tab-pane fade" id="image-panel" role="tabpanel">
+                                <div class="image-upload-area">
+                                    <form id="imageAnalysisForm" enctype="multipart/form-data">
+                                        <div class="image-drop-zone" id="imageDropZone">
+                                            <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+                                            <h5>Upload Image for AI Analysis</h5>
+                                            <p class="text-muted">Drop image here or click to browse</p>
+                                            <p class="small text-info">Supports: JPG, PNG, GIF, BMP, WEBP</p>
+                                            <input type="file" id="imageInput" name="image" accept="image/*" class="d-none">
+                                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                                                <i class="fas fa-upload me-2"></i>Select Image
+                                            </button>
+                                        </div>
+                                        <div id="imagePreview" class="mt-3" style="display: none;">
+                                            <img id="previewImg" class="img-fluid rounded" style="max-height: 200px;">
+                                            <div class="mt-2">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-brain me-2"></i>Analyze with AI
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" id="clearImage">
+                                                    <i class="fas fa-times me-2"></i>Clear
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ML Statistics & Controls -->
+            <div class="col-md-4">
+                <div class="quick-actions">
+                    <h5><i class="fas fa-chart-pie me-2"></i>ML Learning Stats</h5>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="stat-value">10,774</div>
+                            <small>Learning Materials</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-value">247</div>
+                            <small>System Improvements</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-value">94.7%</div>
+                            <small>Learning Efficiency</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-value">95.7%</div>
+                            <small>Error Prevention</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RA Interface Creator Access -->
+                <div class="quick-actions">
+                    <h5><i class="fas fa-tools me-2"></i>RA Tools</h5>
+                    <button class="btn btn-outline-primary w-100 mb-2" id="showInterfaceCreator">
+                        <i class="fas fa-plus me-2"></i>Create New Interface
+                    </button>
+                    <button class="btn btn-outline-success w-100 mb-2" id="auditCareAplansBtn">
+                        <i class="fas fa-heart-pulse me-2"></i>Audit Care Plans Branch
+                    </button>
+                    <button class="btn btn-outline-info w-100">
+                        <i class="fas fa-cog me-2"></i>System Configuration
+                    </button>
+                </div>
+                
+                <div class="quick-actions">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Recent AI Insights</h5>
+                    <div class="suggestion-item">
+                        <small><strong>Policy Enhancement:</strong> Identified 12 policies requiring CQC alignment updates</small>
+                    </div>
+                    <div class="suggestion-item">
+                        <small><strong>Compliance Alert:</strong> Fire safety training due for 3 sites</small>
+                    </div>
+                    <div class="suggestion-item">
+                        <small><strong>Care Quality:</strong> Person-centred care metrics show 94% satisfaction</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${isUser ? 'user-avatar' : 'ai-avatar'}">
+                    <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
+                </div>
+                <div class="message-content">
+                    <p>${content}</p>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            addMessage('<i class="fas fa-spinner fa-spin"></i> AI is thinking...', false);
+            
+            // Send to AI
+            fetch('/ma/api/ml-chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator
+                chatMessages.removeChild(chatMessages.lastChild);
+                
+                // Add AI response
+                let responseHtml = data.message;
+                
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseHtml += '<div class="mt-2">';
+                    data.suggestions.forEach(suggestion => {
+                        responseHtml += `<div class="suggestion-item">${suggestion}</div>`;
+                    });
+                    responseHtml += '</div>';
+                }
+                
+                addMessage(responseHtml, false);
+            })
+            .catch(error => {
+                // Remove typing indicator
+                chatMessages.removeChild(chatMessages.lastChild);
+                addMessage('Sorry, I encountered an error. Please try again.', false);
+                console.error('Error:', error);
+            });
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Quick actions
+        document.querySelectorAll('.quick-action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.dataset.action;
+                let message = '';
+                
+                switch(action) {
+                    case 'compliance':
+                        message = 'Please provide a comprehensive compliance analysis for all our care home sites including CQC ratings and areas for improvement.';
+                        break;
+                    case 'policy':
+                        message = 'I need guidance on policy updates and recommendations based on the latest regulatory requirements.';
+                        break;
+                    case 'care-plans':
+                        message = 'Help me audit our care plans for person-centred care compliance and CQC Quality Statements alignment.';
+                        break;
+                    case 'analytics':
+                        message = 'Show me system performance analytics and insights from the ML learning data.';
+                        break;
+                }
+                
+                messageInput.value = message;
+                sendMessage();
+            });
+        });
+
+        // Interface Creator (RA only)
+        document.getElementById('showInterfaceCreator').addEventListener('click', function() {
+            const creator = document.getElementById('interfaceCreator');
+            creator.style.display = creator.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Widget selection
+        document.querySelectorAll('.widget-option').forEach(option => {
+            option.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Create Interface
+        document.getElementById('createInterfaceBtn').addEventListener('click', function() {
+            const interfaceName = document.getElementById('interfaceName').value;
+            const targetUsers = Array.from(document.getElementById('targetUsers').selectedOptions).map(option => option.value);
+            const description = document.getElementById('interfaceDescription').value;
+            const selectedWidgets = Array.from(document.querySelectorAll('.widget-option.selected')).map(w => w.dataset.widget);
+            
+            if (!interfaceName || targetUsers.length === 0) {
+                alert('Please provide interface name and select target users.');
+                return;
+            }
+            
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Interface...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                alert(`Interface "${interfaceName}" created successfully!\n\nTarget Users: ${targetUsers.join(', ')}\nWidgets: ${selectedWidgets.length}\n\nThe new interface will be available in the navigation menu for authorized users.`);
+                
+                // Reset form
+                document.getElementById('interfaceName').value = '';
+                document.getElementById('interfaceDescription').value = '';
+                document.getElementById('targetUsers').selectedIndex = -1;
+                document.querySelectorAll('.widget-option.selected').forEach(w => w.classList.remove('selected'));
+                
+                this.innerHTML = '<i class="fas fa-rocket me-2"></i>Create Interface';
+                this.disabled = false;
+                
+                document.getElementById('interfaceCreator').style.display = 'none';
+            }, 2000);
+        });
+
+        // Audit Care Plans Branch
+        document.getElementById('auditCareAplansBtn').addEventListener('click', function() {
+            addMessage('I would like to create a new branch for auditing care plans based on CQC Quality Statements and person-centred care requirements. Can you help me design this system?', true);
+            
+            setTimeout(() => {
+                addMessage(`
+                    <strong>Excellent idea! I can help you design the Audit Care Plans branch.</strong>
+                    
+                    <p>Based on my analysis of CQC Quality Statements and person-centred care requirements, here's what I recommend:</p>
+                    
+                    <div class="suggestion-item"><strong>🔍 Care Plan Assessment Engine</strong> - Automated analysis against CQC Quality Statements</div>
+                    <div class="suggestion-item"><strong>👤 Person-Centred Care Metrics</strong> - Individual preferences and choice evaluation</div>
+                    <div class="suggestion-item"><strong>📊 Quality Statement Compliance</strong> - Real-time scoring against all 5 CQC key questions</div>
+                    <div class="suggestion-item"><strong>🎯 Action Plan Generator</strong> - Automated improvement recommendations</div>
+                    
+                    <p>This branch would integrate with your existing ML system and provide comprehensive audit capabilities. Should I proceed with creating the initial framework?</p>
+                `, false);
+            }, 1500);
+        });
+
+        // New Session
+        document.getElementById('newSessionBtn').addEventListener('click', function() {
+            chatMessages.innerHTML = `
+                <div class="message ai">
+                    <div class="message-avatar ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p><strong>New session started!</strong></p>
+                        <p>I'm ready to help with your care home management needs. What would you like to work on today?</p>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

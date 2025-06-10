@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Assessment Learning{% endblock %}
+
+{% block head %}
+<style>
+    .assessment-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    .assessment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .stats-card {
+        border-left: 4px solid #4285f4;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+    }
+    .upload-card {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .upload-card:hover {
+        border-color: #4285f4;
+        background-color: #f8f9fa;
+    }
+    .document-type-badge {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-right: 5px;
+    }
+    .badge-evidence {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    .badge-performance {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .badge-framework {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .indicator-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .indicator-item {
+        padding: 8px 12px;
+        border-left: 3px solid #4285f4;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+    }
+    #file-name-display {
+        margin-top: 10px;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">CQC Assessment Learning</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Assessment Stats</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats %}
+                    <div class="stats-card">
+                        <h6>Evidence Categories</h6>
+                        <p class="mb-0">{{ stats.evidence_categories }} documents</p>
+                    </div>
+                    <div class="stats-card">
+                        <h6>Performance Assessment</h6>
+                        <p class="mb-0">{{ stats.performance_assessment }} documents</p>
+                    </div>
+                    <div class="stats-card">
+                        <h6>Quality Frameworks</h6>
+                        <p class="mb-0">{{ stats.quality_frameworks }} documents</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No assessment documents have been processed yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Key Indicators</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats and stats.key_indicators %}
+                    <div class="indicator-list">
+                        {% for indicator in stats.key_indicators %}
+                        <div class="indicator-item">
+                            <p class="mb-0">{{ indicator }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No key indicators available. Process assessment documents to extract them.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Process Assessment Documents</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Upload Documents</h6>
+                        <form action="{{ url_for('policy_learning.cqc_assessment') }}" method="post" enctype="multipart/form-data">
+                            <div class="upload-card" id="upload-area" onclick="document.getElementById('assessmentFiles').click();">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                <p>Drag & drop CQC assessment PDF files here or click to browse</p>
+                                <input type="file" id="assessmentFiles" name="assessmentFiles" multiple style="display: none;" accept=".pdf" onchange="updateFileNames()">
+                                <div id="file-name-display"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload & Process</button>
+                        </form>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Process from Folder</h6>
+                        <form action="{{ url_for('policy_learning.cqc_assessment') }}" method="post">
+                            <div class="form-group">
+                                <label for="folder_path">Folder Path</label>
+                                <input type="text" class="form-control" id="folder_path" name="folder_path" value="attached_assets">
+                            </div>
+                            <div class="form-group">
+                                <label for="specific_files">Specific Files (comma-separated, leave empty for auto-detection)</label>
+                                <input type="text" class="form-control" id="specific_files" name="specific_files" placeholder="file1.pdf, file2.pdf">
+                                <small class="form-text text-muted">For example: full_book_evidence-categories-1746444218.PDF, full_book_assessing-quality-and-performance-1746444140.PDF</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Process Files</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Processed Assessment Documents</h5>
+                </div>
+                <div class="card-body">
+                    {% if assessment_docs %}
+                    {% for doc in assessment_docs %}
+                    <div class="assessment-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>{{ doc.file_name }}</h6>
+                                {% if doc.document_type == 'Evidence Categories' %}
+                                <span class="document-type-badge badge-evidence">{{ doc.document_type }}</span>
+                                {% elif doc.document_type == 'Performance Assessment' %}
+                                <span class="document-type-badge badge-performance">{{ doc.document_type }}</span>
+                                {% elif doc.document_type == 'Quality Framework' %}
+                                <span class="document-type-badge badge-framework">{{ doc.document_type }}</span>
+                                {% else %}
+                                <span class="document-type-badge">{{ doc.document_type }}</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('static_file', filename=doc.file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                        {% if doc.metadata and doc.metadata.summary %}
+                        <div class="mt-3">
+                            <p class="mb-1"><strong>Summary:</strong></p>
+                            <p class="text-muted small">{{ doc.metadata.summary }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No assessment documents have been processed yet. Upload some PDF files to get started.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle file upload UI
+    function updateFileNames() {
+        const input = document.getElementById('assessmentFiles');
+        const display = document.getElementById('file-name-display');
+        
+        if (input.files.length > 0) {
+            let fileNames = '';
+            for (let i = 0; i < input.files.length; i++) {
+                fileNames += `<div>${input.files[i].name}</div>`;
+            }
+            display.innerHTML = fileNames;
+        } else {
+            display.innerHTML = '';
+        }
+    }
+    
+    // File drag and drop
+    const uploadArea = document.getElementById('upload-area');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#4285f4';
+        uploadArea.style.backgroundColor = '#f8f9fa';
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = '';
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = '';
+        
+        const fileInput = document.getElementById('assessmentFiles');
+        fileInput.files = e.dataTransfer.files;
+        updateFileNames();
+    });
+</script>
+{% endblock %}

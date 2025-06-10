@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{policy.code}} - {{policy.title}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .policy-header {
+            margin-bottom: 30px;
+        }
+        .policy-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        .review-sheet {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6c757d;
+        }
+        .review-sheet h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #495057;
+        }
+        .review-item {
+            margin-bottom: 10px;
+        }
+        .review-label {
+            font-weight: bold;
+            display: inline-block;
+            min-width: 150px;
+        }
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        .summary-section h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        .legislation-section {
+            margin-bottom: 30px;
+        }
+        .legislation-section h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        .legislation-section ul {
+            padding-left: 20px;
+        }
+        .main-content {
+            margin-top: 30px;
+        }
+        .policy-section {
+            margin-bottom: 30px;
+        }
+        .policy-section h2 {
+            font-size: 20px;
+            color: #3c5a99;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        .policy-section h3 {
+            color: #5c7cb8;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .policy-section p {
+            margin-bottom: 15px;
+        }
+        .policy-section ul {
+            margin-bottom: 15px;
+        }
+        .policy-section li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="policy-container">
+        <div class="policy-header">
+            <h1>{{policy.code}} - {{policy.title}}</h1>
+        </div>
+        
+        <div class="review-sheet">
+            <h2>Review Sheet</h2>
+            <div class="review-item">
+                <span class="review-label">Last Reviewed:</span>
+                <span>{{policy.last_modified}}</span>
+            </div>
+            <div class="review-item">
+                <span class="review-label">Last Amended:</span>
+                <span>This policy will be reviewed as needs require</span>
+            </div>
+            <div class="review-item">
+                <span class="review-label">Business Impact:</span>
+                <span>MEDIUM</span>
+            </div>
+            <div class="review-item">
+                <span class="review-label">Reason for this Review:</span>
+                <span>Scheduled review</span>
+            </div>
+            <div class="review-item">
+                <span class="review-label">Changes Made:</span>
+                <span>Yes</span>
+            </div>
+        </div>
+        
+        <div class="summary-section">
+            <h2>Summary:</h2>
+            <p>This policy provides guidance on {{policy.title|lower}}. It has been reviewed to ensure compliance with current regulations and best practices.</p>
+        </div>
+        
+        <div class="legislation-section">
+            <h2>Relevant Legislation:</h2>
+            <ul>
+                <li>Health and Social Care Act 2008 (Regulated Activities) Regulations 2014</li>
+                <li>Care Quality Commission (Registration) Regulations 2009</li>
+                <li>Health and Safety at Work etc. Act 1974</li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            {{ content|safe }}
+        </div>
+    </div>
+</body>
+</html>

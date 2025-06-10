@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ policy.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .policy-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .policy-title {
+        font-size: 2em;
+        margin-bottom: 0.5rem;
+    }
+    .policy-meta {
+        margin-top: 10px;
+        font-size: 0.9em;
+        color: #666;
+    }
+    .policy-meta-item {
+        display: flex;
+        margin-bottom: 5px;
+    }
+    .policy-meta-label {
+        font-weight: bold;
+        width: 120px;
+    }
+    .policy-content {
+        margin-top: 30px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: #fff;
+    }
+    .policy-content h1 {
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+    .policy-content h2 {
+        font-size: 1.5em;
+        margin-top: 25px;
+        margin-bottom: 15px;
+    }
+    .policy-content h3 {
+        font-size: 1.3em;
+        margin-top: 20px;
+    }
+    .policy-content p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+    .policy-content ul, .policy-content ol {
+        margin-bottom: 15px;
+        padding-left: 25px;
+    }
+    .policy-content li {
+        margin-bottom: 5px;
+    }
+    .back-link {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="back-link">
+        {% if referrer_url %}
+            <a href="{{ referrer_url }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Go Back
+            </a>
+        {% else %}
+            <a href="{{ url_for('qcs_policy_replication.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Policy Replication
+            </a>
+            <a href="{{ url_for('qcs_policy_replication.view_policies', category_id=policy.category_id) }}" class="btn btn-outline-secondary ml-2">
+                <i class="bi bi-list"></i> Category Policies
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="policy-header">
+        <div>
+            <h1 class="policy-title">{{ policy.title }}</h1>
+            <div class="policy-badges">
+                <span class="badge bg-secondary">Reference Code: {{ policy.code }}</span>
+                <span class="badge bg-{% if policy.is_published %}success{% else %}warning{% endif %}">
+                    {% if policy.is_published %}Published{% else %}Draft{% endif %}
+                </span>
+                {% if policy.is_qcs_policy %}
+                <span class="badge bg-primary">QCS Policy</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="policy-meta">
+        <!-- Common metadata sections that should always be displayed -->
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">Category:</div>
+            <div class="policy-meta-value">{{ policy.category.name if policy.category and policy.category.name else 'Uncategorized' }}</div>
+        </div>
+        
+        {% if policy.version is defined and policy.version %}
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">Version:</div>
+            <div class="policy-meta-value">{{ policy.version }}</div>
+        </div>
+        {% endif %}
+        
+        {% if policy.updated_at is defined and policy.updated_at %}
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">Updated:</div>
+            <div class="policy-meta-value">{{ policy.updated_at.strftime('%Y-%m-%d %H:%M') if policy.updated_at else 'N/A' }}</div>
+        </div>
+        {% endif %}
+        
+        {% if policy.code or policy.reference_code %}
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">Reference:</div>
+            <div class="policy-meta-value">{{ policy.code or policy.reference_code }}</div>
+        </div>
+        {% endif %}
+        
+        <!-- Additional metadata for comprehensive policies -->
+        {% if policy.metadata is defined and policy.metadata %}
+        {% for key, value in policy.metadata.items() %}
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">{{ key|title }}:</div>
+            <div class="policy-meta-value">{{ value }}</div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <!-- Direct download link to policy file if available -->
+        {% if policy.file_path %}
+        <div class="policy-meta-item">
+            <div class="policy-meta-label">Download:</div>
+            <div class="policy-meta-value">
+                <a href="{{ url_for('static', filename='policy_documents/' + policy.category.name.replace(' ', '_') + '/' + policy.code + '_' + policy.title|replace(' ', '_') + '.' + policy.file_type) }}" 
+                   download="{{ policy.code }}_{{ policy.title }}.{{ policy.file_type }}"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download"></i> Download Policy
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Policy Content -->
+    <div class="policy-content">
+        {% if formatted_content %}
+            <!-- Display the policy using our pre-formatted HTML content -->
+            {{ formatted_content|safe }}
+        {% elif content and content|length > 0 %}
+            <!-- Simple Direct HTML Generation -->
+            <div class="formatted-policy">
+                <!-- Display content with direct HTML conversion -->
+                {% set lines = content.split('\n') %}
+                {% for i in range(lines|length) %}
+                    {% set line = lines[i]|trim %}
+                    
+                    <!-- Skip empty lines -->
+                    {% if not line %}
+                        <br>
+                        {% continue %}
+                    {% endif %}
+                    
+                    <!-- Process headings -->
+                    {% if line.startswith('# ') %}
+                        <h1 class="policy-heading">{{ line[2:] }}</h1>
+                    {% elif line.startswith('## ') %}
+                        <h2 class="policy-subheading">{{ line[3:] }}</h2>
+                    {% elif line.startswith('### ') %}
+                        <h3 class="policy-section">{{ line[4:] }}</h3>
+                    {% elif line.startswith('#### ') %}
+                        <h4 class="policy-subsection">{{ line[5:] }}</h4>
+                    {% elif line.startswith('##### ') %}
+                        <h5>{{ line[6:] }}</h5>
+                    {% elif line.startswith('###### ') %}
+                        <h6>{{ line[7:] }}</h6>
+                        
+                    <!-- Process lists (simple approach) -->
+                    {% elif line.startswith('- ') or line.startswith('* ') %}
+                        <ul><li>{{ line[2:] }}</li></ul>
+                    {% elif line[0:1].isdigit() and line.find('. ') > 0 and line.find('. ') < 4 %}
+                        <ol><li>{{ line[line.find('. ')+2:] }}</li></ol>
+                        
+                    <!-- Process paragraphs (everything else) -->
+                    {% else %}
+                        <p class="policy-text">{{ line }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">No content available for this policy.</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Additional JavaScript to handle formatting if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // Convert any remaining markdown if needed
+        const policyContent = document.querySelector('.policy-content');
+        
+        // Clean up any duplicate elements like consecutive <br> tags
+        const brs = policyContent.querySelectorAll('br + br');
+        brs.forEach(br => br.remove());
+        
+        // Enhance lists for better display
+        const listItems = policyContent.querySelectorAll('ul li, ol li');
+        listItems.forEach(item => {
+            // Add some spacing for better readability
+            item.style.marginBottom = '8px';
+        });
+        
+        // Make sure lone list items are properly wrapped
+        const loneListItems = policyContent.querySelectorAll('li:only-child');
+        loneListItems.forEach(item => {
+            if (!item.parentElement.matches('ul, ol')) {
+                const wrap = document.createElement('ul');
+                item.parentNode.insertBefore(wrap, item);
+                wrap.appendChild(item);
+            }
+        });
+    });
+</script>
+{% endblock %}

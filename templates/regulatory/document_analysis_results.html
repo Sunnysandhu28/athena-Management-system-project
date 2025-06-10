@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results: {{ analysis.document_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">Analysis Results: {{ analysis.document_name }}</h2>
+                        <div>
+                            <button class="btn btn-light btn-sm" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i> Print Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <h5>Document Information</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <strong>Document Type:</strong> {{ analysis.document_type }}
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Word Count:</strong> {{ analysis.word_count }}
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Analysis Date:</strong> {{ analysis.analysis_date }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="mb-3">Overall Compliance Score</h5>
+                                    <div class="display-1 mb-2 
+                                        {% if analysis.overall_score >= 80 %}text-success
+                                        {% elif analysis.overall_score >= 60 %}text-warning
+                                        {% else %}text-danger{% endif %}">
+                                        {{ analysis.overall_score }}%
+                                    </div>
+                                    <p class="mb-0">
+                                        {% if analysis.overall_score >= 80 %}
+                                            <span class="badge bg-success">Good</span>
+                                        {% elif analysis.overall_score >= 60 %}
+                                            <span class="badge bg-warning">Needs Improvement</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Requires Attention</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Framework Compliance</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for framework in analysis.framework_scores %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header {% if framework.score >= 80 %}bg-success{% elif framework.score >= 60 %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                                    <h4 class="mb-0">{{ framework.name }}</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-5">
+                                            <div class="display-4 
+                                                {% if framework.score >= 80 %}text-success
+                                                {% elif framework.score >= 60 %}text-warning
+                                                {% else %}text-danger{% endif %}">
+                                                {{ framework.score }}%
+                                            </div>
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="progress" style="height: 25px;">
+                                                <div class="progress-bar 
+                                                    {% if framework.score >= 80 %}bg-success
+                                                    {% elif framework.score >= 60 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ framework.score }}%"
+                                                    aria-valuenow="{{ framework.score }}" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                    {{ framework.score }}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5>Key Findings</h5>
+                                    <ul>
+                                        {% for finding in framework.key_findings %}
+                                        <li>{{ finding }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Regulatory Terminology Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-5">
+                            <h4>Key Terms Used</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Term</th>
+                                            <th>Count</th>
+                                            <th>Context</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for term in analysis.key_terms %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('regulatory.explain_term') }}?term={{ term.term }}" class="text-decoration-none">
+                                                    {{ term.term }}
+                                                </a>
+                                            </td>
+                                            <td>{{ term.count }}</td>
+                                            <td>
+                                                {% if term.context %}
+                                                <span class="d-inline-block text-truncate" style="max-width: 150px;" title="{{ term.context }}">
+                                                    {{ term.context }}
+                                                </span>
+                                                {% else %}
+                                                -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h4>Term Usage Analysis</h4>
+                            <div class="alert alert-info">
+                                {{ analysis.term_usage_analysis }}
+                            </div>
+                            
+                            <h4 class="mt-4">Suggested Terms to Include</h4>
+                            <div class="d-flex flex-wrap">
+                                {% for term in analysis.suggested_terms %}
+                                <a href="{{ url_for('regulatory.explain_term') }}?term={{ term }}" class="badge bg-primary text-decoration-none me-2 mb-2 p-2">{{ term }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Strengths</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for strength in analysis.strengths %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">
+                                        <i class="fas fa-check-circle me-2"></i>{{ strength.title }}
+                                    </h5>
+                                    <p class="card-text">{{ strength.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Gaps and Improvement Areas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="gapsAccordion">
+                        {% for gap in analysis.gaps %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="gap{{ loop.index }}Heading">
+                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#gap{{ loop.index }}Collapse" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="gap{{ loop.index }}Collapse">
+                                    <strong>{{ gap.title }}</strong>
+                                </button>
+                            </h2>
+                            <div id="gap{{ loop.index }}Collapse" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="gap{{ loop.index }}Heading" data-bs-parent="#gapsAccordion">
+                                <div class="accordion-body">
+                                    <p>{{ gap.description }}</p>
+                                    
+                                    <div class="alert alert-warning">
+                                        <strong>Potential Impact:</strong> {{ gap.impact }}
+                                    </div>
+                                    
+                                    <h5>Recommended Actions:</h5>
+                                    <ul>
+                                        {% for action in gap.recommended_actions %}
+                                        <li>{{ action }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">Detailed Recommendations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-secondary mb-4">
+                        {{ analysis.summary_recommendations }}
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Recommendation</th>
+                                    <th>Benefit</th>
+                                    <th>Implementation Difficulty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for recommendation in analysis.recommendations %}
+                                <tr>
+                                    <td>
+                                        <span class="badge 
+                                            {% if recommendation.priority == 'High' %}bg-danger
+                                            {% elif recommendation.priority == 'Medium' %}bg-warning
+                                            {% else %}bg-info{% endif %}">
+                                            {{ recommendation.priority }}
+                                        </span>
+                                    </td>
+                                    <td>{{ recommendation.text }}</td>
+                                    <td>{{ recommendation.benefit }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if recommendation.difficulty == 'Hard' %}bg-danger
+                                            {% elif recommendation.difficulty == 'Medium' %}bg-warning
+                                            {% else %}bg-success{% endif %}">
+                                            {{ recommendation.difficulty }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('regulatory.analyze_document') }}" class="btn btn-primary">
+                            <i class="fas fa-search-plus me-2"></i> Analyze Another Document
+                        </a>
+                        <a href="{{ url_for('regulatory.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, .no-print {
+            display: none !important;
+        }
+        .card {
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+        }
+        .card-header {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+            border-bottom: 1px solid #ddd !important;
+        }
+        body {
+            font-size: 12pt;
+            color: #000;
+        }
+        a {
+            text-decoration: none !important;
+            color: #000 !important;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}

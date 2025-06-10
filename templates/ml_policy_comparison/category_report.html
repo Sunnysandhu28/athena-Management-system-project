@@ -1,0 +1,229 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ category_name }} Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">{{ category_name }} Policy Analysis</h1>
+                    <a href="{{ url_for('ml_policy_comparison.results') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Results
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ category_data.compliance_score|default(0) }}%</h2>
+                                    <p class="mb-0">Category Compliance Score</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ category_data.policies_count|default(0) }}</h2>
+                                    <p class="mb-0">Policies Analyzed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3 bg-light">
+                                <div class="card-body text-center">
+                                    {% set high_compliance = category_data.score_distribution['81-100']|default(0) %}
+                                    {% set total = category_data.policies_count|default(1) %}
+                                    {% set high_percent = (high_compliance / total * 100)|round|int %}
+                                    <h2 class="display-4">{{ high_percent }}%</h2>
+                                    <p class="mb-0">High Compliance Rate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h4 mb-0">Score Distribution</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                    
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Score Range</th>
+                                    <th>Number of Policies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for range, count in category_data.score_distribution|default({'0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0}).items() %}
+                                <tr>
+                                    <td>{{ range }}%</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-7 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h4 mb-0">Policy Compliance Details</h2>
+                </div>
+                <div class="card-body">
+                    {% if policies %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Policy Title</th>
+                                    <th>Code</th>
+                                    <th>Compliance Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in policies %}
+                                <tr>
+                                    <td>{{ policy.title }}</td>
+                                    <td>{{ policy.code }}</td>
+                                    <td>
+                                        <div class="progress" title="{{ policy.compliance_score }}%">
+                                            <div class="progress-bar bg-{{ 'success' if policy.compliance_score >= 80 else 'warning' if policy.compliance_score >= 60 else 'danger' }}" role="progressbar" style="width: {{ policy.compliance_score }}%">
+                                                {{ policy.compliance_score }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('policy_comparison.compare_policy', policy_id=policy.id) }}" class="btn btn-sm btn-primary">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No policy details available for this category.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h2 class="h4 mb-0">Improvement Recommendations</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading"><i class="fas fa-lightbulb me-2"></i> AI Recommendations</h5>
+                        <p>Based on the analysis of {{ category_name }} policies, the following improvements would increase compliance:</p>
+                        <ul>
+                            {% if category_data.compliance_score|default(0) < 70 %}
+                            <li>Review policy structure to ensure all required sections are present</li>
+                            <li>Update policy content to align more closely with QCS standards</li>
+                            <li>Ensure key elements like scope, purpose, and responsibilities are clearly defined</li>
+                            {% elif category_data.compliance_score|default(0) < 90 %}
+                            <li>Enhance section formatting to match QCS structure</li>
+                            <li>Add missing key elements to improve elements match score</li>
+                            <li>Update specific content sections to align with current standards</li>
+                            {% else %}
+                            <li>Maintain current high compliance standards</li>
+                            <li>Consider minor formatting adjustments for perfect alignment</li>
+                            <li>Keep policies updated as QCS standards evolve</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('ml_policy_comparison.results') }}" class="btn btn-outline-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-chart-bar me-2"></i> Back to Overall Results
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('ml_policy_comparison.index') }}" class="btn btn-outline-success btn-lg w-100 mb-3">
+                                <i class="fas fa-redo me-2"></i> Run New Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Distribution chart
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    
+    const distributionData = {
+        '0-20': {{ category_data.score_distribution['0-20']|default(0) }},
+        '21-40': {{ category_data.score_distribution['21-40']|default(0) }},
+        '41-60': {{ category_data.score_distribution['41-60']|default(0) }},
+        '61-80': {{ category_data.score_distribution['61-80']|default(0) }},
+        '81-100': {{ category_data.score_distribution['81-100']|default(0) }}
+    };
+    
+    const distributionChart = new Chart(distributionCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(distributionData).map(range => range + '%'),
+            datasets: [{
+                data: Object.values(distributionData),
+                backgroundColor: [
+                    'rgba(220, 53, 69, 0.7)',   // 0-20: Danger
+                    'rgba(253, 126, 20, 0.7)',  // 21-40: Orange
+                    'rgba(255, 193, 7, 0.7)',   // 41-60: Warning
+                    'rgba(23, 162, 184, 0.7)',   // 61-80: Info
+                    'rgba(40, 167, 69, 0.7)'    // 81-100: Success
+                ],
+                borderColor: [
+                    'rgb(220, 53, 69)',
+                    'rgb(253, 126, 20)',
+                    'rgb(255, 193, 7)',
+                    'rgb(23, 162, 184)',
+                    'rgb(40, 167, 69)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: true,
+                    text: 'Policy Compliance Distribution'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

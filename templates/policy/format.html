@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Format Policies{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Policy Formatter</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Format Policies with Company Branding</h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Select policies to format and download as Word documents.</p>
+            
+            <form method="post" action="{{ url_for('policy.bulk_format') }}">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="site_id" class="form-label">Select Site (Optional)</label>
+                        <select class="form-select" id="site_id" name="site_id">
+                            <option value="">All Sites</option>
+                            {% for site in sites %}
+                            <option value="{{ site.id }}">{{ site.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Site-specific formatting will replace placeholders with site information.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="format_type" class="form-label">Format Type</label>
+                        <select class="form-select" id="format_type" name="format_type">
+                            <option value="{{ format_types.COMPANY }}">Company Format</option>
+                            <option value="{{ format_types.QCS }}">QCS Format</option>
+                        </select>
+                        <div class="form-text">Company format replaces QCS references with your company information.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="file_format" class="form-label">File Format</label>
+                        <select class="form-select" id="file_format" name="file_format">
+                            <option value="docx">Word Document (.docx)</option>
+                            <option value="pdf">PDF Document (.pdf)</option>
+                        </select>
+                        <div class="form-text">Choose the output file format for the policies.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">AI-Learned Formatting</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="use_ai_format" name="use_ai_format" checked>
+                            <label class="form-check-label" for="use_ai_format">Use AI-learned formats</label>
+                        </div>
+                        <div class="form-text">Apply formatting patterns learned from existing policies.</div>
+                    </div>
+                </div>
+                
+                <!-- Administrator-only options -->
+                {% if current_user.is_admin %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Administrator Options</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="c_drive" name="c_drive" value="true">
+                                    <label class="form-check-label" for="c_drive">Save to C: drive location</label>
+                                </div>
+                                <div id="c_path_container" class="mb-3" style="display: none;">
+                                    <label for="c_path" class="form-label">C: Drive Path</label>
+                                    <input type="text" class="form-control" id="c_path" name="c_path" value="C:\Policies" placeholder="e.g., C:\Policies\Care Management">
+                                    <div class="form-text">Specify the C: drive location where you want to save policies.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5>Care Management Policies</h5>
+                            <p>When selecting Care Management policies, the system will automatically use exact QCS formatting regardless of format selection.</p>
+                            <p>All 102 Care Management policies will be formatted to match the original QCS PDF policies in style, content, and legislation references.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <h5 class="mt-4 mb-3">Select Policies</h5>
+                
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                                <label class="form-check-label" for="select-all">Select All</label>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <label class="input-group-text" for="category-filter">Filter by Category:</label>
+                                        <select class="form-select" id="category-filter">
+                                            <option value="">All Categories</option>
+                                            <option value="Care Management">Care Management</option>
+                                            <option value="Clinical Governance">Clinical Governance</option>
+                                            <option value="HR">HR</option>
+                                            <option value="Health and Safety">Health and Safety</option>
+                                            <option value="Administration">Administration</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" id="select-care-management" class="btn btn-outline-primary btn-sm">
+                                        Select Care Management (102)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;"></th>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for policy in policies %}
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input policy-select" type="checkbox" name="policy_ids" value="{{ policy.id }}" id="policy-{{ policy.id }}">
+                                    </div>
+                                </td>
+                                <td>{{ policy.code }}</td>
+                                <td>{{ policy.title }}</td>
+                                <td>{{ policy.category.name if policy.category else '' }}</td>
+                                <td>{{ policy.version or 'None' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Download Formatted Policies</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle "Select All" checkbox
+    const selectAllCheckbox = document.getElementById('select-all');
+    const policyCheckboxes = document.querySelectorAll('.policy-select');
+    const categoryFilter = document.getElementById('category-filter');
+    const policyRows = document.querySelectorAll('tbody tr');
+    
+    // Toggle C: drive path container visibility
+    const cDriveCheckbox = document.getElementById('c_drive');
+    const cPathContainer = document.getElementById('c_path_container');
+    
+    if (cDriveCheckbox && cPathContainer) {
+        cDriveCheckbox.addEventListener('change', function() {
+            cPathContainer.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Automatically select PDF for Care Management policies
+    const fileFormatSelect = document.getElementById('file_format');
+    const careManagementButton = document.getElementById('select-care-management');
+    
+    if (fileFormatSelect && careManagementButton) {
+        careManagementButton.addEventListener('click', function() {
+            // Set format to PDF for Care Management policies for best results
+            fileFormatSelect.value = 'pdf';
+        });
+    }
+    
+    // Handle category filter
+    categoryFilter.addEventListener('change', function() {
+        const selectedCategory = this.value;
+        
+        policyRows.forEach(row => {
+            const categoryCell = row.querySelector('td:nth-child(4)');
+            const category = categoryCell.textContent.trim();
+            
+            if (!selectedCategory || category === selectedCategory) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+                // Uncheck any checkboxes in hidden rows
+                const checkbox = row.querySelector('.policy-select');
+                if (checkbox) checkbox.checked = false;
+            }
+        });
+        
+        // Update select all checkbox after filtering
+        updateSelectAll();
+    });
+    
+    // Quick select buttons for Care Management policies
+    document.getElementById('select-care-management').addEventListener('click', function() {
+        // First filter to show only Care Management
+        categoryFilter.value = 'Care Management';
+        // Trigger the change event to apply the filter
+        categoryFilter.dispatchEvent(new Event('change'));
+        
+        // Then select all visible policies
+        policyRows.forEach(row => {
+            if (row.style.display !== 'none') {
+                const checkbox = row.querySelector('.policy-select');
+                if (checkbox) checkbox.checked = true;
+            }
+        });
+        
+        // Update select all checkbox
+        updateSelectAll();
+    });
+    
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        
+        // Only check/uncheck visible rows
+        policyRows.forEach(row => {
+            if (row.style.display !== 'none') {
+                const checkbox = row.querySelector('.policy-select');
+                if (checkbox) checkbox.checked = isChecked;
+            }
+        });
+    });
+    
+    // Update "Select All" if all visible checkboxes are selected
+    function updateSelectAll() {
+        const visibleCheckboxes = Array.from(policyCheckboxes).filter(checkbox => {
+            const row = checkbox.closest('tr');
+            return row.style.display !== 'none';
+        });
+        
+        if (visibleCheckboxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            return;
+        }
+        
+        const allChecked = visibleCheckboxes.every(checkbox => checkbox.checked);
+        selectAllCheckbox.checked = allChecked;
+    }
+    
+    policyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAll);
+    });
+    
+    // Update card text based on file format selection
+    const cardText = document.querySelector('.card-text');
+    if (fileFormatSelect && cardText) {
+        // Update initial text
+        updateCardText();
+        
+        // Listen for changes
+        fileFormatSelect.addEventListener('change', updateCardText);
+        
+        function updateCardText() {
+            const format = fileFormatSelect.value;
+            const formatName = format === 'pdf' ? 'PDF documents' : 'Word documents';
+            cardText.textContent = `Select policies to format and download as ${formatName}.`;
+        }
+    }
+});
+</script>
+{% endblock %}

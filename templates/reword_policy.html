@@ -1,0 +1,108 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-edit me-2"></i>Reword Policy
+        </h1>
+        <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Policy
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Reword "{{ policy.name }}"</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>About Rewording:</strong> This process uses AI to rewrite the policy text to match your company's tone and style while preserving all the essential content and meaning.
+                    </div>
+                    
+                    <form action="{{ url_for('reword_policy', policy_id=policy.id) }}" method="post">
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" value="Our Company" required>
+                            <div class="form-text">This name will be used in the rewritten policy</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="style" class="form-label">Writing Style</label>
+                            <select class="form-select" id="style" name="style">
+                                <option value="formal" selected>Formal (Professional, official language)</option>
+                                <option value="conversational">Conversational (More accessible but still professional)</option>
+                                <option value="concise">Concise (Clear, direct language)</option>
+                                <option value="detailed">Detailed (Comprehensive, thorough explanations)</option>
+                            </select>
+                            <div class="form-text">Choose the tone and style for the rewritten document</div>
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="use_british_english" name="use_british_english" value="true" checked>
+                            <label class="form-check-label" for="use_british_english">Use British English spelling (e.g., "organisation", "centre")</label>
+                        </div>
+                        
+                        {% if not policy.formatted_path %}
+                        <div class="alert alert-warning mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Note:</strong> You haven't formatted this policy yet. We recommend formatting the policy before rewording for best results.
+                            <a href="{{ url_for('format_policy', policy_id=policy.id) }}" class="alert-link">Format Policy First</a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="alert alert-warning mb-4">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Important:</strong> This process requires an OpenAI API key to be configured. Please ensure your API key is set up in the environment variables.
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i>Reword Policy
+                            </button>
+                            <a href="{{ url_for('view_policy_details', policy_id=policy.id) }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Rewording Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">What Gets Changed</h6>
+                    <ul class="mb-4">
+                        <li>Language style and tone to match selected preferences</li>
+                        <li>Wording and phrasing to better reflect your company</li>
+                        <li>Grammar and spelling according to British English conventions</li>
+                        <li>Text flow and readability improvements</li>
+                    </ul>
+                    
+                    <h6 class="text-muted mb-2">What Stays the Same</h6>
+                    <ul class="mb-4">
+                        <li>All policy content and essential information</li>
+                        <li>Legal and compliance requirements</li>
+                        <li>Document structure and organization</li>
+                        <li>Technical terminology required for compliance</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Processing Time:</strong> This operation may take several minutes to complete, depending on the size of the document.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'action_plan_steps/base_wizard.html' %}
+
+{% set current_step = 2 %}
+{% set progress_percentage = 40 %}
+
+{% block step_title %}Regulatory Categories{% endblock %}
+{% block step_description %}Select the regulatory categories that apply to this action plan.{% endblock %}
+{% block form_action %}/action-plans/step3{% endblock %}
+
+{% block step_content %}
+<div class="mb-4" id="evidence-files-container">
+    <label class="form-label">Evidence Files</label>
+    
+    <div class="evidence-file-group mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Upload Evidence File</label>
+                <input class="form-control" type="file" name="evidenceFile[]">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Evidence Description</label>
+                <input type="text" class="form-control" name="evidenceDescription[]" placeholder="Brief description of this evidence">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-evidence" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-end mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="add-evidence">
+            <i class="bi bi-plus-circle"></i> Add Another Evidence File
+        </button>
+    </div>
+    
+    <div class="form-text mt-2">Accepted formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('evidence-files-container');
+        const addButton = document.getElementById('add-evidence');
+        
+        // Function to add a new evidence file group
+        addButton.addEventListener('click', function() {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'evidence-file-group mb-3';
+            newGroup.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Upload Evidence File</label>
+                        <input class="form-control" type="file" name="evidenceFile[]">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Evidence Description</label>
+                        <input type="text" class="form-control" name="evidenceDescription[]" placeholder="Brief description of this evidence">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-evidence">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert the new group before the add button div
+            container.insertBefore(newGroup, document.querySelector('#evidence-files-container .text-end'));
+            
+            // Add event listener for the remove button
+            newGroup.querySelector('.remove-evidence').addEventListener('click', function() {
+                container.removeChild(newGroup);
+                updateRemoveButtons();
+            });
+            
+            updateRemoveButtons();
+        });
+        
+        // Function to update the visibility of remove buttons
+        function updateRemoveButtons() {
+            const groups = container.querySelectorAll('.evidence-file-group');
+            if (groups.length === 1) {
+                groups[0].querySelector('.remove-evidence').style.display = 'none';
+            } else {
+                groups.forEach(group => {
+                    group.querySelector('.remove-evidence').style.display = 'block';
+                });
+            }
+        }
+        
+        // Initial setup
+        updateRemoveButtons();
+        
+        // Store evidence data in session storage when form is submitted
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            // Get all evidence descriptions
+            const evidenceDescriptions = Array.from(
+                document.querySelectorAll('input[name="evidenceDescription[]"]')
+            ).map(input => input.value.trim())
+            .filter(description => description !== ''); // Filter out empty descriptions
+            
+            // Store in session storage for use in later steps
+            sessionStorage.setItem('evidenceData', JSON.stringify(evidenceDescriptions));
+            
+            // Continue with form submission
+        });
+    });
+</script>
+
+<div class="mb-4">
+    <label class="form-label">CQC Regulations</label>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg1" name="cqcReg[]" value="person-centered-care">
+                <label class="form-check-label" for="reg1">Regulation 9: Person-centered care</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg2" name="cqcReg[]" value="dignity-respect">
+                <label class="form-check-label" for="reg2">Regulation 10: Dignity and respect</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg3" name="cqcReg[]" value="need-consent">
+                <label class="form-check-label" for="reg3">Regulation 11: Need for consent</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg4" name="cqcReg[]" value="safe-care">
+                <label class="form-check-label" for="reg4">Regulation 12: Safe care and treatment</label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg5" name="cqcReg[]" value="safeguarding">
+                <label class="form-check-label" for="reg5">Regulation 13: Safeguarding</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg6" name="cqcReg[]" value="premises-equipment">
+                <label class="form-check-label" for="reg6">Regulation 15: Premises and equipment</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg7" name="cqcReg[]" value="staffing">
+                <label class="form-check-label" for="reg7">Regulation 18: Staffing</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="reg8" name="cqcReg[]" value="good-governance">
+                <label class="form-check-label" for="reg8">Regulation 17: Good governance</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <label class="form-label">Additional Regulatory Areas</label>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area1" name="regArea[]" value="fire-safety">
+                <label class="form-check-label" for="area1">Fire Safety Regulations</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area2" name="regArea[]" value="health-safety">
+                <label class="form-check-label" for="area2">Health and Safety</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area3" name="regArea[]" value="data-protection">
+                <label class="form-check-label" for="area3">Data Protection (GDPR)</label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area4" name="regArea[]" value="employment-law">
+                <label class="form-check-label" for="area4">Employment Law</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area5" name="regArea[]" value="financial-regs">
+                <label class="form-check-label" for="area5">Financial Regulations</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="area6" name="regArea[]" value="environmental">
+                <label class="form-check-label" for="area6">Environmental Regulations</label>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

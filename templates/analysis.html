@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .file-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .metadata-item {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mt-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Document Analysis</li>
+            </ol>
+        </nav>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-info">
+            <ul class="mb-0">
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3>{{ result.filename }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            {% if result.type == 'pdf' %}
+                            <div class="file-icon text-danger">📄</div>
+                            {% elif result.type in ['doc', 'docx'] %}
+                            <div class="file-icon text-primary">📝</div>
+                            {% elif result.type in ['xls', 'xlsx', 'csv'] %}
+                            <div class="file-icon text-success">📊</div>
+                            {% elif result.type in ['py', 'js', 'html'] %}
+                            <div class="file-icon text-warning">💻</div>
+                            {% elif result.type == 'ipynb' %}
+                            <div class="file-icon text-info">📓</div>
+                            {% else %}
+                            <div class="file-icon">📄</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5>File Information</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        File Type
+                                        <span class="badge bg-primary rounded-pill">{{ result.type }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        File Size
+                                        <span class="badge bg-secondary rounded-pill">{{ (result.size / 1024)|round|int }} KB</span>
+                                    </li>
+                                    {% if result.word_count is defined %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Word Count
+                                        <span class="badge bg-success rounded-pill">{{ result.word_count }}</span>
+                                    </li>
+                                    {% endif %}
+                                    {% if result.line_count is defined %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Line Count
+                                        <span class="badge bg-info rounded-pill">{{ result.line_count }}</span>
+                                    </li>
+                                    {% endif %}
+                                    {% if result.char_count is defined %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Character Count
+                                        <span class="badge bg-warning rounded-pill">{{ result.char_count }}</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            
+                            {% if result.metadata is defined %}
+                            <div class="col-md-6">
+                                <h5>Metadata</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <strong>Original Filename:</strong> {{ result.metadata.original_filename }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Document Type:</strong> 
+                                        <span class="badge bg-primary">{{ result.metadata.document_type }}</span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Category:</strong> 
+                                        <span class="badge bg-secondary">{{ result.metadata.category }}</span>
+                                    </li>
+                                    {% if result.metadata.notes %}
+                                    <li class="list-group-item">
+                                        <strong>Notes:</strong> 
+                                        <p class="mt-2 mb-0">{{ result.metadata.notes }}</p>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if result.preview is defined %}
+                        <div class="mb-4">
+                            <h5>Content Preview</h5>
+                            <pre>{{ result.preview }}</pre>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-end">
+                            <a href="/" class="btn btn-primary">Back to Files</a>
+                            <a href="{{ url_for('delete_file', filename=result.filename) }}" class="btn btn-danger ms-2" onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>ML Training Potential</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6>Document Quality</h6>
+                            <div class="progress mb-2">
+                                {% if result.type in ['py', 'ipynb', 'js'] %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">95%</div>
+                                {% elif result.type in ['txt', 'html', 'json'] and result.word_count|default(0) > 100 %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                {% elif result.type in ['pdf', 'doc', 'docx'] %}
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                {% elif result.type in ['xls', 'xlsx', 'csv'] %}
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
+                                {% else %}
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">60%</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6>Framework Coverage</h6>
+                            <div class="progress mb-2">
+                                {% if result.metadata is defined and result.metadata.category in ['uk_law', 'uk_commercial_law', 'uk_company_law', 'uk_tax_law'] %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">90%</div>
+                                {% elif result.metadata is defined and result.metadata.category in ['cqc', 'riddor', 'fire_safety'] %}
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
+                                {% elif result.metadata is defined and result.metadata.category == 'financial' %}
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                {% else %}
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if result.metadata is defined and result.metadata.document_type == 'algorithm' %}
+                        <div class="alert alert-success">
+                            <strong>ML Algorithm Detected!</strong> This document contains potential ML code that could be valuable for training.
+                        </div>
+                        {% elif result.metadata is defined and result.metadata.document_type == 'notebook' %}
+                        <div class="alert alert-success">
+                            <strong>Jupyter Notebook Detected!</strong> This document likely contains data analysis and ML training code.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="button">Add to Training Set</button>
+                            <button class="btn btn-outline-secondary" type="button">Extract Features</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5>Related Documents</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">No related documents found.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

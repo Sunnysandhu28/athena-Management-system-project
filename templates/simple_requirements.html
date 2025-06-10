@@ -1,0 +1,84 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Requirements List</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { padding-top: 2rem; }
+            .requirement-card { transition: transform 0.3s; }
+            .requirement-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="/">Regulatory Compliance</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/list_requirements">Requirements</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/list_evidence">Evidence</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/heat_map">Heat Map</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/action_plan">Action Plan</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Regulatory Requirements</h1>
+                <a href="/add_requirement" class="btn btn-primary">Add Requirement</a>
+            </div>
+            
+            {% if requirements %}
+            <div class="row">
+                {% for req in requirements %}
+                <div class="col-md-6 mb-4">
+                    <div class="card requirement-card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5 class="mb-0">{{ req.code }}</h5>
+                            <span class="badge bg-{% if req.severity == 4 %}danger{% elif req.severity == 3 %}warning{% elif req.severity == 2 %}info{% else %}primary{% endif %}">
+                                Severity: {{ req.severity }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ req.title }}</h5>
+                            <p class="card-text">{{ req.description }}</p>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="badge bg-secondary">{{ req.framework }}</span>
+                                    {% if req.category %}
+                                    <span class="badge bg-light text-dark">{{ req.category }}</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="/upload_evidence?requirement_id={{ req.id }}" class="btn btn-sm btn-outline-primary">Add Evidence</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            Added: {{ req.created_at.strftime('%Y-%m-%d') }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <p>No regulatory requirements found. Add requirements to start tracking compliance.</p>
+                <a href="/add_requirement" class="btn btn-primary">Add Requirement</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>
+    

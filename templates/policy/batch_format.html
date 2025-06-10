@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>Batch Format Care Management Policies</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">About QCS Policy Formatting</h5>
+                <p>This tool allows you to format all Care Management policies with QCS styling in a single batch operation.</p>
+                <p>The formatted policies will:</p>
+                <ul>
+                    <li>Match 100% of the original QCS PDF styling</li>
+                    <li>Include proper policy code extraction and formatting</li>
+                    <li>Maintain QCS branding and copyright information</li>
+                    <li>Be downloadable as a zip file with all 102 policies</li>
+                </ul>
+            </div>
+
+            <div class="mt-4">
+                <h5>Formatting Process</h5>
+                <p>When you click the button below, the system will:</p>
+                <ol>
+                    <li>Find all Care Management policies in the database</li>
+                    <li>Extract policy codes and titles</li>
+                    <li>Format each policy with QCS styling</li>
+                    <li>Create DOCX documents that match QCS formatting</li>
+                    <li>Package all formatted documents into a downloadable ZIP file</li>
+                </ol>
+                <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> This process may take a few minutes to complete.</p>
+            </div>
+
+            <div class="mt-4">
+                <h5>Format Options</h5>
+                <ul>
+                    <li><strong>Format Type:</strong> QCS Format</li>
+                    <li><strong>Category:</strong> Care Management</li>
+                    <li><strong>Output:</strong> DOCX files (matches QCS styling)</li>
+                </ul>
+            </div>
+
+            <div class="mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#formatPreviewModal">
+                                <i class="fas fa-eye"></i> Preview Sample Policy Format
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="POST" id="batchFormatForm">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-file-medical"></i> Format All Care Management Policies
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Include the format preview modal -->
+            {% include 'policy/format_preview_modal.html' %}
+        </div>
+        <div class="card-footer">
+            <div class="small text-muted">
+                <p><i class="fas fa-info-circle"></i> The formatted policies will be available for download immediately after processing.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

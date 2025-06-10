@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Generation Status{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">Policy Generation Status</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Generation Status</h3>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h4>Status: <span id="generation-status" class="
+                    {% if generation.status == 'processing' %}text-warning{% endif %}
+                    {% if generation.status == 'completed' %}text-success{% endif %}
+                    {% if generation.status == 'partial' %}text-info{% endif %}
+                    {% if generation.status == 'failed' %}text-danger{% endif %}
+                ">
+                    {{ generation.status|title }}
+                </span></h4>
+                <p class="text-muted">Generation ID: {{ generation_id }}</p>
+                <p class="text-muted">Started: {{ generation.started_at }}</p>
+                {% if generation.completed_at %}
+                <p class="text-muted">Completed: {{ generation.completed_at }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <h4>Request Details</h4>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Policy Objective:</strong> {{ generation.request.policy_objective }}</li>
+                    <li class="list-group-item"><strong>Category:</strong> {{ generation.request.policy_category }}</li>
+                    {% if generation.request.staff_involved %}
+                    <li class="list-group-item"><strong>Staff Involved:</strong> {{ generation.request.staff_involved }}</li>
+                    {% endif %}
+                    {% if generation.request.regulations %}
+                    <li class="list-group-item"><strong>Regulations:</strong> {{ generation.request.regulations }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            {% if generation.status == 'processing' %}
+                <div class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">AI is generating your policy. This may take a minute...</p>
+                    
+                    <script>
+                        // Refresh the page every 5 seconds to check status
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 5000);
+                    </script>
+                </div>
+            {% endif %}
+            
+            {% if generation.status == 'completed' or generation.status == 'partial' %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('ai_policy_generator_direct_view', generation_id=generation_id) if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.view_generated_policy', generation_id=generation_id) }}" class="btn btn-primary btn-lg">View Generated Policy</a>
+                </div>
+            {% endif %}
+            
+            {% if generation.status == 'failed' %}
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">Generation Failed</h4>
+                    <p>{{ generation.error }}</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('ai_policy_generator_direct_index') if request.path.startswith('/ai-policy-generator-direct') else url_for('ai_policy_generator.index') }}" class="btn btn-primary btn-lg">Try Again</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

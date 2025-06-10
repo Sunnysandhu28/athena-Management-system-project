@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Workflow Wizard - Cathena Policy Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .card p {
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 1rem;
+        }
+        .btn:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cathena Policy Management System</h1>
+        <p>Policy Workflow Wizard</p>
+    </header>
+
+    <div class="container">
+        <h2>Welcome to the Policy Editing Dashboard</h2>
+        <p>Select a tool to begin editing your policies</p>
+
+        <div class="card-container">
+            <div class="card">
+                <h3>Format & Style Editor</h3>
+                <p>Customize the appearance of your policies with font styles, colors, and formatting options.</p>
+                <a href="/interface/format" class="btn">Open Editor</a>
+            </div>
+
+            <div class="card">
+                <h3>Policy Rewording</h3>
+                <p>Reword policy content with AI assistance while maintaining the essential meaning.</p>
+                <a href="/interface/reword" class="btn">Open Rewording Tool</a>
+            </div>
+
+            <div class="card">
+                <h3>Version Control</h3>
+                <p>Track changes and manage different versions of your policies over time.</p>
+                <a href="/interface/version-control" class="btn">View Version History</a>
+            </div>
+
+            <div class="card">
+                <h3>Direct Text Editor</h3>
+                <p>Make direct edits to policy text with a full-featured rich text editor.</p>
+                <a href="/interface/edit" class="btn">Open Text Editor</a>
+            </div>
+
+            <div class="card">
+                <h3>NHS Health Insights</h3>
+                <p>Enhance policies with integrated NHS health knowledge and best practices.</p>
+                <a href="/interface/nhs-insights" class="btn">View Health Insights</a>
+            </div>
+
+            <div class="card">
+                <h3>Backup & Download</h3>
+                <p>Create and download backups of your policy documents.</p>
+                <a href="/interface/backup-download" class="btn">Manage Backups</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

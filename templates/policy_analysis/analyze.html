@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Analysis - {{ policy.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('policy_analysis.index') }}">Policy Analysis</a></li>
+                    <li class="breadcrumb-item active">{{ policy.title }}</li>
+                </ol>
+            </nav>
+            <h1>Policy Analysis</h1>
+            <h2 class="text-muted">{{ policy.title }}</h2>
+        </div>
+    </div>
+    
+    <!-- Policy Info Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Policy Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Reference Code:</th>
+                            <td>{{ policy.reference_code or policy.code or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Category:</th>
+                            <td>{{ policy.category.name if policy.category else 'Uncategorized' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ policy.created_at.strftime('%Y-%m-%d') if policy.created_at else 'N/A' }}</td>
+                        </tr>
+                        {% if policy.file_path %}
+                        <tr>
+                            <th>File:</th>
+                            <td>{{ policy.file_path.split('/')[-1] }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    {% if policy.json_metadata %}
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Metadata Available</h6>
+                        <p class="mb-0">This policy has metadata information from previous analysis.</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">No Metadata</h6>
+                        <p class="mb-0">This policy has not been analyzed yet. Use the analysis tools below to extract metadata.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Tools -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Analysis Tools</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('policy_analysis.analyze_policy', policy_id=policy.id) }}" method="post">
+                <div class="form-group">
+                    <label for="analysisType">Analysis Type</label>
+                    <select class="form-control" id="analysisType" name="analysis_type">
+                        <option value="structure">Structure Analysis</option>
+                        <option value="content">Content Analysis</option>
+                        <option value="compliance">Compliance Analysis</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">
+                    <i class="fas fa-microscope"></i> Analyze Policy
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Analysis Results -->
+    {% if analysis_results %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Analysis Results</h5>
+                <div>
+                    <a href="{{ url_for('policy_analysis.export_analysis', policy_id=policy.id, analysis_type=request.form.get('analysis_type', 'structure')) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-download"></i> Export Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if request.form.get('analysis_type') == 'structure' %}
+                <h5>Structure Analysis</h5>
+                
+                <!-- Section Pattern Matches -->
+                <div class="mb-4">
+                    <h6>Section Pattern Matches</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Section Type</th>
+                                    <th>Match Score</th>
+                                    <th>Expected in Category</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for section, details in analysis_results.get('section_matches', {}).items() %}
+                                <tr>
+                                    <td>{{ section }}</td>
+                                    <td>
+                                        {% if details.get('match_score', 0) > 0.8 %}
+                                            <span class="badge bg-success">{{ (details.get('match_score', 0) * 100)|round }}%</span>
+                                        {% elif details.get('match_score', 0) > 0.5 %}
+                                            <span class="badge bg-warning">{{ (details.get('match_score', 0) * 100)|round }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ (details.get('match_score', 0) * 100)|round }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ 'Yes' if details.get('expected_in_category', False) else 'No' }}</td>
+                                    <td>{{ details.get('comments', '') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No section matches found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Missing Sections -->
+                <div class="mb-4">
+                    <h6>Missing Sections</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Section Type</th>
+                                    <th>Importance</th>
+                                    <th>Suggestions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for section in analysis_results.get('missing_sections', []) %}
+                                <tr>
+                                    <td>{{ section.get('name', '') }}</td>
+                                    <td>
+                                        {% if section.get('importance', '') == 'high' %}
+                                            <span class="badge bg-danger">High</span>
+                                        {% elif section.get('importance', '') == 'medium' %}
+                                            <span class="badge bg-warning">Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ section.get('suggestion', '') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No missing sections identified</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Overall Structure Score -->
+                <div class="mb-4">
+                    <h6>Overall Structure Analysis</h6>
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set structure_score = analysis_results.get('overall_score', 0) * 100 %}
+                        <div class="progress-bar {% if structure_score > 80 %}bg-success{% elif structure_score > 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ structure_score }}%;" 
+                             aria-valuenow="{{ structure_score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ structure_score|round }}%
+                        </div>
+                    </div>
+                    
+                    <div class="alert {% if structure_score > 80 %}alert-success{% elif structure_score > 50 %}alert-warning{% else %}alert-danger{% endif %}">
+                        <h6 class="alert-heading">
+                            {% if structure_score > 80 %}
+                                Strong Structure Match
+                            {% elif structure_score > 50 %}
+                                Moderate Structure Match
+                            {% else %}
+                                Poor Structure Match
+                            {% endif %}
+                        </h6>
+                        <p>{{ analysis_results.get('summary', '') }}</p>
+                    </div>
+                </div>
+                
+            {% elif request.form.get('analysis_type') == 'content' %}
+                <h5>Content Analysis</h5>
+                
+                <!-- Extracted Metadata -->
+                <div class="mb-4">
+                    <h6>Extracted Metadata</h6>
+                    <div class="row">
+                        {% for key, value in analysis_results.items() %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0">{{ key|replace('_', ' ')|title }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if value is mapping %}
+                                        <ul class="list-group list-group-flush">
+                                            {% for subkey, subvalue in value.items() %}
+                                            <li class="list-group-item">
+                                                <strong>{{ subkey|replace('_', ' ')|title }}:</strong>
+                                                <span class="ml-2">{{ subvalue }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% elif value is iterable and value is not string %}
+                                        <ul class="list-group list-group-flush">
+                                            {% for item in value %}
+                                            <li class="list-group-item">{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="card-text">{{ value }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col">
+                            <div class="alert alert-warning">
+                                No metadata could be extracted from this policy.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+            {% elif request.form.get('analysis_type') == 'compliance' %}
+                <h5>Compliance Analysis</h5>
+                
+                <!-- Legislation References -->
+                <div class="mb-4">
+                    <h6>Legislation References in Policy</h6>
+                    <ul class="list-group mb-3">
+                        {% for ref in analysis_results.get('legislation_references', []) %}
+                        <li class="list-group-item">{{ ref }}</li>
+                        {% else %}
+                        <li class="list-group-item">No legislation references found in policy</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <h6>Category Legislation Requirements</h6>
+                    <ul class="list-group mb-3">
+                        {% for act in analysis_results.get('category_legislation', []) %}
+                        <li class="list-group-item">{{ act.get('name', '') }}</li>
+                        {% else %}
+                        <li class="list-group-item">No legislation requirements for this category</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <h6>Comparison</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Found in Both</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% for ref in analysis_results.get('comparison', {}).get('found_in_both', []) %}
+                                        <li class="list-group-item bg-success text-white border-light">{{ ref }}</li>
+                                        {% else %}
+                                        <li class="list-group-item bg-success text-white border-light">No matching references</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Missing from Policy</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% for ref in analysis_results.get('comparison', {}).get('missing_from_policy', []) %}
+                                        <li class="list-group-item bg-danger text-white border-light">{{ ref }}</li>
+                                        {% else %}
+                                        <li class="list-group-item bg-danger text-white border-light">No missing references</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-info text-white h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Policy Only</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% for ref in analysis_results.get('comparison', {}).get('policy_only', []) %}
+                                        <li class="list-group-item bg-info text-white border-light">{{ ref }}</li>
+                                        {% else %}
+                                        <li class="list-group-item bg-info text-white border-light">No policy-only references</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Policy Metadata -->
+    {% if policy_metadata %}
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Stored Policy Metadata</h5>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="metadataAccordion">
+                {% for key, value in policy_metadata.items() %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                            {{ key|replace('_', ' ')|title }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#metadataAccordion">
+                        <div class="accordion-body">
+                            {% if value is mapping %}
+                                <table class="table table-sm">
+                                    {% for subkey, subvalue in value.items() %}
+                                    <tr>
+                                        <th>{{ subkey|replace('_', ' ')|title }}</th>
+                                        <td>
+                                            {% if subvalue is mapping %}
+                                                <pre class="mb-0">{{ subvalue|tojson(indent=2) }}</pre>
+                                            {% elif subvalue is iterable and subvalue is not string %}
+                                                <ul class="mb-0">
+                                                    {% for item in subvalue %}
+                                                    <li>{{ item }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                {{ subvalue }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            {% elif value is iterable and value is not string %}
+                                <ul>
+                                    {% for item in value %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,937 @@
+{% extends "base.html" %}
+
+{% block title %}Action Plan Heat Map Tracker - Cathena Policy Management System{% endblock %}
+
+{% block head %}
+<style>
+    /* Enhanced full-page heat map styling */
+    body {
+        overflow-x: hidden;
+    }
+    
+    .container-fluid {
+        max-width: 98%;
+    }
+    
+    .heatmap-container {
+        width: 100%;
+        overflow: auto;
+        margin-bottom: 30px;
+        min-height: 65vh; /* Ensures large vertical space */
+    }
+    
+    .heatmap-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 2px; /* Increased spacing between cells */
+        font-size: 1.05rem; /* Slightly larger text */
+    }
+    
+    .heatmap-table th, .heatmap-table td {
+        padding: 12px; /* Larger cell padding */
+        text-align: center;
+        position: relative;
+    }
+    
+    .heatmap-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .heatmap-table th.vertical-header {
+        height: 150px;
+        white-space: nowrap;
+        vertical-align: bottom;
+        padding-bottom: 10px;
+    }
+    
+    .heatmap-table th.vertical-header div {
+        transform: rotate(-90deg);
+        width: 30px;
+        margin-bottom: 115px;
+    }
+    
+    .heatmap-table td.category-cell {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-align: left;
+        position: sticky;
+        left: 0;
+        z-index: 5;
+    }
+    
+    /* Enhanced color gradient for better visual impact */
+    .heatmap-severity-0 { 
+        background-color: #E8F5E9; 
+    }
+    
+    .heatmap-severity-1 { 
+        background-color: #C8E6C9; 
+    }
+    
+    .heatmap-severity-2 { 
+        background-color: #A5D6A7; 
+    }
+    
+    .heatmap-severity-3 { 
+        background-color: #81C784; 
+    }
+    
+    .heatmap-severity-4 { 
+        background-color: #66BB6A; 
+    }
+    
+    .heatmap-severity-5 { 
+        background-color: #4CAF50; 
+    }
+    
+    .heatmap-severity-6 { 
+        background-color: #43A047; 
+        color: white;
+    }
+    
+    .heatmap-severity-7 { 
+        background-color: #388E3C; 
+        color: white;
+    }
+    
+    .heatmap-severity-8 { 
+        background-color: #2E7D32; 
+        color: white;
+    }
+    
+    .heatmap-severity-9 { 
+        background-color: #1B5E20; 
+        color: white;
+    }
+    
+    .heatmap-due {
+        background-color: #FFD54F;
+    }
+    
+    .heatmap-overdue {
+        background-color: #EF5350;
+        color: white;
+    }
+    
+    .heatmap-completed {
+        background-color: #66BB6A;
+    }
+    
+    .heatmap-not-required {
+        background-color: #E0E0E0;
+        color: #9E9E9E;
+    }
+    
+    .action-count {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        width: 20px; /* Larger circle */
+        height: 20px; /* Larger circle */
+        font-size: 11px; /* Larger font */
+        line-height: 20px;
+        text-align: center;
+    }
+    
+    .heatmap-filters {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .progress-summary {
+        margin-top: 30px;
+    }
+    
+    .info-tooltip {
+        cursor: pointer;
+        color: #007bff;
+    }
+    
+    .county-selector {
+        max-width: 250px;
+    }
+    
+    /* Enhanced legend styling */
+    .legend {
+        display: flex;
+        align-items: center;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+        margin-bottom: 8px;
+    }
+    
+    .legend-color {
+        width: 24px; /* Larger legend items */
+        height: 24px;
+        margin-right: 8px;
+        border-radius: 3px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .zoom-controls {
+        margin-bottom: 15px;
+    }
+    
+    .action-details {
+        position: absolute;
+        width: 350px; /* Larger popup */
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 100;
+        display: none;
+    }
+    
+    .heatmap-cell {
+        cursor: pointer;
+        min-width: 50px; /* Ensure minimum width */
+        min-height: 50px; /* Ensure minimum height */
+    }
+    
+    .heatmap-cell:hover {
+        box-shadow: inset 0 0 0 3px #007bff;
+        transform: scale(1.05);
+        transition: transform 0.2s;
+        z-index: 20;
+    }
+    
+    @media print {
+        .heatmap-controls {
+            display: none;
+        }
+        
+        .heatmap-table th, .heatmap-table td {
+            border: 1px solid #ddd;
+        }
+    }
+    
+    .progress {
+        height: 28px; /* Taller progress bars */
+        margin-bottom: 12px;
+    }
+    
+    .progress-bar {
+        line-height: 28px;
+        font-weight: bold;
+    }
+    
+    /* Fix for vertical scroll */
+    html, body {
+        height: 100%;
+    }
+    
+    /* Make sure the heatmap fills the available space */
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Make sure the map controls stand out */
+    .zoom-controls .btn {
+        padding: 0.5rem 1rem;
+        margin-left: 5px;
+    }
+    
+    /* Enhanced header styling */
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>CQC Action Plan Heat Map Tracker</h1>
+            <p class="lead">Visual tracking of action plan progress across regions and requirements</p>
+        </div>
+        <div>
+            <button id="print-heatmap" class="btn btn-outline-secondary">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button id="export-heatmap" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-map me-2"></i>
+                Geographic Action Plan Status
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                This heat map tracker provides a comprehensive view of your CQC action plan progress across all geographic regions. Each cell represents the status and priority of actions for a specific regulatory requirement in each region.
+            </div>
+            
+            <div class="heatmap-controls heatmap-filters row">
+                <div class="col-md-3 mb-3">
+                    <label for="region-filter" class="form-label">Filter by Region</label>
+                    <select id="region-filter" class="form-select">
+                        <option value="all" selected>All Regions</option>
+                        <option value="London">London</option>
+                        <option value="South East">South East</option>
+                        <option value="South West">South West</option>
+                        <option value="East of England">East of England</option>
+                        <option value="East Midlands">East Midlands</option>
+                        <option value="West Midlands">West Midlands</option>
+                        <option value="Yorkshire">Yorkshire & Humber</option>
+                        <option value="North East">North East</option>
+                        <option value="North West">North West</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="status-filter" class="form-label">Filter by Status</label>
+                    <select id="status-filter" class="form-select">
+                        <option value="all" selected>All Statuses</option>
+                        <option value="completed">Completed</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="due">Due Soon</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="not-required">Not Required</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="priority-filter" class="form-label">Filter by Priority</label>
+                    <select id="priority-filter" class="form-select">
+                        <option value="all" selected>All Priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="county-filter" class="form-label">Filter by County</label>
+                    <select id="county-filter" class="form-select county-selector">
+                        <option value="all" selected>All Counties</option>
+                        <option value="Greater London">Greater London</option>
+                        <option value="Essex">Essex</option>
+                        <option value="Kent">Kent</option>
+                        <option value="Surrey">Surrey</option>
+                        <option value="Suffolk">Suffolk</option>
+                        <option value="Norfolk">Norfolk</option>
+                        <option value="Cambridgeshire">Cambridgeshire</option>
+                        <option value="Oxfordshire">Oxfordshire</option>
+                        <option value="Devon">Devon</option>
+                        <option value="Cornwall">Cornwall</option>
+                        <option value="Dorset">Dorset</option>
+                        <option value="Hampshire">Hampshire</option>
+                        <option value="Gloucestershire">Gloucestershire</option>
+                        <option value="Leicestershire">Leicestershire</option>
+                        <option value="Nottinghamshire">Nottinghamshire</option>
+                        <option value="Derbyshire">Derbyshire</option>
+                        <option value="West Midlands">West Midlands</option>
+                        <option value="Staffordshire">Staffordshire</option>
+                        <option value="Cheshire">Cheshire</option>
+                        <option value="Greater Manchester">Greater Manchester</option>
+                        <option value="Merseyside">Merseyside</option>
+                        <option value="Lancashire">Lancashire</option>
+                        <option value="North Yorkshire">North Yorkshire</option>
+                        <option value="West Yorkshire">West Yorkshire</option>
+                        <option value="South Yorkshire">South Yorkshire</option>
+                        <option value="Tyne and Wear">Tyne and Wear</option>
+                        <option value="Durham">Durham</option>
+                        <option value="Northumberland">Northumberland</option>
+                        <option value="Rutland">Rutland</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="zoom-controls heatmap-controls text-end mb-3">
+                <button id="zoom-out" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+                <button id="zoom-reset" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button id="zoom-in" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+            </div>
+            
+            <div class="heatmap-container" id="heatmap-wrapper">
+                <table class="heatmap-table" id="action-plan-heatmap">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="vertical-header"><div>London</div></th>
+                            <th class="vertical-header"><div>Essex</div></th>
+                            <th class="vertical-header"><div>Kent</div></th>
+                            <th class="vertical-header"><div>Surrey</div></th>
+                            <th class="vertical-header"><div>Suffolk</div></th>
+                            <th class="vertical-header"><div>Norfolk</div></th>
+                            <th class="vertical-header"><div>Cambridgeshire</div></th>
+                            <th class="vertical-header"><div>Oxfordshire</div></th>
+                            <th class="vertical-header"><div>Devon</div></th>
+                            <th class="vertical-header"><div>Cornwall</div></th>
+                            <th class="vertical-header"><div>Dorset</div></th>
+                            <th class="vertical-header"><div>Hampshire</div></th>
+                            <th class="vertical-header"><div>West Midlands</div></th>
+                            <th class="vertical-header"><div>Leicestershire</div></th>
+                            <th class="vertical-header"><div>South Yorkshire</div></th>
+                            <th class="vertical-header"><div>Greater Manchester</div></th>
+                            <th class="vertical-header"><div>Merseyside</div></th>
+                            <th class="vertical-header"><div>Northumberland</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Safe Category -->
+                        <tr>
+                            <td class="category-cell" colspan="19">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shield-alt text-success me-2"></i>
+                                    Safe
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-12: Safe care and treatment</td>
+                            <td class="heatmap-cell heatmap-severity-9">9<span class="action-count">8</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">3</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-13: Safeguarding</td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">2</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-15: Premises and equipment</td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">Infection control</td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                        </tr>
+                        
+                        <!-- Effective Category -->
+                        <tr>
+                            <td class="category-cell" colspan="19">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-check-circle text-primary me-2"></i>
+                                    Effective
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-9: Person-centered care</td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-11: Need for consent</td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-14: Meeting nutritional needs</td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-18: Staffing</td>
+                            <td class="heatmap-cell heatmap-severity-9">9<span class="action-count">8</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                        </tr>
+                        
+                        <!-- Well-led Category -->
+                        <tr>
+                            <td class="category-cell" colspan="19">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-sitemap text-info me-2"></i>
+                                    Well-led
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-17: Good governance</td>
+                            <td class="heatmap-cell heatmap-severity-9">9<span class="action-count">8</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-8">8<span class="action-count">7</span></td>
+                            <td class="heatmap-cell heatmap-severity-9">9<span class="action-count">8</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-19: Fit and proper persons</td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-3">3<span class="action-count">3</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-7">7<span class="action-count">6</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                        </tr>
+                        <tr>
+                            <td class="category-cell">REG-20: Duty of candour</td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-not-required">-</td>
+                            <td class="heatmap-cell heatmap-completed">✓<span class="action-count">1</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-2">2<span class="action-count">2</span></td>
+                            <td class="heatmap-cell heatmap-severity-5">5<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-6">6<span class="action-count">5</span></td>
+                            <td class="heatmap-cell heatmap-severity-4">4<span class="action-count">4</span></td>
+                            <td class="heatmap-cell heatmap-severity-1">1<span class="action-count">1</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color heatmap-completed"></div>
+                    <span>Completed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-not-required"></div>
+                    <span>Not Required</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-due"></div>
+                    <span>Due Soon</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-overdue"></div>
+                    <span>Overdue</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-9"></div>
+                    <span>Priority Level 9</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-8"></div>
+                    <span>Priority Level 8</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-7"></div>
+                    <span>Priority Level 7</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-6"></div>
+                    <span>Priority Level 6</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-5"></div>
+                    <span>Priority Level 5</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-4"></div>
+                    <span>Priority Level 4</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-3"></div>
+                    <span>Priority Level 3</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-2"></div>
+                    <span>Priority Level 2</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-1"></div>
+                    <span>Priority Level 1</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color heatmap-severity-0"></div>
+                    <span>Priority Level 0</span>
+                </div>
+            </div>
+            
+            <div class="progress-summary">
+                <h4>Overall Action Plan Progress</h4>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h5>Progress by Region</h5>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 75%;" role="progressbar">London: 75%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 82%;" role="progressbar">Essex: 82%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 79%;" role="progressbar">Kent: 79%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 80%;" role="progressbar">Surrey: 80%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 88%;" role="progressbar">Suffolk: 88%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Progress by Category</h5>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 85%;" role="progressbar">Safe: 85%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 78%;" role="progressbar">Effective: 78%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 92%;" role="progressbar">Caring: 92%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 81%;" role="progressbar">Responsive: 81%</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 76%;" role="progressbar">Well-led: 76%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Details Popup -->
+    <div id="action-details" class="action-details">
+        <h5 class="action-title"></h5>
+        <div class="action-content"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Zoom controls
+    let currentZoom = 100;
+    const zoomWrapper = document.getElementById('heatmap-wrapper');
+    const heatmapTable = document.getElementById('action-plan-heatmap');
+    
+    document.getElementById('zoom-in').addEventListener('click', function() {
+        currentZoom += 10;
+        applyZoom();
+    });
+    
+    document.getElementById('zoom-out').addEventListener('click', function() {
+        if (currentZoom > 50) {
+            currentZoom -= 10;
+            applyZoom();
+        }
+    });
+    
+    document.getElementById('zoom-reset').addEventListener('click', function() {
+        currentZoom = 100;
+        applyZoom();
+    });
+    
+    function applyZoom() {
+        heatmapTable.style.transform = `scale(${currentZoom / 100})`;
+        heatmapTable.style.transformOrigin = 'top left';
+    }
+    
+    // Filtering
+    const regionFilter = document.getElementById('region-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const priorityFilter = document.getElementById('priority-filter');
+    const countyFilter = document.getElementById('county-filter');
+    
+    const filters = [regionFilter, statusFilter, priorityFilter, countyFilter];
+    
+    filters.forEach(filter => {
+        filter.addEventListener('change', applyFilters);
+    });
+    
+    function applyFilters() {
+        // This would actually apply the filters in a real implementation
+        console.log('Filters applied:', {
+            region: regionFilter.value,
+            status: statusFilter.value,
+            priority: priorityFilter.value,
+            county: countyFilter.value
+        });
+        
+        // Display a message for demo purposes
+        alert('Filters applied in a real implementation. This is a static demo.');
+    }
+    
+    // Print functionality
+    document.getElementById('print-heatmap').addEventListener('click', function() {
+        window.print();
+    });
+    
+    // Export functionality (demo only)
+    document.getElementById('export-heatmap').addEventListener('click', function() {
+        alert('In a real implementation, this would export the heat map data to CSV, Excel, or PDF.');
+    });
+    
+    // Action cell click handler
+    const heatmapCells = document.querySelectorAll('.heatmap-cell');
+    const actionDetails = document.getElementById('action-details');
+    
+    heatmapCells.forEach(cell => {
+        cell.addEventListener('click', function(e) {
+            // Get the regulation from the first cell in the row
+            const regulation = this.parentElement.firstElementChild.textContent;
+            
+            // Get the region from the header
+            const columnIndex = Array.from(this.parentElement.children).indexOf(this);
+            const region = document.querySelector(`th:nth-child(${columnIndex + 1}) div`)?.textContent || 'Unknown Region';
+            
+            // Set the content
+            actionDetails.querySelector('.action-title').textContent = `${regulation} - ${region}`;
+            
+            let content = '';
+            if (this.classList.contains('heatmap-completed')) {
+                content = `
+                    <div class="alert alert-success mb-2">All actions completed</div>
+                    <p>The last action was completed on <strong>May 15, 2025</strong>.</p>
+                    <p>Next review date: <strong>November 15, 2025</strong></p>
+                `;
+            } else if (this.classList.contains('heatmap-not-required')) {
+                content = `
+                    <div class="alert alert-secondary mb-2">No actions required</div>
+                    <p>This regulation is not applicable to this location.</p>
+                `;
+            } else {
+                // Get the number from the cell (priority level)
+                const priority = this.textContent.trim().split(/\s+/)[0];
+                const actionCount = this.querySelector('.action-count')?.textContent || '0';
+                
+                content = `
+                    <div class="alert alert-warning mb-2">Priority Level ${priority}</div>
+                    <p><strong>${actionCount} actions required</strong></p>
+                    <ul class="mb-0">
+                        <li>Due date: <strong>June 1, 2025</strong></li>
+                        <li>Assigned to: <strong>Regional Manager</strong></li>
+                        <li>Progress: <strong>25%</strong></li>
+                    </ul>
+                    <hr>
+                    <button class="btn btn-sm btn-primary">View Action Plan</button>
+                `;
+            }
+            
+            actionDetails.querySelector('.action-content').innerHTML = content;
+            
+            // Position the popup near the clicked cell
+            const rect = this.getBoundingClientRect();
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+            
+            actionDetails.style.top = `${rect.bottom + scrollTop}px`;
+            actionDetails.style.left = `${rect.left + scrollLeft}px`;
+            
+            // Show the popup
+            actionDetails.style.display = 'block';
+            
+            e.stopPropagation();
+        });
+    });
+    
+    // Close the details popup when clicking outside
+    document.addEventListener('click', function() {
+        actionDetails.style.display = 'none';
+    });
+    
+    // Toggle between region and county view
+    const countyViewBtn = document.querySelector('.county-view-btn');
+    const regionViewBtn = document.querySelector('.region-view-btn');
+    const countyMap = document.querySelector('.county-map');
+    const regionMap = document.querySelector('.region-map');
+    
+    countyViewBtn.addEventListener('click', function() {
+        countyViewBtn.classList.add('active');
+        regionViewBtn.classList.remove('active');
+        countyMap.style.display = 'block';
+        regionMap.style.display = 'none';
+    });
+    
+    regionViewBtn.addEventListener('click', function() {
+        regionViewBtn.classList.add('active');
+        countyViewBtn.classList.remove('active');
+        regionMap.style.display = 'block';
+        countyMap.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

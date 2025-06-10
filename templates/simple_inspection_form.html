@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Details</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-weight: 700;
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
+        }
+        
+        .hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Inspection Details Form</h1>
+        <p>Please provide information about who conducted the inspection, when it happened, and why</p>
+    </div>
+    
+    <div class="container">
+        <form action="/submit-inspection" method="POST">
+            <div class="form-group">
+                <label for="inspectors">Inspectors</label>
+                <input type="text" id="inspectors" name="inspectors" placeholder="Full name(s) of inspector(s)" required>
+                <div class="hint">Enter the names of all inspectors involved, separated by commas</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="inspection_date">Inspection Date</label>
+                <input type="date" id="inspection_date" name="inspection_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="visit_type">Visit Type</label>
+                <select id="visit_type" name="visit_type" required>
+                    <option value="">Select visit type</option>
+                    <option value="Inspection">Inspection</option>
+                    <option value="Enquiry">Enquiry</option>
+                    <option value="Investigation">Investigation</option>
+                    <option value="Audit">Audit</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Follow-up">Follow-up Visit</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="purpose">Purpose of Visit</label>
+                <textarea id="purpose" name="purpose" rows="4" placeholder="Why was this inspection/visit conducted?" required></textarea>
+            </div>
+            
+            <button type="submit">Save Inspection Details</button>
+        </form>
+    </div>
+</body>
+</html>

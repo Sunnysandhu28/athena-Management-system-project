@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Policy Learning System - Unavailable{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h2 class="h4 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        Policy Learning Modules Unavailable
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-puzzle-fill" style="font-size: 4rem; color: #6c757d;"></i>
+                    </div>
+                    
+                    <p class="lead">The required modules for policy learning are not available in this environment.</p>
+                    
+                    <div class="alert alert-info">
+                        <h5>Required Dependencies</h5>
+                        <p>The following dependencies are required for policy learning:</p>
+                        <ul>
+                            <li><strong>PyPDF2</strong> - For PDF processing</li>
+                            <li><strong>beautifulsoup4</strong> - For HTML parsing</li>
+                            <li><strong>requests</strong> - For making HTTP requests</li>
+                            <li><strong>openai</strong> or <strong>anthropic</strong> - For AI analysis (at least one)</li>
+                        </ul>
+                    </div>
+                    
+                    <h5>Installation Instructions</h5>
+                    <p>Install the required packages using pip:</p>
+                    <pre><code>pip install PyPDF2 beautifulsoup4 requests openai anthropic</code></pre>
+                    
+                    <p>Ensure that environment variables are set for the AI services:</p>
+                    <pre><code>OPENAI_API_KEY=your_api_key
+ANTHROPIC_API_KEY=your_api_key</code></pre>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

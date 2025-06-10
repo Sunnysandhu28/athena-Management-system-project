@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Enhanced Policy Generator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Enhanced Policy Generator</h1>
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Generate a New Policy with AI</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        This enhanced AI policy generator integrates clinical knowledge and legislation data to create
+                        comprehensive and compliant policies. The system automatically applies:
+                    </p>
+                    <ul>
+                        <li>Relevant legislative requirements from key acts and regulations</li>
+                        <li>Clinical knowledge from NICE Clinical Knowledge Summaries (when applicable)</li>
+                        <li>Care home best practices and standards</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mb-3">
+                        <h5><i class="fas fa-info-circle"></i> Demo Mode</h5>
+                        <p>This enhanced policy generator demonstrates our integration of clinical knowledge and legislation data. In this demo, you can see how the system would enhance a policy prompt.</p>
+                    </div>
+                    
+                    <form action="{{ url_for('enhanced_policy.enhanced_policy_generator') }}" method="POST" class="mt-4">
+                        <div class="form-group mb-3">
+                            <label for="policy_type"><strong>Policy Type:</strong></label>
+                            <input type="text" class="form-control" id="policy_type" name="policy_type" 
+                                   placeholder="e.g., Diabetes Management Policy, Fire Safety Policy" required>
+                            <small class="form-text text-muted">Try typing "Diabetes Management Policy" to see clinical knowledge integration in action.</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="policy_objective"><strong>Policy Objective:</strong></label>
+                            <textarea class="form-control" id="policy_objective" name="policy_objective" rows="3" 
+                                     placeholder="Describe the main purpose and objectives of this policy" required></textarea>
+                            <small class="form-text text-muted">Example: "To ensure proper management of residents with diabetes, including blood glucose monitoring and insulin administration."</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="policy_instructions"><strong>Specific Requirements (Optional):</strong></label>
+                            <textarea class="form-control" id="policy_instructions" name="policy_instructions" rows="5" 
+                                     placeholder="List specific requirements or sections to include (one per line)"></textarea>
+                            <small class="form-text text-muted">For example: "Include staff training requirements", "Detail emergency procedures"</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Show Enhanced Prompt</button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <p class="text-muted mb-0">The generated policy will comply with relevant legislation and incorporate clinical best practices when applicable.</p>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="card-title mb-0">Available Clinical Knowledge</h3>
+                </div>
+                <div class="card-body">
+                    <p>The system has access to clinical knowledge in the following areas:</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action">Diabetes Management</a>
+                                <a href="#" class="list-group-item list-group-item-action">Hypertension</a>
+                                <a href="#" class="list-group-item list-group-item-action">Dementia Care</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action">Pressure Ulcer Prevention</a>
+                                <a href="#" class="list-group-item list-group-item-action">Falls Prevention</a>
+                                <a href="#" class="list-group-item list-group-item-action">Medication Management</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action">End of Life Care</a>
+                                <a href="#" class="list-group-item list-group-item-action">Nutrition and Hydration</a>
+                                <a href="#" class="list-group-item list-group-item-action">Infection Control</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

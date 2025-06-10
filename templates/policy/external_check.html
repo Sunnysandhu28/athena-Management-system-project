@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}External View Check - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-container {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .preview-header {
+        background-color: var(--bs-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem 0.375rem 0 0;
+        margin: -1rem -1rem 1rem -1rem;
+    }
+    
+    .preview-body {
+        min-height: 300px;
+    }
+    
+    .preview-footer {
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+        color: var(--bs-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .role-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        margin-left: 0.5rem;
+    }
+    
+    .policy-thumbnail {
+        height: 120px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .policy-card {
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    
+    .policy-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .disabled-policy {
+        opacity: 0.6;
+        position: relative;
+    }
+    
+    .disabled-policy::after {
+        content: "Not Accessible";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-display me-2" viewBox="0 0 16 16">
+                <path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4c0 .667.083 1.167.25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75c.167-.333.25-.833.25-1.5H2s-2 0-2-2V4zm1.398-.855a.758.758 0 0 0-.254.302A1.46 1.46 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.464 1.464 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.758.758 0 0 0 .254-.302 1.464 1.464 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.757.757 0 0 0-.302-.254A1.46 1.46 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145z"/>
+            </svg>
+            External View Check
+        </h1>
+        <p class="lead text-muted">Verify how policies appear to users with different roles and at different sites.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">External View Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('policy_replicator.external_check') }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="user_role" class="form-label">User Role</label>
+                        {{ form.user_role(class="form-select", id="user_role") }}
+                        <div class="form-text">Select the role to simulate for viewing policies.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="site_id" class="form-label">Site</label>
+                        {{ form.site_id(class="form-select", id="site_id") }}
+                        <div class="form-text">Select the site for which to check policy access.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="policy_format" class="form-label">Policy Format</label>
+                        {{ form.policy_format(class="form-select", id="policy_format") }}
+                        <div class="form-text">Choose between QCS original format or company-formatted policies.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye me-2" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                        Preview External View
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Role Permissions</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Administrator
+                        <span class="badge bg-success rounded-pill">All Policies, All Sites</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Manager
+                        <span class="badge bg-primary rounded-pill">Company Format, Assigned Sites</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Staff
+                        <span class="badge bg-primary rounded-pill">Company Format, Assigned Sites</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Regular User
+                        <span class="badge bg-secondary rounded-pill">Company Format, One Site Only</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        {% if preview %}
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    External View
+                    <span class="badge bg-light text-dark role-badge">{{ preview.role }}</span>
+                    <span class="badge bg-light text-dark role-badge">{{ preview.site }}</span>
+                    <span class="badge bg-light text-dark role-badge">{{ preview.format }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Policies</h5>
+                            <span class="badge bg-secondary">{{ preview.role }}</span>
+                        </div>
+                    </div>
+                    <div class="preview-body">
+                        <div class="row">
+                            {% for policy in preview.policies %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card policy-card {% if not policy.accessible %}disabled-policy{% endif %}">
+                                    <img src="{{ url_for('static', filename='img/policy-thumbnail.jpg') }}" class="policy-thumbnail" alt="Policy thumbnail">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ policy.name }}</h6>
+                                        <p class="card-text small text-muted">{{ policy.description }}</p>
+                                        <div class="d-flex mt-3">
+                                            <a href="#" class="btn btn-sm btn-primary {% if not policy.accessible %}disabled{% endif %}">View</a>
+                                            <a href="#" class="btn btn-sm btn-outline-secondary ms-auto {% if not policy.accessible %}disabled{% endif %}">Download</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="preview-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-0"><small>Site: {{ preview.site }}</small></p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <p class="mb-0"><small>Format: {{ preview.format }}</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <h6 class="alert-heading">External View Summary</h6>
+                    <p class="mb-0">
+                        {% if preview.has_restricted %}
+                        This user can access <strong>{{ preview.accessible_count }} out of {{ preview.total_count }}</strong> policies due to role and site restrictions.
+                        {% else %}
+                        This user has full access to all <strong>{{ preview.total_count }}</strong> policies.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">External View Preview</h5>
+            </div>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-display text-muted mb-3" viewBox="0 0 16 16">
+                    <path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4c0 .667.083 1.167.25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75c.167-.333.25-.833.25-1.5H2s-2 0-2-2V4zm1.398-.855a.758.758 0 0 0-.254.302A1.46 1.46 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.464 1.464 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.758.758 0 0 0 .254-.302 1.464 1.464 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.757.757 0 0 0-.302-.254A1.46 1.46 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145z"/>
+                </svg>
+                <h5 class="text-muted mb-3">Select View Settings</h5>
+                <p class="text-center text-muted mb-0">Use the form on the left to select the role, site, and policy format to simulate how policies will appear to external users.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Check Results</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Policy</th>
+                            <th>Status</th>
+                            <th>Issues</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if check_results %}
+                            {% for result in check_results %}
+                            <tr>
+                                <td>{{ result.policy_name }}</td>
+                                <td>
+                                    {% if result.status == 'success' %}
+                                    <span class="badge bg-success">Success</span>
+                                    {% elif result.status == 'warning' %}
+                                    <span class="badge bg-warning text-dark">Warning</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Error</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ result.message }}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailsModal{{ result.policy_id }}">
+                                        Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No check results available. Run a check first.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if check_results %}
+    {% for result in check_results %}
+    <div class="modal fade" id="detailsModal{{ result.policy_id }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ result.policy_id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel{{ result.policy_id }}">Details for {{ result.policy_name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Access Details</h6>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Site</th>
+                                <th>Format</th>
+                                <th>Access</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Administrator</td>
+                                <td>All Sites</td>
+                                <td>QCS & Company</td>
+                                <td><span class="badge bg-success">Full Access</span></td>
+                            </tr>
+                            <tr>
+                                <td>Manager</td>
+                                <td>{{ result.site }}</td>
+                                <td>Company Only</td>
+                                <td>
+                                    {% if result.details.site_access_limited %}
+                                    <span class="badge bg-warning text-dark">Limited Access</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Full Access</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Staff</td>
+                                <td>{{ result.site }}</td>
+                                <td>Company Only</td>
+                                <td>
+                                    {% if result.details.site_access_limited %}
+                                    <span class="badge bg-danger">No Access</span>
+                                    {% else %}
+                                    <span class="badge bg-success">View Only</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Regular User</td>
+                                <td>{{ result.site }}</td>
+                                <td>Company Only</td>
+                                <td>
+                                    {% if result.details.site_access_limited %}
+                                    <span class="badge bg-danger">No Access</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">View Only</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h6 class="mt-4">Technical Details</h6>
+                    <pre class="bg-light p-3 rounded"><code>{{ result.details|tojson(indent=2) }}</code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

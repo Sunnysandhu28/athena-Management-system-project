@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h1 class="h3 mb-0"><i class="fas fa-folder-open me-2"></i>Confirm Download Location</h1>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="alert-heading">Choose Where to Save Your Policies</h5>
+                            <p>Please confirm or modify the location where you want to save the downloaded QCS policies and forms.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form action="{{ url_for('confirm_download_location') }}" method="post">
+                    <div class="mb-4">
+                        <label for="download_dir" class="form-label">Download Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-folder-open text-primary"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-lg" id="download_dir" name="download_dir" value="{{ suggested_path }}" required>
+                        </div>
+                        <div class="form-text">
+                            <ul class="ps-3 mb-0 mt-2">
+                                <li>For this Replit environment, use relative paths like <code>./policies</code></li>
+                                <li>A directory structure will be created automatically for organization</li>
+                                <li>The directory will be created if it doesn't exist</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-lg btn-primary">
+                            <i class="fas fa-check-circle me-2"></i>Confirm and Begin Download
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel and Return to Home
+                        </a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small><i class="fas fa-folder-tree me-1"></i> A structured directory will be created</small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small><i class="fas fa-shield-alt me-1"></i> QCS credentials are not stored in the directory</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

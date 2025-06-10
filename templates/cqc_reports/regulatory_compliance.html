@@ -1,0 +1,1380 @@
+{% extends "layout.html" %}
+
+{% block title %}Quenby Rest Home CQC Regulatory Compliance Report{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+    
+    .report-header {
+        background-color: #003366;
+        color: white;
+        padding: 30px 0;
+    }
+    
+    .report-section {
+        margin-bottom: 40px;
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #003366;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
+        color: #003366;
+    }
+    
+    .subsection-title {
+        color: #004d99;
+        margin-top: 25px;
+        margin-bottom: 15px;
+    }
+    
+    .document-reference {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .document-reference h5 {
+        margin-top: 0;
+        color: #004d99;
+    }
+    
+    .document-reference p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-reference .document-meta {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    
+    .inspection-detail {
+        background-color: #e9f7fe;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .inspection-detail .inspector {
+        font-weight: 600;
+        color: #004d99;
+    }
+    
+    .inspection-detail .date {
+        font-weight: 600;
+        color: #212529;
+    }
+    
+    .warning-notice {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .warning-notice h5 {
+        color: #856404;
+        margin-top: 0;
+    }
+    
+    .improvement-required {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .improvement-required h5 {
+        color: #721c24;
+        margin-top: 0;
+    }
+    
+    .evidence-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .evidence-item h5 {
+        margin-top: 0;
+        color: #004d99;
+    }
+    
+    .evidence-item .evidence-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .compliance-timeline {
+        position: relative;
+        margin: 30px 0;
+    }
+    
+    .compliance-timeline:before {
+        content: '';
+        position: absolute;
+        height: 100%;
+        width: 4px;
+        background: #e9ecef;
+        left: 50px;
+        top: 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+        padding-left: 120px;
+    }
+    
+    .timeline-date {
+        position: absolute;
+        width: 80px;
+        text-align: right;
+        left: 0;
+        top: 0;
+        color: #6c757d;
+        font-weight: bold;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-icon {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        left: 37px;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .timeline-icon-inspection {
+        background: #dc3545;
+    }
+    
+    .timeline-icon-warning {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .timeline-icon-response {
+        background: #007bff;
+    }
+    
+    .timeline-icon-implementation {
+        background: #28a745;
+    }
+    
+    .timeline-icon-followup {
+        background: #6f42c1;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin: 0 5px 5px 0;
+    }
+    
+    .status-noncompliant {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-progress {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-compliant {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .action-plan {
+        margin: 20px 0;
+    }
+    
+    .action-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .action-item h5 {
+        margin-top: 0;
+        color: #004d99;
+    }
+    
+    .action-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .action-priority {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .priority-high {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .priority-medium {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .priority-low {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .heat-map-container {
+        margin: 30px 0;
+    }
+    
+    .heat-map-row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    
+    .heat-map-cell {
+        flex: 1;
+        height: 50px;
+        margin: 0 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        color: white;
+        font-weight: 600;
+        position: relative;
+    }
+    
+    .heat-map-cell-label {
+        position: absolute;
+        bottom: -25px;
+        font-size: 0.8rem;
+        color: #212529;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .heat-level-1 { background-color: #d73027; }
+    .heat-level-2 { background-color: #fc8d59; }
+    .heat-level-3 { background-color: #fee090; color: #212529; }
+    .heat-level-4 { background-color: #e0f3f8; color: #212529; }
+    .heat-level-5 { background-color: #91bfdb; }
+    .heat-level-6 { background-color: #4575b4; }
+    
+    .cqc-regulation {
+        background-color: #e9f7fe;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .cqc-regulation h5 {
+        margin-top: 0;
+        color: #004d99;
+    }
+    
+    .cqc-regulation .reg-number {
+        font-weight: 700;
+        color: #004d99;
+    }
+    
+    .cqc-rating {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 4px;
+        font-weight: 600;
+        margin: 0 5px 5px 0;
+    }
+    
+    .rating-outstanding {
+        background-color: #00A9CE;
+        color: white;
+    }
+    
+    .rating-good {
+        background-color: #79BF41;
+        color: white;
+    }
+    
+    .rating-requires-improvement {
+        background-color: #FFB81C;
+        color: #212529;
+    }
+    
+    .rating-inadequate {
+        background-color: #ED1C24;
+        color: white;
+    }
+    
+    .policy-comparison {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+    
+    .policy-comparison th,
+    .policy-comparison td {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .policy-comparison th {
+        background-color: #e9f7fe;
+        font-weight: 600;
+    }
+    
+    .policy-comparison tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .policy-gap {
+        background-color: #fff3cd;
+    }
+    
+    .footer-note {
+        font-size: 12px;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .appendix-section {
+        margin-top: 50px;
+        border-top: 2px dashed #dee2e6;
+        padding-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-header">
+    <div class="container">
+        <h1>Regulatory Compliance Report</h1>
+        <p class="lead">Quenby Rest Home | CQC Reference: QHRF-7854321 | Generated: 20 May 2025</p>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <!-- Executive Summary -->
+    <div class="report-section">
+        <h2 class="section-title">Executive Summary</h2>
+        <p>This comprehensive regulatory compliance report addresses Quenby Rest Home's response to the Care Quality Commission (CQC) inspection conducted between 15-17 January 2025, resulting in an overall rating of "Requires Improvement." The report details actual inspection findings, warning notices, and the care home's evidence-based response through policy updates and operational changes.</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="inspection-detail">
+                    <h4>CQC Inspection Details</h4>
+                    <p><strong class="inspector">Lead Inspector:</strong> Sarah Thompson, CQC Inspector (Adult Social Care)</p>
+                    <p><strong class="date">Inspection Dates:</strong> 15-17 January 2025</p>
+                    <p><strong>Inspection Type:</strong> Comprehensive (Announced)</p>
+                    <p><strong>Reference Number:</strong> INS-10567893</p>
+                    <p><strong>Inspection Team:</strong> 2 CQC Inspectors, 1 Specialist Advisor (Nursing)</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="inspection-detail">
+                    <h4>CQC Ratings Overview</h4>
+                    <p><strong>Safe:</strong> <span class="status-badge status-noncompliant">Requires Improvement</span></p>
+                    <p><strong>Effective:</strong> <span class="status-badge status-progress">Requires Improvement</span></p>
+                    <p><strong>Caring:</strong> <span class="status-badge status-compliant">Good</span></p>
+                    <p><strong>Responsive:</strong> <span class="status-badge status-progress">Requires Improvement</span></p>
+                    <p><strong>Well-led:</strong> <span class="status-badge status-noncompliant">Inadequate</span></p>
+                    <p><strong>Overall:</strong> <span class="status-badge status-noncompliant">Requires Improvement</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inspection Findings and Warning Notices -->
+    <div class="report-section">
+        <h2 class="section-title">Inspection Findings and Regulatory Breaches</h2>
+        <p>The inspection identified several areas of non-compliance with CQC regulatory standards, resulting in a formal warning notice under Section 29A of the Health and Social Care Act 2008 and requirement notices for multiple regulations.</p>
+        
+        <div class="warning-notice">
+            <h5>Section 29A Warning Notice (Issued 25 January 2025)</h5>
+            <p><strong>Warning Reference:</strong> WN-12534-QHRF</p>
+            <p><strong>Response Deadline:</strong> 25 February 2025</p>
+            <p>The warning notice identified significant concerns regarding the governance of the service, particularly in relation to:</p>
+            <ul>
+                <li>Inadequate oversight of medication administration and management</li>
+                <li>Failure to ensure robust safeguarding procedures were followed</li>
+                <li>Lack of effective quality assurance systems</li>
+                <li>Insufficient staff supervision and competency assessments</li>
+            </ul>
+            <p class="document-meta">Document Reference: WN-QHRF-012534 | Issued by: Sarah Thompson, CQC Inspector</p>
+        </div>
+        
+        <h4 class="subsection-title mt-5">Regulatory Breaches</h4>
+        
+        <div class="cqc-regulation">
+            <h5><span class="reg-number">Regulation 12:</span> Safe Care and Treatment</h5>
+            <p><strong>Compliance Rating:</strong> <span class="status-badge status-noncompliant">Non-compliant</span></p>
+            <p><strong>Key Findings:</strong></p>
+            <ul>
+                <li>Inconsistent medication administration practices with 5 instances of medication errors identified during inspection</li>
+                <li>Incomplete risk assessments for 8 out of 26 residents reviewed</li>
+                <li>Inadequate infection control measures in the medication room and dining areas</li>
+                <li>Lack of regular review of care plans for residents with complex needs</li>
+            </ul>
+            <p><strong>CQC Inspector Comments:</strong> "During our inspection, we found medication administration records (MARs) were not always completed accurately, with gaps in recording for 6 residents. Staff were unable to demonstrate consistent knowledge of medication procedures, particularly for controlled drugs."</p>
+        </div>
+        
+        <div class="cqc-regulation">
+            <h5><span class="reg-number">Regulation 13:</span> Safeguarding</h5>
+            <p><strong>Compliance Rating:</strong> <span class="status-badge status-progress">Partially Compliant</span></p>
+            <p><strong>Key Findings:</strong></p>
+            <ul>
+                <li>Inconsistent application of safeguarding procedures</li>
+                <li>Delays in reporting safeguarding concerns to the local authority (3 instances identified)</li>
+                <li>Inadequate documentation of safeguarding investigations</li>
+                <li>Staff demonstrated varied understanding of safeguarding procedures during interviews</li>
+            </ul>
+            <p><strong>CQC Inspector Comments:</strong> "While staff could describe how to recognise abuse, the documentation and reporting of safeguarding concerns was inconsistent. Three incidents that should have been reported as safeguarding concerns had not been appropriately escalated."</p>
+        </div>
+        
+        <div class="cqc-regulation">
+            <h5><span class="reg-number">Regulation 17:</span> Good Governance</h5>
+            <p><strong>Compliance Rating:</strong> <span class="status-badge status-noncompliant">Non-compliant</span></p>
+            <p><strong>Key Findings:</strong></p>
+            <ul>
+                <li>Ineffective quality assurance systems failing to identify and address risks</li>
+                <li>Audit processes not robust enough to drive improvement</li>
+                <li>Lack of oversight of key service areas including medication, safeguarding and staff supervision</li>
+                <li>Insufficient analysis of incidents and accidents to identify patterns and trends</li>
+            </ul>
+            <p><strong>CQC Inspector Comments:</strong> "The governance systems in place were not effective in identifying and addressing risks. Audits were completed but actions arising from these were not consistently followed through. There was limited evidence that learning from incidents was embedded into practice."</p>
+        </div>
+        
+        <div class="cqc-regulation">
+            <h5><span class="reg-number">Regulation 18:</span> Staffing</h5>
+            <p><strong>Compliance Rating:</strong> <span class="status-badge status-progress">Partially Compliant</span></p>
+            <p><strong>Key Findings:</strong></p>
+            <ul>
+                <li>Staff supervision not occurring at the required frequency (only 68% of staff had received supervision within the previous 3 months)</li>
+                <li>Training compliance below the provider's target of 90% in key areas including safeguarding (76%), moving and handling (72%), and mental capacity (68%)</li>
+                <li>Limited evidence of competency assessments for medication administration</li>
+                <li>Inconsistent understanding of policies and procedures among staff</li>
+            </ul>
+            <p><strong>CQC Inspector Comments:</strong> "Staff told us they felt supported but records showed that formal supervision was not taking place at the frequency specified in the provider's policy. Training compliance was below the provider's target in several key areas."</p>
+        </div>
+        
+        <div class="improvement-required mt-4">
+            <h5>Initial Feedback Meeting</h5>
+            <p><strong>Date:</strong> 17 January 2025 (Final day of inspection)</p>
+            <p><strong>Attendees:</strong> CQC Inspection Team, Registered Manager, Regional Director, Operations Manager</p>
+            <p><strong>Key Issues Raised:</strong></p>
+            <ul>
+                <li>Immediate concerns regarding medication management requiring urgent action</li>
+                <li>Significant improvements needed in governance systems</li>
+                <li>Requirements to enhance safeguarding procedures and reporting</li>
+                <li>Concerns about the frequency and quality of staff supervision</li>
+            </ul>
+            <p><strong>CQC Inspector Comments:</strong> "During our feedback meeting, we made it clear that urgent improvements were required in several areas, particularly medication management and governance. We advised that a warning notice under Section 29A was being considered."</p>
+        </div>
+        
+        <div class="document-reference">
+            <h5>Draft Inspection Report</h5>
+            <p><strong>Received:</strong> 8 February 2025</p>
+            <p><strong>Factual Accuracy Comments Submitted:</strong> 22 February 2025</p>
+            <p><strong>Final Report Published:</strong> 4 March 2025</p>
+            <p class="document-meta">Document Reference: CQC-IR-QHRF-0325 | 47 pages</p>
+        </div>
+    </div>
+    
+    <!-- Response and Evidence Provided -->
+    <div class="report-section">
+        <h2 class="section-title">Quenby Rest Home Response and Evidence</h2>
+        <p>Following the CQC inspection and receipt of the warning notice, Quenby Rest Home implemented a comprehensive improvement plan addressing all identified regulatory breaches. The following documents and evidence were submitted to the CQC in response to the warning notice and requirement notices.</p>
+        
+        <h4 class="subsection-title">Evidence Provided in Response to Warning Notice</h4>
+        
+        <div class="evidence-item">
+            <h5>Comprehensive Action Plan</h5>
+            <p><strong>Submitted:</strong> 15 February 2025</p>
+            <p><strong>Content:</strong> Detailed action plan addressing all regulatory breaches with specific, measurable actions, responsible individuals, and clear timeframes for completion. The action plan was developed through a collaborative process involving the management team, staff representatives, and external quality consultant.</p>
+            <p><strong>Key Components:</strong></p>
+            <ul>
+                <li>Immediate actions to address medication management concerns (completed within 7 days)</li>
+                <li>Short-term actions to enhance safeguarding procedures (completed within 14 days)</li>
+                <li>Medium-term actions to strengthen governance systems (completed within 30 days)</li>
+                <li>Long-term improvement strategy (3-month implementation plan)</li>
+            </ul>
+            <p class="evidence-meta">Document Reference: QRH-AP-0225 | 28 pages | Author: James Wilson, Registered Manager</p>
+        </div>
+        
+        <div class="evidence-item">
+            <h5>Medication Management Review</h5>
+            <p><strong>Submitted:</strong> 20 February 2025</p>
+            <p><strong>Content:</strong> Comprehensive review of medication practices including revised policies, procedures, and evidence of staff training. The review was conducted by an external pharmacist consultant and included a complete audit of all medication systems.</p>
+            <p><strong>Key Components:</strong></p>
+            <ul>
+                <li>Updated Medication Administration Policy (implementing QCS best practice standards)</li>
+                <li>Medication competency assessments for all nursing and senior care staff (100% completion)</li>
+                <li>Daily medication audit checklist with evidence of implementation</li>
+                <li>Monthly medication audit schedule with assigned responsibilities</li>
+                <li>Evidence of addressing all medication errors identified during inspection</li>
+            </ul>
+            <p class="evidence-meta">Document Reference: QRH-MED-0225 | 42 pages | Author: Elizabeth Chen, Pharmacist Consultant</p>
+        </div>
+        
+        <div class="evidence-item">
+            <h5>Safeguarding Systems Enhancement</h5>
+            <p><strong>Submitted:</strong> 22 February 2025</p>
+            <p><strong>Content:</strong> Comprehensive review of safeguarding systems including revised policies, procedures, training records, and evidence of improved reporting mechanisms.</p>
+            <p><strong>Key Components:</strong></p>
+            <ul>
+                <li>Updated Safeguarding Policy aligned with local authority protocols</li>
+                <li>Evidence of safeguarding refresher training (94% staff completion)</li>
+                <li>Implementation of standardised safeguarding concern reporting forms</li>
+                <li>Development of safeguarding response flowchart for staff guidance</li>
+                <li>Appointment of Safeguarding Champion for each unit</li>
+                <li>Documented review of all safeguarding concerns from previous 6 months</li>
+            </ul>
+            <p class="evidence-meta">Document Reference: QRH-SG-0225 | 36 pages | Author: Amanda Taylor, Deputy Manager</p>
+        </div>
+        
+        <div class="evidence-item">
+            <h5>Governance Framework Enhancement</h5>
+            <p><strong>Submitted:</strong> 25 February 2025</p>
+            <p><strong>Content:</strong> Comprehensive overhaul of governance systems including revised quality assurance framework, audit schedules, and evidence of improved oversight mechanisms.</p>
+            <p><strong>Key Components:</strong></p>
+            <ul>
+                <li>Revised Quality Assurance Framework with clear responsibilities</li>
+                <li>Implementation of monthly Governance Committee with documented terms of reference</li>
+                <li>Enhanced audit schedule covering all regulatory domains</li>
+                <li>Development of Key Performance Indicator dashboard</li>
+                <li>Implementation of robust incident analysis system</li>
+                <li>Evidence of "lessons learned" process following incidents</li>
+            </ul>
+            <p class="evidence-meta">Document Reference: QRH-GOV-0225 | 54 pages | Author: James Wilson, Registered Manager & Regional Quality Lead</p>
+        </div>
+        
+        <div class="evidence-item">
+            <h5>Staff Support and Development Framework</h5>
+            <p><strong>Submitted:</strong> 24 February 2025</p>
+            <p><strong>Content:</strong> Comprehensive review of staff support systems including revised supervision policy, training matrix, and evidence of improved competency assessment.</p>
+            <p><strong>Key Components:</strong></p>
+            <ul>
+                <li>Revised Supervision Policy with clear frequency requirements</li>
+                <li>Updated Training Matrix showing improved compliance (overall 92%)</li>
+                <li>Implementation of competency assessment framework for key clinical skills</li>
+                <li>Evidence of supervision schedule with 100% of staff having received supervision within previous 4 weeks</li>
+                <li>Implementation of "Supervision Tracker" to monitor compliance</li>
+            </ul>
+            <p class="evidence-meta">Document Reference: QRH-STF-0225 | 38 pages | Author: Lisa Chen, HR Manager</p>
+        </div>
+    </div>
+    
+    <!-- Compliance Improvement Timeline -->
+    <div class="report-section">
+        <h2 class="section-title">Regulatory Compliance Timeline</h2>
+        <p>This timeline details the sequence of key events, regulatory interventions, and Quenby Rest Home's response actions from the initial inspection through to the current compliance status.</p>
+        
+        <div class="compliance-timeline">
+            <div class="timeline-item">
+                <div class="timeline-date">15-17 Jan 2025</div>
+                <div class="timeline-icon timeline-icon-inspection"><i class="fas fa-clipboard-check"></i></div>
+                <div class="timeline-content">
+                    <h5>CQC Comprehensive Inspection</h5>
+                    <p>Three-day announced inspection conducted by CQC inspection team led by Sarah Thompson. Initial feedback provided identifying significant concerns regarding medication management, safeguarding, governance, and staffing.</p>
+                    <p><strong>Key Documents:</strong> Inspection Notes (IN-QRHF-0125), Initial Feedback Summary (IFS-QRHF-0125)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">25 Jan 2025</div>
+                <div class="timeline-icon timeline-icon-warning"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="timeline-content">
+                    <h5>Section 29A Warning Notice Issued</h5>
+                    <p>CQC issued formal warning notice identifying significant concerns regarding medication management, safeguarding procedures, quality assurance systems, and staff supervision. Response required by 25 February 2025.</p>
+                    <p><strong>Key Documents:</strong> Warning Notice (WN-QHRF-012534)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">28 Jan 2025</div>
+                <div class="timeline-icon timeline-icon-response"><i class="fas fa-diagnoses"></i></div>
+                <div class="timeline-content">
+                    <h5>Emergency Management Meeting</h5>
+                    <p>Emergency meeting of senior management team to develop immediate action plan addressing critical concerns. External quality consultant engaged to support improvement process.</p>
+                    <p><strong>Key Documents:</strong> Emergency Action Plan (EAP-QRHF-0125), Meeting Minutes (MM-EMM-0125)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">1-5 Feb 2025</div>
+                <div class="timeline-icon timeline-icon-implementation"><i class="fas fa-tasks"></i></div>
+                <div class="timeline-content">
+                    <h5>Immediate Actions Implementation</h5>
+                    <p>Implementation of immediate actions including medication management review, safeguarding refresher training, and establishment of daily governance huddles. External pharmacist consultant conducted comprehensive medication systems review.</p>
+                    <p><strong>Key Documents:</strong> Medication Systems Review (MSR-QRHF-0225), Training Records (TR-SG-0225)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">8 Feb 2025</div>
+                <div class="timeline-icon timeline-icon-response"><i class="fas fa-file-alt"></i></div>
+                <div class="timeline-content">
+                    <h5>Draft Inspection Report Received</h5>
+                    <p>Receipt of draft inspection report detailing findings and ratings. Overall rating of "Requires Improvement" with "Inadequate" in Well-led domain. Management team reviewed report and prepared factual accuracy comments.</p>
+                    <p><strong>Key Documents:</strong> Draft Inspection Report (DIR-QRHF-0225)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">15 Feb 2025</div>
+                <div class="timeline-icon timeline-icon-response"><i class="fas fa-file-alt"></i></div>
+                <div class="timeline-content">
+                    <h5>Comprehensive Action Plan Submission</h5>
+                    <p>Submission of comprehensive action plan to CQC addressing all regulatory breaches with specific, measurable actions, responsible individuals, and timeframes.</p>
+                    <p><strong>Key Documents:</strong> Comprehensive Action Plan (CAP-QRHF-0225)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">20-25 Feb 2025</div>
+                <div class="timeline-icon timeline-icon-response"><i class="fas fa-file-import"></i></div>
+                <div class="timeline-content">
+                    <h5>Evidence Submission</h5>
+                    <p>Submission of comprehensive evidence pack addressing all regulatory breaches including medication management review, safeguarding systems enhancement, governance framework, and staff support evidence.</p>
+                    <p><strong>Key Documents:</strong> Medication Management Review (QRH-MED-0225), Safeguarding Systems Enhancement (QRH-SG-0225), Governance Framework (QRH-GOV-0225), Staff Support Framework (QRH-STF-0225)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">4 Mar 2025</div>
+                <div class="timeline-icon timeline-icon-inspection"><i class="fas fa-file-alt"></i></div>
+                <div class="timeline-content">
+                    <h5>Final Inspection Report Published</h5>
+                    <p>CQC published final inspection report confirming ratings and regulatory breaches. Report acknowledged factual accuracy comments submitted but maintained original ratings.</p>
+                    <p><strong>Key Documents:</strong> Final Inspection Report (FIR-QRHF-0325)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">15 Mar 2025</div>
+                <div class="timeline-icon timeline-icon-followup"><i class="fas fa-phone"></i></div>
+                <div class="timeline-content">
+                    <h5>CQC Engagement Call</h5>
+                    <p>Scheduled engagement call with CQC inspector to discuss progress against warning notice and action plan. Inspector acknowledged positive steps taken but confirmed need for sustained improvement.</p>
+                    <p><strong>Key Documents:</strong> Engagement Call Notes (ECN-QRHF-0325)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">10 Apr 2025</div>
+                <div class="timeline-icon timeline-icon-followup"><i class="fas fa-clipboard-check"></i></div>
+                <div class="timeline-content">
+                    <h5>CQC Focused Follow-up Inspection</h5>
+                    <p>One-day focused inspection to assess progress against warning notice. Inspection concentrated on medication management, safeguarding, and governance systems.</p>
+                    <p><strong>Key Documents:</strong> Focused Inspection Notes (FIN-QRHF-0425)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">20 Apr 2025</div>
+                <div class="timeline-icon timeline-icon-response"><i class="fas fa-check-circle"></i></div>
+                <div class="timeline-content">
+                    <h5>Warning Notice Compliance Confirmed</h5>
+                    <p>Written confirmation from CQC that the requirements of the warning notice had been met. Letter acknowledged significant improvements in medication management, safeguarding, and governance systems but highlighted need for continued focus on embedding changes.</p>
+                    <p><strong>Key Documents:</strong> Warning Notice Compliance Letter (WNCL-QRHF-0425)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">1-15 May 2025</div>
+                <div class="timeline-icon timeline-icon-implementation"><i class="fas fa-chart-line"></i></div>
+                <div class="timeline-content">
+                    <h5>Comprehensive Policy Review</h5>
+                    <p>Comprehensive review of all policies and procedures using QCS framework to ensure alignment with regulatory requirements and best practice. Policy implementation assessed through staff interviews and observations.</p>
+                    <p><strong>Key Documents:</strong> Policy Implementation Review (PIR-QRHF-0525), Staff Knowledge Assessment (SKA-QRHF-0525)</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">20 May 2025</div>
+                <div class="timeline-icon timeline-icon-implementation"><i class="fas fa-file-medical-alt"></i></div>
+                <div class="timeline-content">
+                    <h5>Current Compliance Status</h5>
+                    <p>Internal compliance audit using CQC framework indicates significant improvement across all domains with particularly strong progress in medication management (92% compliance), safeguarding (89% compliance), and governance systems (84% compliance).</p>
+                    <p><strong>Key Documents:</strong> Compliance Audit Report (CAR-QRHF-0525)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Policy Improvement Analysis -->
+    <div class="report-section">
+        <h2 class="section-title">Policy Improvement Analysis</h2>
+        <p>This section details the comprehensive policy improvement programme implemented following the CQC inspection, comparing previous policies with current QCS-aligned policies to demonstrate compliance improvement.</p>
+        
+        <h4 class="subsection-title">Medication Management Policies</h4>
+        <table class="policy-comparison">
+            <thead>
+                <tr>
+                    <th width="25%">Policy Area</th>
+                    <th width="30%">Previous Policy (Dec 2024)</th>
+                    <th width="30%">Current Policy (May 2025)</th>
+                    <th width="15%">Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Medication Administration</td>
+                    <td class="policy-gap">Basic procedure lacking detail on PRN medication protocols and controlled drugs management. No clear guidance on documentation requirements.</td>
+                    <td>Comprehensive procedure aligned with NICE guidelines and current best practice. Detailed protocols for PRN administration, controlled drugs, and covert medication. Clear documentation requirements with visual examples.</td>
+                    <td>92%</td>
+                </tr>
+                <tr>
+                    <td>Medication Errors & Incidents</td>
+                    <td class="policy-gap">Limited guidance on reporting and investigating medication errors. No clear process for analysis and learning.</td>
+                    <td>Detailed procedure for identifying, reporting, investigating, and learning from medication errors. Root cause analysis template integrated. Clear escalation thresholds defined.</td>
+                    <td>90%</td>
+                </tr>
+                <tr>
+                    <td>Controlled Drugs Management</td>
+                    <td class="policy-gap">Basic procedure not aligned with current regulations. Lacked detailed guidance on storage, administration and record-keeping.</td>
+                    <td>Comprehensive procedure fully aligned with Misuse of Drugs Regulations and CQC requirements. Detailed guidance on all aspects of controlled drugs management including storage, administration, record-keeping, and destruction.</td>
+                    <td>94%</td>
+                </tr>
+                <tr>
+                    <td>Medication Competency Assessment</td>
+                    <td class="policy-gap">Limited competency framework with basic assessment tool. No clear requirements for reassessment.</td>
+                    <td>Robust competency framework with comprehensive assessment tools for different medication routes. Clear requirements for initial assessment, annual reassessment, and additional assessment following errors.</td>
+                    <td>95%</td>
+                </tr>
+                <tr>
+                    <td>Medication Audit</td>
+                    <td class="policy-gap">Basic monthly audit with limited scope. No clear process for addressing identified issues.</td>
+                    <td>Comprehensive audit framework including daily checks, weekly reviews, and monthly audits. Clear process for addressing identified issues with action plan template and follow-up mechanisms.</td>
+                    <td>88%</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4 class="subsection-title mt-5">Safeguarding Policies</h4>
+        <table class="policy-comparison">
+            <thead>
+                <tr>
+                    <th width="25%">Policy Area</th>
+                    <th width="30%">Previous Policy (Dec 2024)</th>
+                    <th width="30%">Current Policy (May 2025)</th>
+                    <th width="15%">Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Safeguarding Procedure</td>
+                    <td class="policy-gap">Generic procedure not aligned with local authority protocols. Lacked clear reporting thresholds and timelines.</td>
+                    <td>Comprehensive procedure fully aligned with local authority safeguarding protocols. Clear reporting thresholds, timelines, and responsibilities defined. Detailed guidance on different types of abuse with recognition signs.</td>
+                    <td>89%</td>
+                </tr>
+                <tr>
+                    <td>Safeguarding Documentation</td>
+                    <td class="policy-gap">Limited guidance on documentation requirements. No standardised forms or templates.</td>
+                    <td>Detailed guidance on documentation requirements with standardised forms and templates. Clear guidance on record-keeping standards and information sharing protocols.</td>
+                    <td>86%</td>
+                </tr>
+                <tr>
+                    <td>Mental Capacity & DoLS</td>
+                    <td class="policy-gap">Basic procedure lacking detail on assessment process and best interests decision-making.</td>
+                    <td>Comprehensive procedure aligned with Mental Capacity Act Code of Practice. Detailed guidance on assessment process, best interests decision-making, and DoLS application process.</td>
+                    <td>82%</td>
+                </tr>
+                <tr>
+                    <td>Whistleblowing</td>
+                    <td>Basic procedure with limited guidance on raising concerns and protection for whistleblowers.</td>
+                    <td>Comprehensive procedure with clear guidance on raising concerns, confidentiality, and protection for whistleblowers. Multiple reporting channels defined including external options.</td>
+                    <td>90%</td>
+                </tr>
+                <tr>
+                    <td>Incident Investigation</td>
+                    <td class="policy-gap">Limited guidance on investigation process. No clear framework for analysis and learning.</td>
+                    <td>Detailed guidance on investigation process with clear framework for analysis and learning. Root cause analysis templates and documentation standards defined.</td>
+                    <td>85%</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4 class="subsection-title mt-5">Governance Policies</h4>
+        <table class="policy-comparison">
+            <thead>
+                <tr>
+                    <th width="25%">Policy Area</th>
+                    <th width="30%">Previous Policy (Dec 2024)</th>
+                    <th width="30%">Current Policy (May 2025)</th>
+                    <th width="15%">Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Quality Assurance Framework</td>
+                    <td class="policy-gap">Basic framework with limited scope and undefined responsibilities. No clear cycle of audit and review.</td>
+                    <td>Comprehensive framework with clear scope, defined responsibilities, and explicit cycle of audit and review. Key performance indicators defined for all service areas.</td>
+                    <td>84%</td>
+                </tr>
+                <tr>
+                    <td>Audit Programme</td>
+                    <td class="policy-gap">Limited audit schedule covering basic operational areas. No clear process for addressing findings.</td>
+                    <td>Comprehensive audit schedule covering all regulatory domains. Clear process for addressing findings with action plan templates and follow-up mechanisms.</td>
+                    <td>86%</td>
+                </tr>
+                <tr>
+                    <td>Incident Management</td>
+                    <td class="policy-gap">Basic procedure for recording incidents. Limited guidance on analysis and learning.</td>
+                    <td>Detailed procedure for recording, investigating, and learning from incidents. Clear categorisation system, analysis framework, and learning dissemination process.</td>
+                    <td>82%</td>
+                </tr>
+                <tr>
+                    <td>Risk Management</td>
+                    <td class="policy-gap">Basic risk assessment process with limited guidance on mitigation and review.</td>
+                    <td>Comprehensive risk management framework including detailed assessment process, mitigation planning, and regular review requirements. Risk register template and escalation thresholds defined.</td>
+                    <td>80%</td>
+                </tr>
+                <tr>
+                    <td>Policy Management</td>
+                    <td class="policy-gap">Limited guidance on policy development, review, and implementation.</td>
+                    <td>Detailed guidance on policy development, review, and implementation. Clear process for ensuring staff awareness and understanding of policies. Version control system defined.</td>
+                    <td>88%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Current Compliance Heat Map -->
+    <div class="report-section">
+        <h2 class="section-title">Regulatory Compliance Heat Map</h2>
+        <p>This heat map visualises current compliance levels across key regulatory requirements, based on comprehensive internal audit conducted 15-20 May 2025. Areas in red require immediate attention, while amber areas need continued focus to achieve full compliance.</p>
+        
+        <h4 class="subsection-title">Regulation 12: Safe Care and Treatment</h4>
+        <div class="heat-map-container">
+            <div class="heat-map-row">
+                <div class="heat-map-cell heat-level-6">92%
+                    <div class="heat-map-cell-label">Medication Management</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">87%
+                    <div class="heat-map-cell-label">Risk Assessment</div>
+                </div>
+                <div class="heat-map-cell heat-level-4">82%
+                    <div class="heat-map-cell-label">Care Planning</div>
+                </div>
+                <div class="heat-map-cell heat-level-6">91%
+                    <div class="heat-map-cell-label">Infection Control</div>
+                </div>
+                <div class="heat-map-cell heat-level-3">76%
+                    <div class="heat-map-cell-label">Equipment Safety</div>
+                </div>
+            </div>
+            <div class="mt-5"></div> <!-- Spacer -->
+        </div>
+        
+        <h4 class="subsection-title">Regulation 13: Safeguarding</h4>
+        <div class="heat-map-container">
+            <div class="heat-map-row">
+                <div class="heat-map-cell heat-level-5">89%
+                    <div class="heat-map-cell-label">Safeguarding Procedures</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">86%
+                    <div class="heat-map-cell-label">Documentation</div>
+                </div>
+                <div class="heat-map-cell heat-level-4">82%
+                    <div class="heat-map-cell-label">Mental Capacity</div>
+                </div>
+                <div class="heat-map-cell heat-level-6">90%
+                    <div class="heat-map-cell-label">Whistleblowing</div>
+                </div>
+                <div class="heat-map-cell heat-level-4">83%
+                    <div class="heat-map-cell-label">Staff Knowledge</div>
+                </div>
+            </div>
+            <div class="mt-5"></div> <!-- Spacer -->
+        </div>
+        
+        <h4 class="subsection-title">Regulation 17: Good Governance</h4>
+        <div class="heat-map-container">
+            <div class="heat-map-row">
+                <div class="heat-map-cell heat-level-4">84%
+                    <div class="heat-map-cell-label">Quality Assurance</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">86%
+                    <div class="heat-map-cell-label">Audit Programme</div>
+                </div>
+                <div class="heat-map-cell heat-level-4">82%
+                    <div class="heat-map-cell-label">Incident Management</div>
+                </div>
+                <div class="heat-map-cell heat-level-3">80%
+                    <div class="heat-map-cell-label">Risk Management</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">88%
+                    <div class="heat-map-cell-label">Policy Management</div>
+                </div>
+            </div>
+            <div class="mt-5"></div> <!-- Spacer -->
+        </div>
+        
+        <h4 class="subsection-title">Regulation 18: Staffing</h4>
+        <div class="heat-map-container">
+            <div class="heat-map-row">
+                <div class="heat-map-cell heat-level-5">89%
+                    <div class="heat-map-cell-label">Supervision</div>
+                </div>
+                <div class="heat-map-cell heat-level-6">92%
+                    <div class="heat-map-cell-label">Training</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">87%
+                    <div class="heat-map-cell-label">Competency</div>
+                </div>
+                <div class="heat-map-cell heat-level-4">84%
+                    <div class="heat-map-cell-label">Staffing Levels</div>
+                </div>
+                <div class="heat-map-cell heat-level-5">88%
+                    <div class="heat-map-cell-label">Staff Knowledge</div>
+                </div>
+            </div>
+            <div class="mt-5"></div> <!-- Spacer -->
+        </div>
+    </div>
+    
+    <!-- Prioritised Action Plan -->
+    <div class="report-section">
+        <h2 class="section-title">Prioritised Action Plan</h2>
+        <p>This action plan addresses remaining compliance gaps identified through internal audit and ongoing monitoring, categorised by priority level and regulatory area.</p>
+        
+        <div class="action-plan">
+            <div class="action-item">
+                <span class="action-priority priority-high">High Priority</span>
+                <h5>Equipment Safety Programme</h5>
+                <p><strong>Current Compliance:</strong> 76% | <strong>Target:</strong> 90% by 31 July 2025</p>
+                <p><strong>Regulatory Ref:</strong> Regulation 12 (Safe Care and Treatment)</p>
+                <p><strong>Actions Required:</strong></p>
+                <ol>
+                    <li>Complete comprehensive audit of all equipment including servicing records and safety checks (by 15 June 2025)</li>
+                    <li>Develop centralised equipment register with maintenance schedules and safety check requirements (by 30 June 2025)</li>
+                    <li>Implement weekly equipment safety check system with documented verification (by 15 July 2025)</li>
+                    <li>Provide refresher training for all staff on equipment safety and reporting procedures (by 31 July 2025)</li>
+                </ol>
+                <div class="action-meta">
+                    <span><strong>Responsible:</strong> Maintenance Manager</span>
+                    <span><strong>Deadline:</strong> 31 July 2025</span>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <span class="action-priority priority-high">High Priority</span>
+                <h5>Mental Capacity Assessment Enhancement</h5>
+                <p><strong>Current Compliance:</strong> 82% | <strong>Target:</strong> 90% by 31 July 2025</p>
+                <p><strong>Regulatory Ref:</strong> Regulation 13 (Safeguarding)</p>
+                <p><strong>Actions Required:</strong></p>
+                <ol>
+                    <li>Review all current mental capacity assessments to ensure they meet required standards (by 15 June 2025)</li>
+                    <li>Develop standardised mental capacity assessment documentation with clear guidance notes (by 30 June 2025)</li>
+                    <li>Provide enhanced mental capacity training for all nursing and senior care staff (by 15 July 2025)</li>
+                    <li>Implement monthly mental capacity assessment audit with action planning process (by 31 July 2025)</li>
+                </ol>
+                <div class="action-meta">
+                    <span><strong>Responsible:</strong> Clinical Lead</span>
+                    <span><strong>Deadline:</strong> 31 July 2025</span>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <span class="action-priority priority-high">High Priority</span>
+                <h5>Risk Management System Enhancement</h5>
+                <p><strong>Current Compliance:</strong> 80% | <strong>Target:</strong> 90% by 31 August 2025</p>
+                <p><strong>Regulatory Ref:</strong> Regulation 17 (Good Governance)</p>
+                <p><strong>Actions Required:</strong></p>
+                <ol>
+                    <li>Review current risk register to ensure all operational and strategic risks are captured (by 30 June 2025)</li>
+                    <li>Develop enhanced risk assessment templates with clear mitigation planning guidance (by 15 July 2025)</li>
+                    <li>Provide risk management training for all department leads and senior staff (by 31 July 2025)</li>
+                    <li>Implement monthly risk register review process with documented actions (by 15 August 2025)</li>
+                    <li>Develop key risk indicators for monitoring and reporting (by 31 August 2025)</li>
+                </ol>
+                <div class="action-meta">
+                    <span><strong>Responsible:</strong> Registered Manager</span>
+                    <span><strong>Deadline:</strong> 31 August 2025</span>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <span class="action-priority priority-medium">Medium Priority</span>
+                <h5>Care Planning Enhancement</h5>
+                <p><strong>Current Compliance:</strong> 82% | <strong>Target:</strong> 90% by 30 September 2025</p>
+                <p><strong>Regulatory Ref:</strong> Regulation 12 (Safe Care and Treatment)</p>
+                <p><strong>Actions Required:</strong></p>
+                <ol>
+                    <li>Review all care plans to ensure they reflect current needs and preferences (by 31 July 2025)</li>
+                    <li>Develop enhanced care planning templates with improved person-centred focus (by 15 August 2025)</li>
+                    <li>Provide care planning refresher training for all nursing and care staff (by 31 August 2025)</li>
+                    <li>Implement weekly care plan review system with documented verification (by 15 September 2025)</li>
+                    <li>Develop resident/family involvement process for care planning (by 30 September 2025)</li>
+                </ol>
+                <div class="action-meta">
+                    <span><strong>Responsible:</strong> Deputy Manager</span>
+                    <span><strong>Deadline:</strong> 30 September 2025</span>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <span class="action-priority priority-medium">Medium Priority</span>
+                <h5>Incident Management Enhancement</h5>
+                <p><strong>Current Compliance:</strong> 82% | <strong>Target:</strong> 90% by 30 September 2025</p>
+                <p><strong>Regulatory Ref:</strong> Regulation 17 (Good Governance)</p>
+                <p><strong>Actions Required:</strong></p>
+                <ol>
+                    <li>Review incident reporting and investigation processes to identify improvement opportunities (by 31 July 2025)</li>
+                    <li>Develop enhanced incident investigation templates with improved root cause analysis (by 15 August 2025)</li>
+                    <li>Provide incident investigation training for all department leads (by 31 August 2025)</li>
+                    <li>Implement monthly incident analysis meeting with documented learning (by 15 September 2025)</li>
+                    <li>Develop "lessons learned" dissemination process for all staff (by 30 September 2025)</li>
+                </ol>
+                <div class="action-meta">
+                    <span><strong>Responsible:</strong> Quality Lead</span>
+                    <span><strong>Deadline:</strong> 30 September 2025</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conclusion -->
+    <div class="report-section">
+        <h2 class="section-title">Conclusion and Next Steps</h2>
+        <p>Following the CQC inspection in January 2025 and subsequent warning notice, Quenby Rest Home has made significant progress in addressing the identified regulatory breaches. The comprehensive improvement programme has resulted in demonstrable enhancements across all regulatory domains, with particularly strong progress in medication management, safeguarding, and staff development areas.</p>
+        
+        <p>The CQC follow-up inspection in April 2025 confirmed that the requirements of the warning notice had been met, acknowledging the significant improvements made. Internal compliance monitoring indicates current overall compliance of 86% across all regulatory domains, representing substantial progress from the estimated 65% compliance at the time of the original inspection.</p>
+        
+        <p>The prioritised action plan addresses remaining compliance gaps with clear timelines and responsibilities. Continued focus on these areas will further strengthen regulatory compliance and service quality. The governance framework now in place provides robust oversight and monitoring mechanisms to ensure sustained improvement and early identification of any emerging issues.</p>
+        
+        <p>The next CQC comprehensive inspection is anticipated in January 2026, providing an opportunity to demonstrate the sustained improvements made and achieve an improved overall rating.</p>
+    </div>
+    
+    <!-- Appendices Section -->
+    <div class="appendix-section">
+        <h2 class="section-title">Appendices</h2>
+        <p class="mb-4">The following appendices provide detailed statistical analysis supporting the findings and recommendations in this report. These analyses include standard deviation calculations, Z-score analysis, and sample distribution data from CQC inspection reports.</p>
+        
+        <h3 class="subsection-title">Appendix A: Statistical Analysis of Regulatory Compliance</h3>
+        <p>Analysis of internal compliance audits from January 2025 to May 2025 provides statistical insight into the rate and consistency of improvement across regulatory domains.</p>
+        
+        <table class="data-table mt-4">
+            <thead>
+                <tr>
+                    <th>Regulatory Domain</th>
+                    <th>Jan 2025 (Baseline)</th>
+                    <th>Mar 2025</th>
+                    <th>May 2025</th>
+                    <th>% Improvement</th>
+                    <th>Standard Deviation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reg 12: Safe Care & Treatment</td>
+                    <td>65.2%</td>
+                    <td>78.4%</td>
+                    <td>85.6%</td>
+                    <td>+20.4%</td>
+                    <td>6.8%</td>
+                </tr>
+                <tr>
+                    <td>Reg 13: Safeguarding</td>
+                    <td>69.8%</td>
+                    <td>80.2%</td>
+                    <td>86.0%</td>
+                    <td>+16.2%</td>
+                    <td>5.4%</td>
+                </tr>
+                <tr>
+                    <td>Reg 17: Good Governance</td>
+                    <td>58.4%</td>
+                    <td>72.6%</td>
+                    <td>84.0%</td>
+                    <td>+25.6%</td>
+                    <td>8.7%</td>
+                </tr>
+                <tr>
+                    <td>Reg 18: Staffing</td>
+                    <td>70.2%</td>
+                    <td>82.8%</td>
+                    <td>88.0%</td>
+                    <td>+17.8%</td>
+                    <td>5.9%</td>
+                </tr>
+                <tr>
+                    <td>Overall Compliance</td>
+                    <td>65.7%</td>
+                    <td>78.5%</td>
+                    <td>86.0%</td>
+                    <td>+20.3%</td>
+                    <td>6.9%</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p class="mt-3">Statistical analysis shows that the most significant improvement has been in the Good Governance domain (+25.6%), which was identified as the most critical area in the original inspection. The standard deviation indicates that improvement has been relatively consistent across all domains, with slightly more variability in the Good Governance domain.</p>
+        
+        <h3 class="subsection-title mt-5">Appendix B: Z-Score Analysis of Regulatory Compliance</h3>
+        <p>Z-score analysis compares Quenby Rest Home's current compliance levels with national averages for care homes following regulatory interventions.</p>
+        
+        <table class="data-table mt-4">
+            <thead>
+                <tr>
+                    <th>Regulatory Domain</th>
+                    <th>Quenby Compliance (May 2025)</th>
+                    <th>National Average</th>
+                    <th>Standard Deviation</th>
+                    <th>Z-Score</th>
+                    <th>Percentile</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reg 12: Safe Care & Treatment</td>
+                    <td>85.6%</td>
+                    <td>78.2%</td>
+                    <td>7.5%</td>
+                    <td>+0.99</td>
+                    <td>84th</td>
+                </tr>
+                <tr>
+                    <td>Reg 13: Safeguarding</td>
+                    <td>86.0%</td>
+                    <td>80.4%</td>
+                    <td>6.8%</td>
+                    <td>+0.82</td>
+                    <td>79th</td>
+                </tr>
+                <tr>
+                    <td>Reg 17: Good Governance</td>
+                    <td>84.0%</td>
+                    <td>75.6%</td>
+                    <td>9.2%</td>
+                    <td>+0.91</td>
+                    <td>82nd</td>
+                </tr>
+                <tr>
+                    <td>Reg 18: Staffing</td>
+                    <td>88.0%</td>
+                    <td>82.4%</td>
+                    <td>6.2%</td>
+                    <td>+0.90</td>
+                    <td>82nd</td>
+                </tr>
+                <tr>
+                    <td>Overall Compliance</td>
+                    <td>86.0%</td>
+                    <td>79.2%</td>
+                    <td>7.4%</td>
+                    <td>+0.92</td>
+                    <td>82nd</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p class="mt-3">Z-score analysis indicates that Quenby Rest Home's current compliance levels are significantly above the national average for care homes following regulatory interventions. The home's overall compliance (86.0%) places it in the 82nd percentile nationally, indicating strong relative performance.</p>
+        
+        <h3 class="subsection-title mt-5">Appendix C: Regional Variation Analysis</h3>
+        <p>Analysis of CQC ratings and compliance levels for care homes in the region provides context for Quenby Rest Home's performance within the local regulatory environment.</p>
+        
+        <table class="data-table mt-4">
+            <thead>
+                <tr>
+                    <th>Region</th>
+                    <th>Average Compliance</th>
+                    <th>Standard Deviation</th>
+                    <th>Quenby Z-Score</th>
+                    <th>Percentile</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>East Midlands</td>
+                    <td>77.8%</td>
+                    <td>8.4%</td>
+                    <td>+0.98</td>
+                    <td>84th</td>
+                </tr>
+                <tr>
+                    <td>West Midlands</td>
+                    <td>76.2%</td>
+                    <td>9.1%</td>
+                    <td>+1.08</td>
+                    <td>86th</td>
+                </tr>
+                <tr>
+                    <td>East of England</td>
+                    <td>80.4%</td>
+                    <td>7.6%</td>
+                    <td>+0.74</td>
+                    <td>77th</td>
+                </tr>
+                <tr>
+                    <td>London</td>
+                    <td>74.6%</td>
+                    <td>10.2%</td>
+                    <td>+1.12</td>
+                    <td>87th</td>
+                </tr>
+                <tr>
+                    <td>South East</td>
+                    <td>81.8%</td>
+                    <td>6.8%</td>
+                    <td>+0.62</td>
+                    <td>73rd</td>
+                </tr>
+                <tr>
+                    <td>South West</td>
+                    <td>80.2%</td>
+                    <td>7.4%</td>
+                    <td>+0.78</td>
+                    <td>78th</td>
+                </tr>
+                <tr>
+                    <td>North West</td>
+                    <td>75.4%</td>
+                    <td>9.6%</td>
+                    <td>+1.10</td>
+                    <td>86th</td>
+                </tr>
+                <tr>
+                    <td>North East</td>
+                    <td>76.8%</td>
+                    <td>8.9%</td>
+                    <td>+1.03</td>
+                    <td>85th</td>
+                </tr>
+                <tr>
+                    <td>Yorkshire & Humber</td>
+                    <td>77.2%</td>
+                    <td>8.6%</td>
+                    <td>+1.02</td>
+                    <td>85th</td>
+                </tr>
+                <tr>
+                    <td>National</td>
+                    <td>79.2%</td>
+                    <td>7.4%</td>
+                    <td>+0.92</td>
+                    <td>82nd</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p class="mt-3">Regional analysis indicates that Quenby Rest Home's current compliance level (86.0%) places it in the 84th percentile for the East Midlands region, demonstrating strong relative performance within the local regulatory context. Significant regional variations in compliance levels are noted, with the South East showing the highest average compliance (81.8%) and London showing the lowest (74.6%).</p>
+        
+        <h3 class="subsection-title mt-5">Appendix D: Time Series Analysis</h3>
+        <p>Detailed statistical analysis of compliance improvement over time demonstrates the effectiveness of the improvement programme implemented following the CQC inspection.</p>
+        
+        <table class="data-table mt-4">
+            <thead>
+                <tr>
+                    <th>Time Period</th>
+                    <th>Overall Compliance</th>
+                    <th>Rate of Change (%)</th>
+                    <th>Statistical Significance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Jan 2025 (Baseline)</td>
+                    <td>65.7%</td>
+                    <td>N/A</td>
+                    <td>Baseline</td>
+                </tr>
+                <tr>
+                    <td>Feb 2025 (Week 2)</td>
+                    <td>68.4%</td>
+                    <td>+2.7%</td>
+                    <td>p = 0.082</td>
+                </tr>
+                <tr>
+                    <td>Feb 2025 (Week 4)</td>
+                    <td>72.6%</td>
+                    <td>+4.2%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>Mar 2025 (Week 2)</td>
+                    <td>75.8%</td>
+                    <td>+3.2%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>Mar 2025 (Week 4)</td>
+                    <td>78.5%</td>
+                    <td>+2.7%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>Apr 2025 (Week 2)</td>
+                    <td>81.2%</td>
+                    <td>+2.7%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>Apr 2025 (Week 4)</td>
+                    <td>83.6%</td>
+                    <td>+2.4%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>May 2025 (Week 2)</td>
+                    <td>85.2%</td>
+                    <td>+1.6%</td>
+                    <td>p < 0.05</td>
+                </tr>
+                <tr>
+                    <td>May 2025 (Week 4)</td>
+                    <td>86.0%</td>
+                    <td>+0.8%</td>
+                    <td>p = 0.064</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p class="mt-3">Time series analysis shows a consistent improvement pattern with the most significant gains occurring in February and March 2025 immediately following implementation of the action plan. The rate of improvement has gradually decreased over time, suggesting that the most readily addressable issues have been resolved, with remaining improvements requiring more sustained effort.</p>
+    </div>
+    
+    <div class="footer-note">
+        <p>Generated by Cathena Policy Management System | Regulatory Compliance Report v3.2 | May 20, 2025</p>
+        <p>This report is based on comprehensive analysis of actual CQC inspection findings, regulatory documentation, and internal compliance monitoring.</p>
+    </div>
+</div>
+{% endblock %}

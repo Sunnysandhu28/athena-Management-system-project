@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">{{ error_title }}</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ error_subtitle|default('Error') }}</h3>
+        </div>
+        <div class="card-body">
+            <p class="lead">{{ error_message }}</p>
+            
+            <div class="d-flex gap-2 mt-4">
+                <a href="/" class="btn btn-primary">Go to Homepage</a>
+                <button onclick="history.back()" class="btn btn-secondary">Go Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Document - Cathena Policy System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .menu {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .menu a {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .menu a:hover {
+            background-color: #0056b3;
+        }
+        .document-details {
+            margin-bottom: 20px;
+        }
+        .document-details dt {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .document-content {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+        .back-btn {
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('documents') }}" class="back-btn">&larr; Back to Documents</a>
+        
+        <h1>{{ document.title }}</h1>
+        
+        <div class="menu">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('policies') }}">Policies</a>
+        </div>
+        
+        <dl class="document-details">
+            <dt>ID:</dt>
+            <dd>{{ document.id }}</dd>
+            
+            <dt>Reference Code:</dt>
+            <dd>{{ document.reference_code }}</dd>
+            
+            <dt>File Path:</dt>
+            <dd>{{ document.file_path }}</dd>
+            
+            <dt>File Size:</dt>
+            <dd>{{ document.file_size }} bytes</dd>
+            
+            <dt>Content Type:</dt>
+            <dd>{{ document.content_type }}</dd>
+            
+            <dt>Page Count:</dt>
+            <dd>{{ document.page_count }}</dd>
+            
+            <dt>Status:</dt>
+            <dd>{{ document.status }}</dd>
+            
+            <dt>Created:</dt>
+            <dd>{{ document.created_at }}</dd>
+            
+            <dt>Updated:</dt>
+            <dd>{{ document.updated_at }}</dd>
+        </dl>
+        
+        {% if document.extracted_text %}
+        <h2>Extracted Text</h2>
+        <div class="document-content">
+            {{ document.extracted_text }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

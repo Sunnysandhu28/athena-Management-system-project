@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}CQC Updates System Health{% endblock %}
+
+{% block head %}
+<style>
+    .health-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+    .stat-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .chart-container {
+        height: 250px;
+        margin-bottom: 20px;
+    }
+    .scheduler-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+    .scheduler-running {
+        background-color: #c8e6c9;
+        color: #1b5e20;
+    }
+    .scheduler-stopped {
+        background-color: #ffcdd2;
+        color: #b71c1c;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>CQC Updates System Health</h1>
+        <a href="{{ url_for('cqc_updates.index') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ update_stats.total_updates }}</div>
+                <div class="stat-label">Total Updates</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ update_stats.policies_affected }}</div>
+                <div class="stat-label">Policies Affected</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ update_stats.policies_by_priority.high }}</div>
+                <div class="stat-label">High Priority Updates</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ update_stats.policies_by_status.completed }}</div>
+                <div class="stat-label">Completed Updates</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="health-card">
+                <h5 class="mb-3">Updates by Type</h5>
+                <div class="chart-container">
+                    <canvas id="updateTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="health-card">
+                <h5 class="mb-3">Updates by Month</h5>
+                <div class="chart-container">
+                    <canvas id="updateMonthChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="health-card">
+                <h5 class="mb-3">Policies by Priority</h5>
+                <div class="chart-container">
+                    <canvas id="policyPriorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="health-card">
+                <h5 class="mb-3">Policies by Status</h5>
+                <div class="chart-container">
+                    <canvas id="policyStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="health-card">
+                <h5 class="mb-3">Scheduler Status</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0">
+                            Current Status: 
+                            {% if scheduler_status.running %}
+                            <span class="scheduler-status scheduler-running">Running</span>
+                            {% else %}
+                            <span class="scheduler-status scheduler-stopped">Stopped</span>
+                            {% endif %}
+                        </p>
+                        {% if scheduler_status.running and scheduler_status.next_run %}
+                        <p class="mb-0">Next scheduled run: {{ scheduler_status.next_run }}</p>
+                        {% endif %}
+                        {% if scheduler_status.last_run %}
+                        <p class="mb-0">Last run: {{ scheduler_status.last_run.time }}</p>
+                        <p class="mb-0">Result: {{ scheduler_status.last_run.result }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <form action="{{ url_for('cqc_updates.run_now') }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary">Run Crawler Now</button>
+                        </form>
+                        <form action="{{ url_for('cqc_updates.scheduler_control') }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {% if scheduler_status.running %}
+                            <input type="hidden" name="action" value="stop">
+                            <button type="submit" class="btn btn-outline-danger">Stop Scheduler</button>
+                            {% else %}
+                            <input type="hidden" name="action" value="start">
+                            <button type="submit" class="btn btn-outline-success">Start Scheduler</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Updates by Type Chart
+        const updateTypeCtx = document.getElementById('updateTypeChart').getContext('2d');
+        const updateTypeChart = new Chart(updateTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    {% for type, count in update_stats.updates_by_type.items() %}
+                    '{{ type }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    data: [
+                        {% for type, count in update_stats.updates_by_type.items() %}
+                        {{ count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#e3f2fd',
+                        '#e8f5e9',
+                        '#fff3e0',
+                        '#f3e5f5',
+                        '#e1f5fe',
+                        '#f1f8e9',
+                        '#fffde7',
+                        '#e8eaf6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // Updates by Month Chart
+        const updateMonthCtx = document.getElementById('updateMonthChart').getContext('2d');
+        const updateMonthChart = new Chart(updateMonthCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    {% for month, count in update_stats.updates_by_month.items() %}
+                    '{{ month }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Updates',
+                    data: [
+                        {% for month, count in update_stats.updates_by_month.items() %}
+                        {{ count }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: '#bbdefb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Policies by Priority Chart
+        const policyPriorityCtx = document.getElementById('policyPriorityChart').getContext('2d');
+        const policyPriorityChart = new Chart(policyPriorityCtx, {
+            type: 'pie',
+            data: {
+                labels: ['High', 'Medium', 'Low'],
+                datasets: [{
+                    data: [
+                        {{ update_stats.policies_by_priority.high }},
+                        {{ update_stats.policies_by_priority.medium }},
+                        {{ update_stats.policies_by_priority.low }}
+                    ],
+                    backgroundColor: [
+                        '#f44336',
+                        '#ff9800',
+                        '#4caf50'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Policies by Status Chart
+        const policyStatusCtx = document.getElementById('policyStatusChart').getContext('2d');
+        const policyStatusChart = new Chart(policyStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Pending', 'In Progress', 'Completed', 'Ignored'],
+                datasets: [{
+                    data: [
+                        {{ update_stats.policies_by_status.pending }},
+                        {{ update_stats.policies_by_status.in_progress }},
+                        {{ update_stats.policies_by_status.completed }},
+                        {{ update_stats.policies_by_status.ignored }}
+                    ],
+                    backgroundColor: [
+                        '#ffecb3',
+                        '#bbdefb',
+                        '#c8e6c9',
+                        '#e0e0e0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %}

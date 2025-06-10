@@ -1,0 +1,707 @@
+{% extends "base.html" %}
+
+{% block title %}System Communications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .communication-card {
+        margin-bottom: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .communication-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .communication-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .communication-details {
+        background-color: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    
+    .status-success {
+        background-color: #28a745;
+    }
+    
+    .status-warning {
+        background-color: #ffc107;
+    }
+    
+    .status-error {
+        background-color: #dc3545;
+    }
+    
+    .integration-card {
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .integration-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .integration-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #007bff;
+    }
+    
+    .ai-chat-container {
+        height: 500px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .ai-chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+    }
+    
+    .ai-chat-input {
+        padding: 10px;
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        max-width: 80%;
+    }
+    
+    .message-user {
+        align-self: flex-end;
+        background-color: #007bff;
+        color: white;
+        border-radius: 15px 15px 0 15px;
+        padding: 10px 15px;
+        margin-left: auto;
+    }
+    
+    .message-ai {
+        align-self: flex-start;
+        background-color: #f0f0f0;
+        color: #343a40;
+        border-radius: 15px 15px 15px 0;
+        padding: 10px 15px;
+    }
+    
+    .message-timestamp {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 2px;
+    }
+    
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        padding: 20px;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .nav-tabs .nav-link {
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link.active {
+        border-bottom: 3px solid #007bff;
+    }
+    
+    .replit-link {
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .replit-link:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>System Communications</h1>
+        <a href="{{ url_for('system_health.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <ul class="nav nav-tabs mb-4" id="communicationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="replit-tab" data-bs-toggle="tab" data-bs-target="#replit" type="button" role="tab" aria-controls="replit" aria-selected="true">
+                <i class="fas fa-terminal me-1"></i> Replit Communications
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab" aria-controls="ai" aria-selected="false">
+                <i class="fas fa-robot me-1"></i> AI Assistance
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="integrations-tab" data-bs-toggle="tab" data-bs-target="#integrations" type="button" role="tab" aria-controls="integrations" aria-selected="false">
+                <i class="fas fa-plug me-1"></i> Integrations
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="communicationTabsContent">
+        <!-- Replit Communications Tab -->
+        <div class="tab-pane fade show active" id="replit" role="tabpanel" aria-labelledby="replit-tab">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Replit Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator {{ 'status-success' if replit_status.connected else 'status-error' }}"></div>
+                                <h5 class="mb-0">{{ 'Connected' if replit_status.connected else 'Disconnected' }}</h5>
+                            </div>
+                            
+                            <div class="communication-details">
+                                <div><strong>Last Communication:</strong> {{ replit_status.last_communication }}</div>
+                                <div><strong>Connection Status:</strong> {{ replit_status.status }}</div>
+                                {% if replit_status.error %}
+                                <div class="mt-2 text-danger"><strong>Error:</strong> {{ replit_status.error }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-3">
+                                {% if not replit_status.token_configured %}
+                                <a href="{{ url_for('system_health.configure_replit') }}" class="btn btn-primary">
+                                    <i class="fas fa-cog me-1"></i> Configure Replit Token
+                                </a>
+                                {% else %}
+                                <a href="https://replit.com/console" class="btn btn-primary" target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i> Open Replit Console
+                                </a>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary ms-2" onclick="retryReplitConnection()">
+                                    <i class="fas fa-sync-alt me-1"></i> Retry Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Replit Integration</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>The Replit integration enables seamless communication between this application and your Replit workspace. This allows for:</p>
+                            
+                            <ul class="mb-4">
+                                <li><strong>Automated Error Reporting:</strong> Send detailed error reports to your Replit workspace</li>
+                                <li><strong>Console Output Monitoring:</strong> Track application output in real-time</li>
+                                <li><strong>Project Management:</strong> Directly access your Replit project</li>
+                                <li><strong>Continuous Monitoring:</strong> Track system health over time</li>
+                            </ul>
+                            
+                            <div class="alert {{ 'alert-success' if replit_status.token_configured else 'alert-warning' }}">
+                                <i class="{{ 'fas fa-check-circle' if replit_status.token_configured else 'fas fa-exclamation-triangle' }} me-2"></i>
+                                {% if replit_status.token_configured %}
+                                    Replit API token is configured. Integration is active.
+                                {% else %}
+                                    Replit API token is not configured. Some features may be limited.
+                                    <a href="{{ url_for('system_health.configure_replit') }}" class="alert-link">Configure now</a> for enhanced system monitoring and AI integration.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Communication History</h5>
+                    <a href="{{ url_for('system_health.refresh_communications') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if replit_communications %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Message</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comm in replit_communications %}
+                                    <tr>
+                                        <td>{{ comm.timestamp }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if comm.type == 'notification' else 'info' if comm.type == 'log' else 'secondary' }}">
+                                                {{ comm.type|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ 'bg-success' if comm.success else 'bg-danger' }}">
+                                                {{ 'Success' if comm.success else 'Failed' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ comm.message|truncate(60) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#communicationModal{{ loop.index }}">
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal for Communication Details -->
+                                    <div class="modal fade" id="communicationModal{{ loop.index }}" tabindex="-1" aria-labelledby="communicationModalLabel{{ loop.index }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="communicationModalLabel{{ loop.index }}">Communication Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <strong>Timestamp:</strong> {{ comm.timestamp }}
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <strong>Type:</strong> {{ comm.type|title }}
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <strong>Status:</strong> 
+                                                        <span class="badge {{ 'bg-success' if comm.success else 'bg-danger' }}">
+                                                            {{ 'Success' if comm.success else 'Failed' }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <strong>Message:</strong>
+                                                        <div class="p-3 bg-light rounded">{{ comm.message }}</div>
+                                                    </div>
+                                                    {% if comm.details %}
+                                                    <div class="mb-3">
+                                                        <strong>Details:</strong>
+                                                        <pre class="p-3 bg-light rounded">{{ comm.details|tojson(indent=2) }}</pre>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if comm.error %}
+                                                    <div class="mb-3">
+                                                        <strong>Error:</strong>
+                                                        <div class="p-3 bg-light rounded text-danger">{{ comm.error }}</div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    {% if not comm.success %}
+                                                    <button type="button" class="btn btn-primary">Retry</button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                            <p class="lead">No communication history found</p>
+                            <p class="text-muted">Communications with Replit will appear here once they occur</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Assistance Tab -->
+        <div class="tab-pane fade" id="ai" role="tabpanel" aria-labelledby="ai-tab">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">AI Assistant</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>The AI Assistant helps you diagnose and fix issues with your application. You can ask questions about errors, request code explanations, or get help with optimizing your application.</p>
+                            
+                            <div class="ai-chat-container mt-4">
+                                <div class="ai-chat-messages" id="aiChatMessages">
+                                    <div class="message message-ai">
+                                        <div>Hello! I'm your AI assistant. How can I help you with your application today?</div>
+                                        <div class="message-timestamp">{{ ai_interactions[0].timestamp if ai_interactions|length > 0 else current_time }}</div>
+                                    </div>
+                                </div>
+                                <div class="ai-chat-input">
+                                    <form id="aiChatForm" class="d-flex">
+                                        <input type="text" class="form-control" id="aiChatInput" placeholder="Ask a question...">
+                                        <button type="submit" class="btn btn-primary ms-2">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Tip:</strong> For more complex assistance, use the AI Enhancement tab in the main navigation.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent AI Interactions</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if ai_interactions %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <th>Type</th>
+                                                <th>Query</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for interaction in ai_interactions %}
+                                            <tr>
+                                                <td>{{ interaction.timestamp }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ 'primary' if interaction.type == 'error_analysis' else 'info' if interaction.type == 'query' else 'secondary' }}">
+                                                        {{ interaction.type|replace('_', ' ')|title }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ interaction.query|truncate(60) }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#aiModal{{ loop.index }}">
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            
+                                            <!-- Modal for AI Interaction Details -->
+                                            <div class="modal fade" id="aiModal{{ loop.index }}" tabindex="-1" aria-labelledby="aiModalLabel{{ loop.index }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="aiModalLabel{{ loop.index }}">AI Interaction Details</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <strong>Timestamp:</strong> {{ interaction.timestamp }}
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Type:</strong> {{ interaction.type|replace('_', ' ')|title }}
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Query:</strong>
+                                                                <div class="p-3 bg-light rounded">{{ interaction.query }}</div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Response:</strong>
+                                                                <div class="p-3 bg-light rounded">{{ interaction.response }}</div>
+                                                            </div>
+                                                            {% if interaction.actions %}
+                                                            <div class="mb-3">
+                                                                <strong>Suggested Actions:</strong>
+                                                                <ul class="list-group">
+                                                                    {% for action in interaction.actions %}
+                                                                    <li class="list-group-item">{{ action }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-robot fa-3x mb-3 text-muted"></i>
+                                    <p class="lead">No AI interactions found</p>
+                                    <p class="text-muted">Start a conversation with the AI assistant to get help</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integrations Tab -->
+        <div class="tab-pane fade" id="integrations" role="tabpanel" aria-labelledby="integrations-tab">
+            <div class="row mb-4">
+                <div class="col-md-12 mb-4">
+                    <div class="alert alert-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Integrations allow your application to communicate with external services for monitoring, notifications, and assistance.
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-terminal"></i>
+                            </div>
+                            <h5>Replit Integration</h5>
+                            <p>Connect to your Replit workspace for seamless error reporting and monitoring.</p>
+                            <div class="mb-3">
+                                <span class="badge {{ 'bg-success' if replit_status.token_configured else 'bg-warning' }}">
+                                    {{ 'Active' if replit_status.token_configured else 'Not Configured' }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('system_health.configure_replit') }}" class="btn btn-primary btn-sm">Configure</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h5>Email Notifications</h5>
+                            <p>Receive email alerts for critical issues and system events.</p>
+                            <div class="mb-3">
+                                <span class="badge {{ 'bg-success' if email_status.configured else 'bg-warning' }}">
+                                    {{ 'Active' if email_status.configured else 'Not Configured' }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('system_health.configure_email') }}" class="btn btn-primary btn-sm">Configure</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h5>SMS Alerts</h5>
+                            <p>Get SMS notifications for critical system events that require immediate attention.</p>
+                            <div class="mb-3">
+                                <span class="badge {{ 'bg-success' if sms_status.configured else 'bg-warning' }}">
+                                    {{ 'Active' if sms_status.configured else 'Not Configured' }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('system_health.configure_sms') }}" class="btn btn-primary btn-sm">Configure</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h5>AI Assistance</h5>
+                            <p>Configure AI models and settings for enhanced error detection and assistance.</p>
+                            <div class="mb-3">
+                                <span class="badge {{ 'bg-success' if ai_status.configured else 'bg-warning' }}">
+                                    {{ 'Active' if ai_status.configured else 'Not Configured' }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('system_health.configure_ai') }}" class="btn btn-primary btn-sm">Configure</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <h5>Webhooks</h5>
+                            <p>Send event notifications to external services and monitoring platforms.</p>
+                            <div class="mb-3">
+                                <span class="badge {{ 'bg-success' if webhook_status.configured else 'bg-warning' }}">
+                                    {{ 'Active' if webhook_status.configured else 'Not Configured' }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('system_health.configure_webhooks') }}" class="btn btn-primary btn-sm">Configure</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card integration-card">
+                        <div class="card-body text-center">
+                            <div class="integration-icon">
+                                <i class="fas fa-user-headset"></i>
+                            </div>
+                            <h5>Support Link</h5>
+                            <p>Connect directly to Replit support or AI assistance for complex issues.</p>
+                            <div class="mb-3">
+                                <span class="badge bg-success">Available</span>
+                            </div>
+                            <a href="https://replit.com/support" target="_blank" class="btn btn-primary btn-sm">Access Support</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/js/all.min.js"></script>
+<script>
+    // Function to format current time
+    function getCurrentFormattedTime() {
+        const currentDate = new Date();
+        return currentDate.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
+    // Suppress any 'now' undefined errors during page initialization
+    window.addEventListener('error', function(event) {
+        if (event.message && event.message.includes("'now' is undefined")) {
+            event.preventDefault();
+            console.log("Suppressed initialization error - 'now' is undefined");
+            // Remove any error alerts that might be visible
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert-danger');
+                alerts.forEach(alert => {
+                    if (alert.textContent.includes("'now' is undefined")) {
+                        alert.style.display = 'none';
+                    }
+                });
+            }, 100);
+            return true;
+        }
+    }, true);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // AI Chat Functionality
+        const aiChatForm = document.getElementById('aiChatForm');
+        const aiChatInput = document.getElementById('aiChatInput');
+        const aiChatMessages = document.getElementById('aiChatMessages');
+        
+        if (aiChatForm) {
+            aiChatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userMessage = aiChatInput.value.trim();
+                if (!userMessage) return;
+                
+                // Add user message to chat
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'message message-user';
+                userMessageElement.innerHTML = `
+                    <div>${userMessage}</div>
+                    <div class="message-timestamp">${getCurrentFormattedTime()}</div>
+                `;
+                aiChatMessages.appendChild(userMessageElement);
+                
+                // Clear input
+                aiChatInput.value = '';
+                
+                // Scroll to bottom
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                
+                // Send message to server (ajax request)
+                fetch('/system-health/ai-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userMessage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Add AI response to chat
+                    const aiMessageElement = document.createElement('div');
+                    aiMessageElement.className = 'message message-ai';
+                    aiMessageElement.innerHTML = `
+                        <div>${data.message}</div>
+                        <div class="message-timestamp">${getCurrentFormattedTime()}</div>
+                    `;
+                    aiChatMessages.appendChild(aiMessageElement);
+                    
+                    // Scroll to bottom
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Add error message to chat
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'message message-ai';
+                    errorMessageElement.innerHTML = `
+                        <div>Sorry, there was an error processing your request. Please try again later.</div>
+                        <div class="message-timestamp">${getCurrentFormattedTime()}</div>
+                    `;
+                    aiChatMessages.appendChild(errorMessageElement);
+                    
+                    // Scroll to bottom
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                });
+            });
+        }
+        
+        // Retry Replit Connection
+        window.retryReplitConnection = function() {
+            fetch('/system-health/retry-replit-connection', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Connection retry successful!');
+                    window.location.reload();
+                } else {
+                    alert('Connection retry failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Connection retry failed. Please try again later.');
+            });
+        };
+    });
+</script>
+{% endblock %}

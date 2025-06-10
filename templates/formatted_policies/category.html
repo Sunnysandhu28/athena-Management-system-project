@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.display_name }} Policies{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('formatted_policies_bp.policy_list') }}">Categories</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category.display_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ category.display_name }} Policies</h5>
+                        <span class="badge bg-light text-primary">{{ policies|length }} sample policies shown</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">{{ category.description }}</p>
+                    
+                    {% if policies|length < category.count %}
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Currently showing {{ policies|length }} sample policies. The full set of {{ category.count }} policies will be available after QCS extraction is complete.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" placeholder="Search policies..." id="policySearch">
+                        <button class="btn btn-outline-secondary" type="button">Search</button>
+                    </div>
+                    
+                    <div class="list-group">
+                        {% if policies %}
+                            {% for policy in policies %}
+                                <a href="{{ url_for('formatted_policies_bp.policy_view', policy_id=policy.id) }}" class="list-group-item list-group-item-action policy-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ policy.title }}</h5>
+                                        <small class="text-muted">{{ policy.code }}</small>
+                                    </div>
+                                    <small class="text-muted">Updated: {{ policy.updated_at }}</small>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                No policies found in this category.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Category Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Category:</strong> {{ category.display_name }}</p>
+                    <p><strong>Total Policies:</strong> {{ category.count }}</p>
+                    <p><strong>Available Sample Policies:</strong> {{ policies|length }}</p>
+                    
+                    <hr>
+                    
+                    <h6>QCS Extraction Progress</h6>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {% if policies|length == 0 %}5%{% elif policies|length < category.count %}{{ (policies|length / category.count * 100)|int }}%{% else %}100%{% endif %};" 
+                             aria-valuenow="{% if policies|length == 0 %}5{% elif policies|length < category.count %}{{ (policies|length / category.count * 100)|int }}{% else %}100{% endif %}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {% if policies|length == 0 %}Pending{% elif policies|length < category.count %}In Progress{% else %}Complete{% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('formatted_policies_bp.policy_list') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> All Categories
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Related Categories</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for cat in categories[:3] %}
+                            {% if cat.name != category.name %}
+                                <a href="{{ url_for('formatted_policies_bp.category_view', category_name=cat.name) }}" class="list-group-item list-group-item-action">
+                                    {{ cat.display_name }}
+                                    <span class="badge bg-primary rounded-pill float-end">{{ cat.count }}</span>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('policySearch');
+        const policyItems = document.querySelectorAll('.policy-item');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            policyItems.forEach(item => {
+                const policyTitle = item.querySelector('h5').textContent.toLowerCase();
+                const policyCode = item.querySelector('small').textContent.toLowerCase();
+                
+                if (policyTitle.includes(searchTerm) || policyCode.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
